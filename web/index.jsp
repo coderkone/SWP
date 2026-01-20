@@ -7,3 +7,5 @@
     // Có session thì ??a v? /home (controller s? x? lý ti?p)
     response.sendRedirect(request.getContextPath() + "/home");
 %>
+
+``
