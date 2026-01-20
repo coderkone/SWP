@@ -1,0 +1,165 @@
+{
+  "warnings": [
+    {
+      "FileName": "Account.java",
+      "ErrorCode": "V009",
+      "Message": "To use free version of PVS-Studio, source code files are required to start with a special comment.",
+      "CodePrev": 0,
+      "CodeCurrent": 0,
+      "CodeNext": 0
+    },
+    {
+      "FileName": "Product.java",
+      "ErrorCode": "V009",
+      "Message": "To use free version of PVS-Studio, source code files are required to start with a special comment.",
+      "CodePrev": 0,
+      "CodeCurrent": 0,
+      "CodeNext": 0
+    },
+    {
+      "FileName": "DBContext.java",
+      "ErrorCode": "V009",
+      "Message": "To use free version of PVS-Studio, source code files are required to start with a special comment.",
+      "CodePrev": 0,
+      "CodeCurrent": 0,
+      "CodeNext": 0
+    },
+    {
+      "FileName": "Category.java",
+      "ErrorCode": "V009",
+      "Message": "To use free version of PVS-Studio, source code files are required to start with a special comment.",
+      "CodePrev": 0,
+      "CodeCurrent": 0,
+      "CodeNext": 0
+    },
+    {
+      "FileName": "Cart.java",
+      "ErrorCode": "V009",
+      "Message": "To use free version of PVS-Studio, source code files are required to start with a special comment.",
+      "CodePrev": 0,
+      "CodeCurrent": 0,
+      "CodeNext": 0
+    },
+    {
+      "FileName": "Color.java",
+      "ErrorCode": "V009",
+      "Message": "To use free version of PVS-Studio, source code files are required to start with a special comment.",
+      "CodePrev": 0,
+      "CodeCurrent": 0,
+      "CodeNext": 0
+    },
+    {
+      "FileName": "OrderDAO.java",
+      "ErrorCode": "V009",
+      "Message": "To use free version of PVS-Studio, source code files are required to start with a special comment.",
+      "CodePrev": 0,
+      "CodeCurrent": 0,
+      "CodeNext": 0
+    },
+    {
+      "FileName": "customermanager.java",
+      "ErrorCode": "V009",
+      "Message": "To use free version of PVS-Studio, source code files are required to start with a special comment.",
+      "CodePrev": 0,
+      "CodeCurrent": 0,
+      "CodeNext": 0
+    },
+    {
+      "FileName": "Order.java",
+      "ErrorCode": "V009",
+      "Message": "To use free version of PVS-Studio, source code files are required to start with a special comment.",
+      "CodePrev": 0,
+      "CodeCurrent": 0,
+      "CodeNext": 0
+    },
+    {
+      "FileName": "ordermanager.java",
+      "ErrorCode": "V009",
+      "Message": "To use free version of PVS-Studio, source code files are required to start with a special comment.",
+      "CodePrev": 0,
+      "CodeCurrent": 0,
+      "CodeNext": 0
+    },
+    {
+      "FileName": "MyAccountFilter.java",
+      "ErrorCode": "V009",
+      "Message": "To use free version of PVS-Studio, source code files are required to start with a special comment.",
+      "CodePrev": 0,
+      "CodeCurrent": 0,
+      "CodeNext": 0
+    },
+    {
+      "FileName": "UserDAO.java",
+      "ErrorCode": "V009",
+      "Message": "To use free version of PVS-Studio, source code files are required to start with a special comment.",
+      "CodePrev": 0,
+      "CodeCurrent": 0,
+      "CodeNext": 0
+    },
+    {
+      "FileName": "Item.java",
+      "ErrorCode": "V009",
+      "Message": "To use free version of PVS-Studio, source code files are required to start with a special comment.",
+      "CodePrev": 0,
+      "CodeCurrent": 0,
+      "CodeNext": 0
+    },
+    {
+      "FileName": "Size.java",
+      "ErrorCode": "V009",
+      "Message": "To use free version of PVS-Studio, source code files are required to start with a special comment.",
+      "CodePrev": 0,
+      "CodeCurrent": 0,
+      "CodeNext": 0
+    },
+    {
+      "FileName": "DashBoard.java",
+      "ErrorCode": "V009",
+      "Message": "To use free version of PVS-Studio, source code files are required to start with a special comment.",
+      "CodePrev": 0,
+      "CodeCurrent": 0,
+      "CodeNext": 0
+    },
+    {
+      "FileName": "ProductManager.java",
+      "ErrorCode": "V009",
+      "Message": "To use free version of PVS-Studio, source code files are required to start with a special comment.",
+      "CodePrev": 0,
+      "CodeCurrent": 0,
+      "CodeNext": 0
+    },
+    {
+      "FileName": "ExtendFilter.java",
+      "ErrorCode": "V009",
+      "Message": "To use free version of PVS-Studio, source code files are required to start with a special comment.",
+      "CodePrev": 0,
+      "CodeCurrent": 0,
+      "CodeNext": 0
+    },
+    {
+      "FileName": "RoleFilter.java",
+      "ErrorCode": "V009",
+      "Message": "To use free version of PVS-Studio, source code files are required to start with a special comment.",
+      "CodePrev": 0,
+      "CodeCurrent": 0,
+      "CodeNext": 0
+    },
+    {
+      "FileName": "OrderDetail.java",
+      "ErrorCode": "V009",
+      "Message": "To use free version of PVS-Studio, source code files are required to start with a special comment.",
+      "CodePrev": 0,
+      "CodeCurrent": 0,
+      "CodeNext": 0
+    },
+    {
+      "FileName": "ProductDAO.java",
+      "ErrorCode": "V009",
+      "Message": "To use free version of PVS-Studio, source code files are required to start with a special comment.",
+      "CodePrev": 0,
+      "CodeCurrent": 0,
+      "CodeNext": 0
+    }
+  ],
+  "version": 1
+}

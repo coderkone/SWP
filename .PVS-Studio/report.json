@@ -1,0 +1,485 @@
+{
+  "version": 2,
+  "warnings": [
+    {
+      "code": "V009",
+      "cwe": 0,
+      "level": 0,
+      "positions": [
+        {
+          "file": "D:\\FPTU\\PRJ301\\class_projects\\Abibas\\src\\java\\Model\\Order.java",
+          "line": 1,
+          "endLine": 1,
+          "column": 1,
+          "endColumn": 1,
+          "navigation": {
+            "previousLine": 0,
+            "currentLine": 0,
+            "nextLine": 0,
+            "columns": 0
+          }
+        }
+      ],
+      "message": "To use free version of PVS-Studio, source code files are required to start with a special comment.",
+      "projects": [],
+      "favorite": false,
+      "falseAlarm": false
+    },
+    {
+      "code": "V009",
+      "cwe": 0,
+      "level": 0,
+      "positions": [
+        {
+          "file": "D:\\FPTU\\PRJ301\\class_projects\\Abibas\\src\\java\\Model\\Size.java",
+          "line": 1,
+          "endLine": 1,
+          "column": 1,
+          "endColumn": 1,
+          "navigation": {
+            "previousLine": 0,
+            "currentLine": 0,
+            "nextLine": 0,
+            "columns": 0
+          }
+        }
+      ],
+      "message": "To use free version of PVS-Studio, source code files are required to start with a special comment.",
+      "projects": [],
+      "favorite": false,
+      "falseAlarm": false
+    },
+    {
+      "code": "V009",
+      "cwe": 0,
+      "level": 0,
+      "positions": [
+        {
+          "file": "D:\\FPTU\\PRJ301\\class_projects\\Abibas\\src\\java\\Controller\\Admin\\customermanager.java",
+          "line": 1,
+          "endLine": 1,
+          "column": 1,
+          "endColumn": 1,
+          "navigation": {
+            "previousLine": 0,
+            "currentLine": 0,
+            "nextLine": 0,
+            "columns": 0
+          }
+        }
+      ],
+      "message": "To use free version of PVS-Studio, source code files are required to start with a special comment.",
+      "projects": [],
+      "favorite": false,
+      "falseAlarm": false
+    },
+    {
+      "code": "V009",
+      "cwe": 0,
+      "level": 0,
+      "positions": [
+        {
+          "file": "D:\\FPTU\\PRJ301\\class_projects\\Abibas\\src\\java\\dal\\ProductDAO.java",
+          "line": 1,
+          "endLine": 1,
+          "column": 1,
+          "endColumn": 1,
+          "navigation": {
+            "previousLine": 0,
+            "currentLine": 0,
+            "nextLine": 0,
+            "columns": 0
+          }
+        }
+      ],
+      "message": "To use free version of PVS-Studio, source code files are required to start with a special comment.",
+      "projects": [],
+      "favorite": false,
+      "falseAlarm": false
+    },
+    {
+      "code": "V009",
+      "cwe": 0,
+      "level": 0,
+      "positions": [
+        {
+          "file": "D:\\FPTU\\PRJ301\\class_projects\\Abibas\\src\\java\\Model\\Cart.java",
+          "line": 1,
+          "endLine": 1,
+          "column": 1,
+          "endColumn": 1,
+          "navigation": {
+            "previousLine": 0,
+            "currentLine": 0,
+            "nextLine": 0,
+            "columns": 0
+          }
+        }
+      ],
+      "message": "To use free version of PVS-Studio, source code files are required to start with a special comment.",
+      "projects": [],
+      "favorite": false,
+      "falseAlarm": false
+    },
+    {
+      "code": "V009",
+      "cwe": 0,
+      "level": 0,
+      "positions": [
+        {
+          "file": "D:\\FPTU\\PRJ301\\class_projects\\Abibas\\src\\java\\dal\\UserDAO.java",
+          "line": 1,
+          "endLine": 1,
+          "column": 1,
+          "endColumn": 1,
+          "navigation": {
+            "previousLine": 0,
+            "currentLine": 0,
+            "nextLine": 0,
+            "columns": 0
+          }
+        }
+      ],
+      "message": "To use free version of PVS-Studio, source code files are required to start with a special comment.",
+      "projects": [],
+      "favorite": false,
+      "falseAlarm": false
+    },
+    {
+      "code": "V009",
+      "cwe": 0,
+      "level": 0,
+      "positions": [
+        {
+          "file": "D:\\FPTU\\PRJ301\\class_projects\\Abibas\\src\\java\\Model\\Product.java",
+          "line": 1,
+          "endLine": 1,
+          "column": 1,
+          "endColumn": 1,
+          "navigation": {
+            "previousLine": 0,
+            "currentLine": 0,
+            "nextLine": 0,
+            "columns": 0
+          }
+        }
+      ],
+      "message": "To use free version of PVS-Studio, source code files are required to start with a special comment.",
+      "projects": [],
+      "favorite": false,
+      "falseAlarm": false
+    },
+    {
+      "code": "V009",
+      "cwe": 0,
+      "level": 0,
+      "positions": [
+        {
+          "file": "D:\\FPTU\\PRJ301\\class_projects\\Abibas\\src\\java\\Filter\\ExtendFilter.java",
+          "line": 1,
+          "endLine": 1,
+          "column": 1,
+          "endColumn": 1,
+          "navigation": {
+            "previousLine": 0,
+            "currentLine": 0,
+            "nextLine": 0,
+            "columns": 0
+          }
+        }
+      ],
+      "message": "To use free version of PVS-Studio, source code files are required to start with a special comment.",
+      "projects": [],
+      "favorite": false,
+      "falseAlarm": false
+    },
+    {
+      "code": "V009",
+      "cwe": 0,
+      "level": 0,
+      "positions": [
+        {
+          "file": "D:\\FPTU\\PRJ301\\class_projects\\Abibas\\src\\java\\Controller\\Admin\\DashBoard.java",
+          "line": 1,
+          "endLine": 1,
+          "column": 1,
+          "endColumn": 1,
+          "navigation": {
+            "previousLine": 0,
+            "currentLine": 0,
+            "nextLine": 0,
+            "columns": 0
+          }
+        }
+      ],
+      "message": "To use free version of PVS-Studio, source code files are required to start with a special comment.",
+      "projects": [],
+      "favorite": false,
+      "falseAlarm": false
+    },
+    {
+      "code": "V009",
+      "cwe": 0,
+      "level": 0,
+      "positions": [
+        {
+          "file": "D:\\FPTU\\PRJ301\\class_projects\\Abibas\\src\\java\\Model\\OrderDetail.java",
+          "line": 1,
+          "endLine": 1,
+          "column": 1,
+          "endColumn": 1,
+          "navigation": {
+            "previousLine": 0,
+            "currentLine": 0,
+            "nextLine": 0,
+            "columns": 0
+          }
+        }
+      ],
+      "message": "To use free version of PVS-Studio, source code files are required to start with a special comment.",
+      "projects": [],
+      "favorite": false,
+      "falseAlarm": false
+    },
+    {
+      "code": "V009",
+      "cwe": 0,
+      "level": 0,
+      "positions": [
+        {
+          "file": "D:\\FPTU\\PRJ301\\class_projects\\Abibas\\src\\java\\dal\\DBContext.java",
+          "line": 1,
+          "endLine": 1,
+          "column": 1,
+          "endColumn": 1,
+          "navigation": {
+            "previousLine": 0,
+            "currentLine": 0,
+            "nextLine": 0,
+            "columns": 0
+          }
+        }
+      ],
+      "message": "To use free version of PVS-Studio, source code files are required to start with a special comment.",
+      "projects": [],
+      "favorite": false,
+      "falseAlarm": false
+    },
+    {
+      "code": "V009",
+      "cwe": 0,
+      "level": 0,
+      "positions": [
+        {
+          "file": "D:\\FPTU\\PRJ301\\class_projects\\Abibas\\src\\java\\Filter\\RoleFilter.java",
+          "line": 1,
+          "endLine": 1,
+          "column": 1,
+          "endColumn": 1,
+          "navigation": {
+            "previousLine": 0,
+            "currentLine": 0,
+            "nextLine": 0,
+            "columns": 0
+          }
+        }
+      ],
+      "message": "To use free version of PVS-Studio, source code files are required to start with a special comment.",
+      "projects": [],
+      "favorite": false,
+      "falseAlarm": false
+    },
+    {
+      "code": "V009",
+      "cwe": 0,
+      "level": 0,
+      "positions": [
+        {
+          "file": "D:\\FPTU\\PRJ301\\class_projects\\Abibas\\src\\java\\dal\\OrderDAO.java",
+          "line": 1,
+          "endLine": 1,
+          "column": 1,
+          "endColumn": 1,
+          "navigation": {
+            "previousLine": 0,
+            "currentLine": 0,
+            "nextLine": 0,
+            "columns": 0
+          }
+        }
+      ],
+      "message": "To use free version of PVS-Studio, source code files are required to start with a special comment.",
+      "projects": [],
+      "favorite": false,
+      "falseAlarm": false
+    },
+    {
+      "code": "V009",
+      "cwe": 0,
+      "level": 0,
+      "positions": [
+        {
+          "file": "D:\\FPTU\\PRJ301\\class_projects\\Abibas\\src\\java\\Model\\Item.java",
+          "line": 1,
+          "endLine": 1,
+          "column": 1,
+          "endColumn": 1,
+          "navigation": {
+            "previousLine": 0,
+            "currentLine": 0,
+            "nextLine": 0,
+            "columns": 0
+          }
+        }
+      ],
+      "message": "To use free version of PVS-Studio, source code files are required to start with a special comment.",
+      "projects": [],
+      "favorite": false,
+      "falseAlarm": false
+    },
+    {
+      "code": "V009",
+      "cwe": 0,
+      "level": 0,
+      "positions": [
+        {
+          "file": "D:\\FPTU\\PRJ301\\class_projects\\Abibas\\src\\java\\Filter\\MyAccountFilter.java",
+          "line": 1,
+          "endLine": 1,
+          "column": 1,
+          "endColumn": 1,
+          "navigation": {
+            "previousLine": 0,
+            "currentLine": 0,
+            "nextLine": 0,
+            "columns": 0
+          }
+        }
+      ],
+      "message": "To use free version of PVS-Studio, source code files are required to start with a special comment.",
+      "projects": [],
+      "favorite": false,
+      "falseAlarm": false
+    },
+    {
+      "code": "V009",
+      "cwe": 0,
+      "level": 0,
+      "positions": [
+        {
+          "file": "D:\\FPTU\\PRJ301\\class_projects\\Abibas\\src\\java\\Model\\Account.java",
+          "line": 1,
+          "endLine": 1,
+          "column": 1,
+          "endColumn": 1,
+          "navigation": {
+            "previousLine": 0,
+            "currentLine": 0,
+            "nextLine": 0,
+            "columns": 0
+          }
+        }
+      ],
+      "message": "To use free version of PVS-Studio, source code files are required to start with a special comment.",
+      "projects": [],
+      "favorite": false,
+      "falseAlarm": false
+    },
+    {
+      "code": "V009",
+      "cwe": 0,
+      "level": 0,
+      "positions": [
+        {
+          "file": "D:\\FPTU\\PRJ301\\class_projects\\Abibas\\src\\java\\Controller\\Admin\\ordermanager.java",
+          "line": 1,
+          "endLine": 1,
+          "column": 1,
+          "endColumn": 1,
+          "navigation": {
+            "previousLine": 0,
+            "currentLine": 0,
+            "nextLine": 0,
+            "columns": 0
+          }
+        }
+      ],
+      "message": "To use free version of PVS-Studio, source code files are required to start with a special comment.",
+      "projects": [],
+      "favorite": false,
+      "falseAlarm": false
+    },
+    {
+      "code": "V009",
+      "cwe": 0,
+      "level": 0,
+      "positions": [
+        {
+          "file": "D:\\FPTU\\PRJ301\\class_projects\\Abibas\\src\\java\\Model\\Category.java",
+          "line": 1,
+          "endLine": 1,
+          "column": 1,
+          "endColumn": 1,
+          "navigation": {
+            "previousLine": 0,
+            "currentLine": 0,
+            "nextLine": 0,
+            "columns": 0
+          }
+        }
+      ],
+      "message": "To use free version of PVS-Studio, source code files are required to start with a special comment.",
+      "projects": [],
+      "favorite": false,
+      "falseAlarm": false
+    },
+    {
+      "code": "V009",
+      "cwe": 0,
+      "level": 0,
+      "positions": [
+        {
+          "file": "D:\\FPTU\\PRJ301\\class_projects\\Abibas\\src\\java\\Controller\\Admin\\ProductManager.java",
+          "line": 1,
+          "endLine": 1,
+          "column": 1,
+          "endColumn": 1,
+          "navigation": {
+            "previousLine": 0,
+            "currentLine": 0,
+            "nextLine": 0,
+            "columns": 0
+          }
+        }
+      ],
+      "message": "To use free version of PVS-Studio, source code files are required to start with a special comment.",
+      "projects": [],
+      "favorite": false,
+      "falseAlarm": false
+    },
+    {
+      "code": "V009",
+      "cwe": 0,
+      "level": 0,
+      "positions": [
+        {
+          "file": "D:\\FPTU\\PRJ301\\class_projects\\Abibas\\src\\java\\Model\\Color.java",
+          "line": 1,
+          "endLine": 1,
+          "column": 1,
+          "endColumn": 1,
+          "navigation": {
+            "previousLine": 0,
+            "currentLine": 0,
+            "nextLine": 0,
+            "columns": 0
+          }
+        }
+      ],
+      "message": "To use free version of PVS-Studio, source code files are required to start with a special comment.",
+      "projects": [],
+      "favorite": false,
+      "falseAlarm": false
+    }
+  ]
+}

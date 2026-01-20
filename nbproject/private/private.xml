@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project-private xmlns="http://www.netbeans.org/ns/project-private/1">
+    <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
+    <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
+        <group name="SWP391">
+            <file>file:/D:/PRJbl/Abibas/DevQuery/src/java/control/AuthController.java</file>
+            <file>file:/D:/PRJbl/Abibas/DevQuery/web/View/User/home.jsp</file>
+            <file>file:/D:/PRJbl/Abibas/DevQuery/src/java/dal/UserDAO.java</file>
+            <file>file:/D:/PRJbl/Abibas/DevQuery/web/index.jsp</file>
+            <file>file:/D:/PRJbl/Abibas/DevQuery/src/java/util/PasswordUtil.java</file>
+            <file>file:/D:/PRJbl/Abibas/DevQuery/src/java/control/HomeController.java</file>
+            <file>file:/D:/PRJbl/Abibas/DevQuery/src/java/filter/AuthFilter.java</file>
+            <file>file:/D:/PRJbl/Abibas/DevQuery/src/java/dto/UserDTO.java</file>
+            <file>file:/D:/PRJbl/Abibas/DevQuery/web/View/User/register.jsp</file>
+            <file>file:/D:/PRJbl/Abibas/DevQuery/web/View/User/login.jsp</file>
+            <file>file:/D:/PRJbl/Abibas/DevQuery/src/java/config/DBContext.java</file>
+            <file>file:/D:/PRJbl/Abibas/DevQuery/web/META-INF/context.xml</file>
+            <file>file:/D:/PRJbl/Abibas/DevQuery/web/WEB-INF/web.xml</file>
+            <file>file:/D:/PRJbl/Abibas/DevQuery/src/java/control/LogoutController.java</file>
+            <file>file:/D:/PRJbl/Abibas/DevQuery/src/java/control/DashboardController.java</file>
+            <file>file:/D:/PRJbl/Abibas/DevQuery/web/View/Admin/dashboard.jsp</file>
+        </group>
+    </open-files>
+</project-private>
