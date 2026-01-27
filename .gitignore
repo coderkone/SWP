@@ -1,0 +1,78 @@
+# Build outputs (CRITICAL - regenerate with Ant)
+/build/
+/dist/
+*.class
+*.jar
+*.war
+
+# IDE & Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+*.iml
+
+# NetBeans
+/nbproject/private/
+/nbproject/build-impl.xml.bak
+/nbproject/project.properties.bak
+/nbbuild/
+/nbdist/
+.nb-gradle/
+
+# Logs
+*.log
+/logs/
+
+# Environment
+.env
+.env.local
+local.properties
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Gradle & Maven
+.gradle/
+/target/
+pom.xml.tag
+pom.xml.asc
+
+# Node (frontend build)
+/node_modules/
+npm-debug.log
+yarn-error.log
+
+# JetBrains
+.gradle/
+
+# Package files
+*.zip
+*.tar.gz
+
+# Tomcat work directories
+/tomcat-work/
+/tomcat-logs/
+
+# Compiled JSP
+/work/
+/temp/
+
+# Local vendor libraries (CRITICAL - use CDN or download separately)
+/web/assets/vendor/
+/web/assets/node_modules/
+/src/java/lib/**/*.jar
+
+# Database files
+*.db
+*.sqlite
+
+# Backup files
+*.bak
+*.backup
+*~
+
+# IntelliJ
+out/
