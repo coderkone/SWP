@@ -8,11 +8,11 @@
             <web-module-libraries>
                 <library dirs="200">
                     <file>${file.reference.jakarta.servlet.jsp.jstl-2.0.0.jar}</file>
-                    <path-in-war>WEB-INF/lib</path-in-war>
+                     <path-in-war>WEB-INF/lib</path-in-war>
                 </library>
                 <library dirs="200">
                     <file>${file.reference.jakarta.servlet.jsp.jstl-api-2.0.0.jar}</file>
-                    <path-in-war>WEB-INF/lib</path-in-war>
+                     <path-in-war>WEB-INF/lib</path-in-war>
                 </library>
                 <library dirs="200">
                     <file>${file.reference.mssql-jdbc-12.8.1.jre11.jar}</file>
@@ -35,8 +35,9 @@
                     <path-in-war>WEB-INF/lib</path-in-war>
                 </library>
                 <library dirs="200">
-                    <file>${file.reference.httpcore-4.4.16.jar}</file>
-                    <path-in-war>WEB-INF/lib</path-in-war>
+                     <file>${file.reference.mssql-jdbc-12.8.1.jre11.jar}</file>
+                     <file>${file.reference.httpcore-4.4.16.jar}</file>
+                     <path-in-war>WEB-INF/lib</path-in-war>
                 </library>
             </web-module-libraries>
             <web-module-additional-libraries/>
