@@ -11,14 +11,13 @@ package model;
 public class GoogleUser {
     public String id;
     public String email;
-    public String verified_email;
     public String name;
-    public String given_name;
-    public String family_name;
-    public String picture;
-
-    @Override
-    public String toString() {
-        return "GoogleUser{" + "email='" + email + '\'' + ", name='" + name + '\'' + '}';
+    
+    public GoogleUser() {}
+    
+    public GoogleUser(String id, String email, String name) {
+        this.id = id;
+        this.email = email;
+        this.name = name;
     }
 }

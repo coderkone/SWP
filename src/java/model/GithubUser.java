@@ -9,14 +9,12 @@ package model;
  * @author nguye
  */
 public class GithubUser {
-    public long id;
-    public String login;      // Tên đăng nhập (username)
-    public String name;       // Tên hiển thị đầy đủ
-    public String email;      // Email (có thể null nếu user ẩn)
-    public String avatar_url; // Link ảnh đại diện
+    public Long id;
+    public String email;
+    public String name;
+    public String login;
 
-    @Override
-    public String toString() {
-        return "GithubUser{" + "login=" + login + ", email=" + email + '}';
+    public String getDisplayName() {
+        return (name != null && !name.isEmpty()) ? name : login;
     }
 }

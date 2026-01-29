@@ -1,27 +1,19 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/Servlet.java to edit this template
- */
-
 package control;
+
 import util.GithubUtils;
 import model.GithubUser;
+import dal.UserDAO;
+import model.User;
 import java.io.IOException;
-import java.io.PrintWriter;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
-
-/**
- *
- * @author nguye
- */
 
 @WebServlet("/auth/github/callback")
 public class GithubCallbackController extends HttpServlet {
+    
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -29,29 +21,29 @@ public class GithubCallbackController extends HttpServlet {
             String code = request.getParameter("code");
             if (code != null && !code.isEmpty()) {
                 
-                // 1. Lấy Token
                 String accessToken = GithubUtils.getToken(code);
+                GithubUser gitUser = GithubUtils.getUserInfo(accessToken);
                 
-                // 2. Lấy User Info
-                GithubUser githubUser = GithubUtils.getUserInfo(accessToken);
-                
-                // In ra kiểm tra
-                System.out.println("GITHUB USER: " + githubUser);
+                if (gitUser.email == null) {
+                    response.sendRedirect(request.getContextPath() + "/View/User/login.jsp?error=GithubEmailPrivate");
+                    return;
+                }
 
-                // 3. Lưu vào Session
-                // Lưu ý: Để tiện hiển thị trên trang Home chung với Google, 
-                // ta có thể dùng chung tên session là "user" hoặc tạo object User chung.
-                HttpSession session = request.getSession();
-                session.setAttribute("user", githubUser); // Lưu object GithubUser
+                UserDAO dao = new UserDAO();
+                User user = dao.loginWithGithub(gitUser);
 
-                // 4. Về trang chủ
-                response.sendRedirect(request.getContextPath() + "/View/User/home.jsp");
-                return;
+                if (user != null) {
+                    request.getSession().setAttribute("user", user);
+                    response.sendRedirect(request.getContextPath() + "/View/User/home.jsp");
+                } else {
+                    response.sendRedirect(request.getContextPath() + "/View/User/login.jsp?error=GithubLoginFailed");
+                }
+            } else {
+                response.sendRedirect(request.getContextPath() + "/View/User/login.jsp");
             }
         } catch (Exception e) {
             e.printStackTrace();
+            response.sendRedirect(request.getContextPath() + "/View/User/login.jsp");
         }
-        // Nếu lỗi thì về login
-        response.sendRedirect(request.getContextPath() + "/View/User/login.jsp");
     }
 }

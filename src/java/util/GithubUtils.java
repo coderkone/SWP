@@ -8,6 +8,8 @@ import java.io.IOException;
 import org.apache.http.client.fluent.Form;
 import org.apache.http.client.fluent.Request;
 import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 /**
  *
@@ -33,12 +35,32 @@ public class GithubUtils {
     
     // 2. Lấy thông tin User
     public static GithubUser getUserInfo(String accessToken) throws IOException {
-        String link = Constants.GITHUB_LINK_GET_USER_INFO;
-        String response = Request.Get(link)
-                .addHeader("Authorization", "Bearer " + accessToken) // Gửi token qua Header
+        String linkUser = Constants.GITHUB_LINK_GET_USER_INFO;
+        String responseUser = Request.Get(linkUser)
+                .addHeader("Authorization", "Bearer " + accessToken)
                 .addHeader("Accept", "application/json")
                 .execute().returnContent().asString();
+        GithubUser user = new Gson().fromJson(responseUser, GithubUser.class);
         
-        return new Gson().fromJson(response, GithubUser.class);
+        if (user.email == null) {
+            System.out.println("Email is null");
+            
+            String linkEmail = "https://api.github.com/user/emails";
+            String responseEmail = Request.Get(linkEmail)
+                    .addHeader("Authorization", "Bearer " + accessToken)
+                    .addHeader("Accept", "application/json")
+                    .execute().returnContent().asString();
+            
+            JsonArray emails = new Gson().fromJson(responseEmail, JsonArray.class);
+            
+            for (JsonElement e : emails) {
+                JsonObject obj = e.getAsJsonObject();
+                if (obj.get("primary").getAsBoolean()) {
+                    user.email = obj.get("email").getAsString();
+                    break;
+                }
+            }
+        }
+        return user;
     }
 }

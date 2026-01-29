@@ -1,14 +1,15 @@
 package control;
 
-import model.GoogleUser;
 import util.GoogleUtils;
+import model.GoogleUser;
+import dal.UserDAO;
+import model.User; // Đảm bảo bạn import đúng model User của bạn
 import java.io.IOException;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
 
 @WebServlet("/auth/google/callback")
 public class GoogleCallbackController extends HttpServlet {
@@ -17,28 +18,29 @@ public class GoogleCallbackController extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         
-        String code = request.getParameter("code");
-        
-        if (code == null || code.isEmpty()) {
-            response.sendRedirect(request.getContextPath() + "/auth/login?error=GoogleLoginFailed");
-            return;
-        }
-
         try {
+            String code = request.getParameter("code");
+            if (code == null || code.isEmpty()) {
+                response.sendRedirect("login.jsp");
+                return;
+            }
+
             String accessToken = GoogleUtils.getToken(code);
-            GoogleUser googleUser = GoogleUtils.getUserInfo(accessToken);
+            GoogleUser gUser = GoogleUtils.getUserInfo(accessToken);
             
-            System.out.println("LOGGED IN USER: " + googleUser);
+            UserDAO dao = new UserDAO();
+            User user = dao.loginWithGoogle(gUser);
 
-            HttpSession session = request.getSession();
-            session.setAttribute("user", googleUser);
-
-            response.sendRedirect(request.getContextPath() + "/home"); // Đảm bảo bạn có servlet /home hoặc trang index.jsp
+            if (user != null) {
+                request.getSession().setAttribute("user", user);
+                response.sendRedirect(request.getContextPath() + "/View/User/home.jsp");
+            } else {
+                response.sendRedirect(request.getContextPath() + "/View/User/login.jsp?error=GoogleLoginFailed");
+            }
 
         } catch (Exception e) {
             e.printStackTrace();
-            request.setAttribute("error", "Login with Google failed!");
-            request.getRequestDispatcher("/login.jsp").forward(request, response);
+            response.sendRedirect(request.getContextPath() + "/View/User/login.jsp");
         }
     }
 }
