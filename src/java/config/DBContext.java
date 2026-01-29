@@ -1,21 +1,3 @@
-//package config;
-//
-//import java.sql.Connection;
-//import java.sql.DriverManager;
-//
-//public class DBContext {
-//
-//    // sửa đúng máy bạn
-//    private static final String URL =
-//        "jdbc:sqlserver://localhost:1433;databaseName=devquery;encrypt=true;trustServerCertificate=true;";
-//    private static final String USER = "sa";
-//    private static final String PASS = "123";
-//
-//    public static Connection getConnection() throws Exception {
-//        return DriverManager.getConnection(URL, USER, PASS);
-//    }
-//}
-
 package config;
 
 import java.sql.Connection;
