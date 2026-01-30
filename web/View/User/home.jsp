@@ -436,6 +436,7 @@
         </style>
     </head>
     <body>
+
         <header>
             <div class="header-container">
                 <div class="logo">
@@ -471,8 +472,11 @@
             <main class="main-content">
                 <div class="content-header">
                     <h1 class="page-title">Newest Questions</h1>
-                    <button class="btn-primary">Ask Question</button>
-                </div>
+                     <button class="btn-primary">Ask Question</button>
+                     <a href="<%=request.getContextPath()%>/ask" style="text-decoration: none;">
+                        <button class="btn-primary">Ask Question</button>
+                    </a>
+                 </div>
 
                 <div class="filters-container">
                     <div class="total-questions">24,178,555 questions</div>
