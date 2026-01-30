@@ -79,7 +79,10 @@
         <label>Email</label>
         <input name="email" type="email" placeholder="you@example.com" required>
 
-        <label>Password</label>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin: 12px 0 6px;">
+        <label for="password" style="margin: 0; cursor: pointer;">Password</label>
+        <a href="<%=request.getContextPath()%>/auth/forgot-password" style="font-size: 13px; color: #0a95ff; text-decoration: none; font-weight: 600;">Forgot password</a>
+        </div>
         <input name="password" type="password" placeholder="********" required>
 
         <button type="submit">Login</button>
