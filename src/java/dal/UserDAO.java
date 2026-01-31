@@ -139,4 +139,14 @@ public class UserDAO {
         }
         return null;
     }
+    public void changPassword(String email, String newPassword) throws Exception{
+        String sql = "UPDATE Users SET password_hash = ? WHERE email = ?";
+        String hash = PasswordUtil.sha256(newPassword);
+        try(Connection con = db.getConnection();
+            PreparedStatement ps = con.prepareStatement(sql)){
+            ps.setString(1, email);
+            ps.setString(2, hash);
+            ps.executeUpdate();
+        }
+    }
 }
