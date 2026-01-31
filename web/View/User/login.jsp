@@ -42,6 +42,16 @@
         
         .btn-github { background: #24292e; color: #fff; border-color: #24292e; }
         .btn-github:hover { background: #2f363d; }
+        .forgot-password{
+            float : right;
+            font-size: 13px;
+            text-decoration: none;
+            font-weight: 500;       
+            margin-top: 2px;}
+        .forgot-password:hover {
+            color: #0074cc;
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
@@ -79,10 +89,12 @@
         <label>Email</label>
         <input name="email" type="email" placeholder="you@example.com" required>
 
-        <div style="display: flex; justify-content: space-between; align-items: center; margin: 12px 0 6px;">
-        <label for="password" style="margin: 0; cursor: pointer;">Password</label>
-        <a href="<%=request.getContextPath()%>/auth/forgot-password" style="font-size: 13px; color: #0a95ff; text-decoration: none; font-weight: 600;">Forgot password</a>
-        </div>
+        
+        <label for="password">Password
+        <a href="<%=request.getContextPath()%>/auth/forgot-password" class="forgot-password">Forgot password</a>
+        </label>
+        
+        
         <input name="password" type="password" placeholder="********" required>
 
         <button type="submit">Login</button>
