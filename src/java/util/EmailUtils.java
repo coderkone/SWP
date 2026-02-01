@@ -13,12 +13,12 @@ import javax.mail.internet.*;
  * @author Asus
  */
 public class EmailUtils {
-    public static void sendEmail(String toEmail, String subject, String body){
+    public static void sendEmail(String toEmail, String link, String name){
         try{
             String host = "smtp.gmail.com";
             String port = "587";
-            final String hostEmail = "admin@devquery.com";
-            final String hostPassword = "passswpproject00";
+            final String hostEmail = "devquery391@gmail.com";
+            final String hostPassword = "passswp123456789";
             Properties pro = new Properties();
             pro.put("mail.smtp.host", host);
             pro.put("mail.smtp.port", port);
@@ -32,11 +32,16 @@ public class EmailUtils {
             };
             Session session = Session.getInstance(pro, auth);
             MimeMessage msg = new MimeMessage(session);
-            msg.setFrom(new InternetAddress(hostEmail,"DevQuery System","utf-8"));
+            msg.setFrom(new InternetAddress(hostEmail,"DevQuery System","UTF-8"));
             msg.setRecipients(Message.RecipientType.TO, InternetAddress.parse(toEmail));
-            msg.setSubject(subject, "utf-8");
-            msg.setText(body, "utf-8", "html");
+            msg.setSubject("Account Recovery - DevQuery", "UTF-8");
+            String content = "We received an account recovery request on Stack Overflow for" + toEmail + ".\n"
+                            + "If you initated this request, please click the link below to reset password :\n " + link + "\n\n"
+                            + "If you did not initate this request , just ignore this email " +"\n\n"
+                            + "Thanks you for yours support";
+            msg.setText(content, "UTF-8", "text/html");
             Transport.send(msg);
+            System.out.println("Send successfully");
         }catch(Exception e){
             System.out.println("Email này không tồn tại!");
             System.out.println("Xin hãy nhập lại Email");
