@@ -18,12 +18,12 @@ public class EmailUtils {
             String host = "smtp.gmail.com";
             String port = "587";
             final String hostEmail = "devquery391@gmail.com";
-            final String hostPassword = "wfrt yhea kkql hxdg";
+            final String hostPassword = "lqwvgsyofipzspsj";
             Properties pro = new Properties();
             pro.put("mail.smtp.host", host);
             pro.put("mail.smtp.port", port);
             pro.put("mail.smtp.auth", "true");
-            pro.put("mail.smtp.STARTTLS.enable", "true");
+            pro.put("mail.smtp.starttls.enable", "true");
             Authenticator auth = new Authenticator(){
                 @Override
                 protected PasswordAuthentication getPasswordAuthentication() {
