@@ -91,7 +91,7 @@
 
         
         <label for="password">Password
-        <a href="<%=request.getContextPath()%>/auth/forgot-password" class="forgot-password">Forgot password</a>
+        <a href="<%=request.getContextPath()%>/ForgotPassword" class="forgot-password">Forgot password</a>
         </label>
         
         
