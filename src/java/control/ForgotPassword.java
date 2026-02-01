@@ -43,7 +43,7 @@ public class ForgotPassword extends HttpServlet {
                                   + request.getServerName() 
                                   + request.getServerPort() 
                                   + request.getContextPath() 
-                                  + "resetPassword"+token;
+                                  + "/resetPassword"+token;
                 EmailUtils.sendEmail(email, resetLink, email);
                 request.setAttribute("message", "Successfully send reset link password to your email. Pleas check it!");
             }else{
