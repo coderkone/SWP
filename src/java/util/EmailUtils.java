@@ -18,7 +18,7 @@ public class EmailUtils {
             String host = "smtp.gmail.com";
             String port = "587";
             final String hostEmail = "devquery391@gmail.com";
-            final String hostPassword = "passswp123456789";
+            final String hostPassword = "wfrt yhea kkql hxdg";
             Properties pro = new Properties();
             pro.put("mail.smtp.host", host);
             pro.put("mail.smtp.port", port);
