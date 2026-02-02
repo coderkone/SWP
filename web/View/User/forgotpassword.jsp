@@ -15,9 +15,8 @@
         .links a{margin-left:10px;color:#0a95ff;text-decoration:none;}
         
         
-        .err{background:#FDEDED;color:#B42318;padding:10px;border-radius:8px;margin:10px 0; font-size: 14px;}
-        .ok{background:#E3FCEF;color:#2f6f44;padding:10px;border-radius:8px;margin:10px 0; font-size: 14px;}
-        
+        .err{background:#FDEDED;color:#B42318;padding:10px;border-radius:8px;margin:10px 0;}
+        .ok{background:#E3FCEF;color:#2f6f44;padding:10px;border-radius:8px;margin:10px 0;}
         label{display:block;margin:12px 0 6px;font-weight:600;}
         input{width:100%;padding:10px;border:1px solid #d6d9dc;border-radius:8px;box-sizing: border-box;}
         
@@ -31,37 +30,31 @@
     </head>
     <body>
         <div class="wrap">
-        <div class="top">
-            <div class="brand">DevQuery</div>
-            <div class="links">
-                <a href="login.jsp">Đăng nhập</a>
-                <a href="register.jsp">Đăng ký</a>
-            </div>
-        </div>
+      
         
-        <h3 style="margin-top: 0; margin-bottom: 20px;">Khôi phục mật khẩu</h3>
+       
         
         <p class="small" style="text-align: left; margin-bottom: 20px;">
-            Nhập email tài khoản của bạn và chúng tôi sẽ gửi cho bạn liên kết để đặt lại mật khẩu.
+            Forgot your account's password? Enter your email address and we'll send you a recovery link.
         </p>
-
-        <c:if test="${not empty requestScope.error}">
-            <div class="err">${requestScope.error}</div>
-        </c:if>
-        <c:if test="${not empty requestScope.message}">
-            <div class="ok">${requestScope.message}</div>
-        </c:if>
+        
+         <% String error = (String) request.getAttribute("error"); %>
+    <% if (error != null) { %>
+        <div class="err"><%=error%></div>
+    <% } %>
+        <% String message = (String) request.getAttribute("message"); %>
+<% if (message != null) { %>
+    <div class="ok"><%=message%></div>
+<% } %>
 
         <form action="ForgotPassword" method="post">
             <label>Email</label>
-            <input type="email" name="email" placeholder="Ví dụ: name@email.com" required>
+            <input type="email" name="email" placeholder="Example: abc@gmail.com" required>
             
-            <button type="submit">Gửi liên kết xác nhận</button>
+            <button type="submit">Send recovery email</button>
         </form>
 
-        <div class="small">
-            Đã nhớ ra mật khẩu? <a href="login.jsp">Quay lại đăng nhập</a>
-        </div>
+        
     </div>
     </body>
 </html>
