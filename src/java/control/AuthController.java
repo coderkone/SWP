@@ -6,7 +6,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
 import java.io.IOException;
-
+import model.User;
 @WebServlet(name = "AuthController", urlPatterns = {"/auth/login", "/auth/register"})
 public class AuthController extends HttpServlet {
 
@@ -84,29 +84,52 @@ public class AuthController extends HttpServlet {
         response.sendRedirect(request.getContextPath() + "/auth/login?registered=1");
     }
 
+    // Đừng quên import model.User ở đầu file
+
     private void handleLogin(HttpServletRequest request, HttpServletResponse response)
             throws Exception, ServletException, IOException {
 
         String email = request.getParameter("email");
         String pass = request.getParameter("password");
 
+        // 1. Validate đầu vào
         if (email == null || email.trim().isEmpty() || pass == null || pass.isEmpty()) {
             request.setAttribute("error", "Vui lòng nhập email và password.");
             request.getRequestDispatcher("/View/User/login.jsp").forward(request, response);
             return;
         }
 
-        UserDTO user = dao.login(email, pass);
-        if (user == null) {
+        // 2. Gọi DAO lấy UserDTO (Giữ nguyên theo ý bạn)
+        UserDTO dto = dao.login(email, pass);
+
+        if (dto == null) {
             request.setAttribute("error", "Sai email hoặc password.");
             request.getRequestDispatcher("/View/User/login.jsp").forward(request, response);
             return;
         }
 
-        HttpSession session = request.getSession(true);
-        session.setAttribute("USER", user);
+        // --- BẮT ĐẦU ĐOẠN QUAN TRỌNG NHẤT ---
+        // 3. Convert từ UserDTO sang model.User
+        // Lý do: Để Session đồng nhất kiểu dữ liệu với Google Login và AuthFilter
+        User userSession = new User();
 
-        String role = user.getRole(); // admin / moderator / member
+        // Ánh xạ dữ liệu (Mapping)
+        // Lưu ý: Kiểm tra kỹ tên hàm set bên model.User của bạn (có thể là setUser_id hoặc setUserId)
+        userSession.setUserId(dto.getUserId());
+        userSession.setUsername(dto.getUsername());
+        userSession.setEmail(dto.getEmail());
+        userSession.setRole(dto.getRole());
+        // userSession.setAvatar(dto.getAvatar()); // Nếu DTO có avatar thì set thêm
+
+        // 4. Lưu vào Session
+        HttpSession session = request.getSession(true);
+
+        // QUAN TRỌNG: Tên attribute phải là "user" (chữ thường) để khớp với AuthFilter
+        session.setAttribute("user", userSession);
+
+        // --- KẾT THÚC ĐOẠN QUAN TRỌNG ---
+        // 5. Điều hướng phân quyền
+        String role = dto.getRole();
         if (role != null && role.equalsIgnoreCase("admin")) {
             response.sendRedirect(request.getContextPath() + "/dashboard");
         } else {
