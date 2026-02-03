@@ -39,11 +39,11 @@ public class ForgotPassword extends HttpServlet {
             if(dao.emailExists(email)){
                 String token = UUID.randomUUID().toString();
                 TokenStore.saveToken(token, email);
-                String resetLink = request.getScheme() + ":"
-                                  + request.getServerName() 
+                String resetLink = request.getScheme() + "://"
+                                  + request.getServerName() + ":" 
                                   + request.getServerPort() 
                                   + request.getContextPath() 
-                                  + "/resetPassword"+token;
+                                  + "/resetPassword?token=" + token;
                 EmailUtils.sendEmail(email, resetLink, email);
                 request.setAttribute("message", "Successfully send reset link password to your email. Pleas check it!");
             }else{
