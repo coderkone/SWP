@@ -144,8 +144,8 @@ public class UserDAO {
         String hash = PasswordUtil.sha256(newPassword);
         try(Connection con = db.getConnection();
             PreparedStatement ps = con.prepareStatement(sql)){
-            ps.setString(1, email);
-            ps.setString(2, hash);
+            ps.setString(1, hash);
+            ps.setString(2, email);
             ps.executeUpdate();
         }
     }
