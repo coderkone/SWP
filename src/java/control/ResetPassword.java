@@ -17,7 +17,7 @@ import util.TokenStore;
 import java.util.UUID;
 
 
-@WebServlet(name="ResetPassword", urlPatterns={"/ResetPassword"})
+@WebServlet(name="ResetPassword", urlPatterns={"/resetPassword"})
 public class ResetPassword extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -47,14 +47,14 @@ public class ResetPassword extends HttpServlet {
         String email = TokenStore.getToken(token);
         if(email == null){
             request.setAttribute("error", "The recovery link we sended to you is overtime.");
-            request.getRequestDispatcher("login.jsp").forward(request, response);
+            request.getRequestDispatcher("auth/login.jsp").forward(request, response);
             return;
         }try{
             UserDAO dao= new UserDAO();
             dao.changPassword(email, newPassword);
             TokenStore.removeToken(token);
             request.setAttribute("message", "Succesfully changed password. Please go to LogIn into your account");
-            request.getRequestDispatcher("login.jsp").forward(request, response);
+            request.getRequestDispatcher("auth/login.jsp").forward(request, response);
         }catch(Exception e){
             e.printStackTrace();
             request.setAttribute("error", "System error :" + e.getMessage());
