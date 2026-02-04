@@ -35,11 +35,12 @@ public class EmailUtils {
             msg.setFrom(new InternetAddress(hostEmail,"DevQuery System","UTF-8"));
             msg.setRecipients(Message.RecipientType.TO, InternetAddress.parse(toEmail));
             msg.setSubject("Account Recovery - DevQuery", "UTF-8");
-            String content = "We received an account recovery request on DevQuery for " + toEmail + ".\n"
-                            + "If you initated this request, please click the link below to reset password :\n " + link + "\n\n"
-                            + "If you did not initate this request , just ignore this email " +"\n\n"
-                            + "Thanks you for yours support";
-            msg.setText(content, "UTF-8", "plain");
+            String content = "We received an account recovery request on DevQuery for " + toEmail + ".<br>"
+                            + "If you initiated this request, please click the link below to reset password:<br>"
+                            + "<a href='" + link + "'>Click here to Reset Password</a><br><br>"
+                            + "If you did not initiate this request, just ignore this email.<br><br>"
+                            + "Thank you for your support.";
+            msg.setContent(content, "text/html; charset=UTF-8");
             Transport.send(msg);
             System.out.println("Send successfully");
         }catch(Exception e){
