@@ -25,40 +25,47 @@ public class ResetPassword extends HttpServlet {
         String token = request.getParameter("token");
         String email = TokenStore.getToken(token);
         if(email==null){
-            request.setAttribute("error", "The recovery link we sended to you is incomplete.");
-            request.getRequestDispatcher("login.jsp").forward(request, response);
+            request.setAttribute("status", "expired");
+            request.getRequestDispatcher("/View/User/resetpassword.jsp").forward(request, response);
             return;
         }
+        request.setAttribute("email", email);
         request.setAttribute("token", token);
-        request.getRequestDispatcher("View/User/resetpassword.jsp").forward(request, response);
+        request.getRequestDispatcher("/View/User/resetpassword.jsp").forward(request, response);
     } 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
     throws ServletException, IOException {
         String token = request.getParameter("token");
-        String newPassword = request.getParameter("new password");
-        String confirmPassword = request.getParameter("confirm password");
-        if(!newPassword.equals(confirmPassword)){
-            request.setAttribute("error","The verification password is incorrect. Please re-enter your password.");
+        String newPassword = request.getParameter("password");
+        String confirmPassword = request.getParameter("confirm_password");
+        
+        if(newPassword ==null ||!newPassword.equals(confirmPassword)){
+            request.setAttribute("error", "The passwords don't match. Please re-enter your password.");
             request.setAttribute("token", token);
-            request.getRequestDispatcher("View/User/resetpassword.jsp").forward(request, response);
+            String email = TokenStore.getToken(token);
+            request.setAttribute("email", email);
+            request.getRequestDispatcher("/View/User/resetpassword.jsp").forward(request, response);
             return;
         }
+        
         String email = TokenStore.getToken(token);
         if(email == null){
-            request.setAttribute("error", "The recovery link we sended to you is overtime.");
-            request.getRequestDispatcher("auth/login.jsp").forward(request, response);
+            request.setAttribute("status", "expired");
+            request.getRequestDispatcher("/View/User/resetpassword.jsp").forward(request, response);
             return;
-        }try{
+        }
+
+        try{
             UserDAO dao= new UserDAO();
             dao.changPassword(email, newPassword);
             TokenStore.removeToken(token);
-            request.setAttribute("message", "Succesfully changed password. Please go to LogIn into your account");
-            request.getRequestDispatcher("auth/login.jsp").forward(request, response);
+            request.setAttribute("status", "success");
+            request.getRequestDispatcher("/View/User/resetpassword.jsp").forward(request, response);
         }catch(Exception e){
             e.printStackTrace();
             request.setAttribute("error", "System error :" + e.getMessage());
-            request.getRequestDispatcher("login.jsp").forward(request, response);
+            request.getRequestDispatcher("/View/User/resetpassword.jsp").forward(request, response);
         }
         
     }
