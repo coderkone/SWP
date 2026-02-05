@@ -37,7 +37,7 @@ public class EmailUtils {
             msg.setSubject("Account Recovery - DevQuery", "UTF-8");
             String content = "We received an account recovery request on DevQuery for " + toEmail + ".<br>"
                             + "If you initiated this request, please click the link below to reset password:<br>"
-                            + "<a href='" + link + "'>Click here to Reset Password</a><br><br>"
+                            + "<a href='" + link + "'>Reset Password</a><br><br>"
                             + "If you did not initiate this request, just ignore this email.<br><br>"
                             + "Thank you for your support.";
             msg.setContent(content, "text/html; charset=UTF-8");
