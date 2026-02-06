@@ -40,6 +40,15 @@ public class ResetPassword extends HttpServlet {
         String newPassword = request.getParameter("password");
         String confirmPassword = request.getParameter("confirm_password");
         
+        if(newPassword.length() < 8){
+            request.setAttribute("error", "Password must contain at least eight characters");
+            request.setAttribute("token", token);
+            String email = TokenStore.getToken(token);
+            request.setAttribute("email", email);
+            request.getRequestDispatcher("/View/User/resetpassword.jsp").forward(request, response);
+            return;
+        }
+        
         if(newPassword ==null ||!newPassword.equals(confirmPassword)){
             request.setAttribute("error", "The passwords don't match. Please re-enter your password.");
             request.setAttribute("token", token);
