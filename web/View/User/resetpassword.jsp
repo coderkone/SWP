@@ -41,15 +41,15 @@
             <% if("expired".equals(status)){ %>
             <div class="alret-boxexpired">
                 <i class="fa-solid-expired"></i><br><br>
-                <strong>Link has expired</strong><br>
-                This link has expired or is broken.<br> Please return to the homepage and request a new application.
+                <strong>Link has expired</strong>
+                <br>This link has expired or is broken.<br> Please return to the homepage and request a new application.
             </div>
             <a href="auth/login" class="btn-action">Go to Login</a>
             <% }else if ("success".equals(status)){ %>
             <div class="alret-boxsuccess">
                 <i class="fa-solid-success"></i><br><br>
                 <strong>Done</strong>
-                Your password has been reset successfully.<br>Please return to the homepage and request a new application.
+                <br>Your password has been reset successfully.<br>Please return to the homepage and request a new application.
             </div>
             <a href="auth/login" class="btn-action">Go to Login</a>
             <% } else { %>
