@@ -7,6 +7,8 @@ package control;
 import dal.BookmarkDAO;
 import dto.BookmarkDTO; // Import package dto
 import model.User;
+import dal.CollectionDAO;
+import model.Collection;
 import java.io.IOException;
 import java.util.List;
 import jakarta.servlet.ServletException;
@@ -43,6 +45,11 @@ public class SavesController extends HttpServlet {
 
         request.setAttribute("savedList", savedList);
         request.setAttribute("savedCount", savedList.size());
+        
+        //Lấy danh sách list đã tạo
+        CollectionDAO colDao = new CollectionDAO();
+        List<Collection> myCollections = colDao.getCollectionsByUserId(user.getUserId());
+        request.setAttribute("myCollections", myCollections);
 
         request.getRequestDispatcher("/View/User/saves.jsp").forward(request, response);
     }
