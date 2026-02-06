@@ -3,7 +3,8 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
 package dto;
-
+import java.util.List;
+import java.util.ArrayList;
 import java.sql.Timestamp;
 import model.Question;
 
@@ -25,7 +26,15 @@ public class QuestionDTO extends Question {
         this.authorAvatar = authorAvatar;
         this.answerCount = answerCount;
     }
+    private List<String> tags = new ArrayList<>(); // Khởi tạo luôn để không bị Null
 
+    public List<String> getTags() {
+        return tags;
+    }
+
+    public void setTags(List<String> tags) {
+        this.tags = tags;
+    }
     public String getAuthorName() { 
         return authorName; 
     }

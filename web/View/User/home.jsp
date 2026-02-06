@@ -37,17 +37,15 @@
                 font-size: 13px;
             }
 
-            /* Header - Đã xóa vì bạn dùng jsp:include */
-            
             /* Main Layout */
             .container {
                 max-width: 1264px;
-                margin: 56px auto 0; /* Offset header */
+                margin: 56px auto 0;
                 display: flex;
-                min-height: 100vh;
+                align-items: flex-start;
             }
 
-            /* Left Sidebar - Css giữ nguyên để khớp với file include */
+            /* Left Sidebar */
             .left-sidebar {
                 width: 164px;
                 flex-shrink: 0;
@@ -60,6 +58,7 @@
                 flex-grow: 1;
                 padding: 24px;
                 border-left: 1px solid var(--border-color);
+                width: 100%;
             }
 
             .content-header {
@@ -84,7 +83,7 @@
                 font-size: 13px;
                 cursor: pointer;
                 box-shadow: inset 0 1px 0 0 rgba(255,255,255,0.4);
-                text-decoration: none; /* Thêm để thẻ a trông giống button */
+                text-decoration: none;
             }
 
             .btn-primary:hover {
@@ -109,7 +108,6 @@
                 border-radius: 3px;
             }
 
-            /* Sửa div thành thẻ a để bấm được */
             .filter-item {
                 padding: 10px 12px;
                 background: #fff;
@@ -181,8 +179,7 @@
                 padding: 4px 6px;
                 border-radius: 3px;
             }
-            
-            /* CSS thêm cho class status-none (chưa có câu trả lời) */
+
             .stat-box.status-none {
                 color: #6a737c;
             }
@@ -315,7 +312,7 @@
                 margin-bottom: 15px;
                 color: var(--black-text);
             }
-            
+
             /* CSS Phân trang */
             .pagination {
                 display: flex;
@@ -338,14 +335,14 @@
         </style>
     </head>
     <body>
-        
-        <jsp:include page="../common/header.jsp"/>
+        <jsp:include page="../Common/header.jsp" />
 
         <div class="container">
+
             <div class="left-sidebar">
-                 <jsp:include page="../common/sidebar.jsp">
-                     <jsp:param name="page" value="home"/>
-                 </jsp:include>
+                <jsp:include page="../Common/sidebar.jsp">
+                    <jsp:param name="page" value="bookmarks"/>
+                </jsp:include>
             </div>
 
             <main class="main-content">
@@ -353,17 +350,17 @@
                     <h1 class="page-title">
                         <c:if test="${currentKeyword != null}">Results for "${currentKeyword}"</c:if>
                         <c:if test="${currentKeyword == null}">Top Questions</c:if>
-                    </h1>
-                    <a href="ask" class="btn-primary">Ask Question</a>
+                        </h1>
+                        <a href="${pageContext.request.contextPath}/ask" class="btn-primary">Ask Question</a>
                 </div>
 
                 <div class="filters-container">
                     <div class="total-questions">${totalQuestions} questions</div>
                     <div style="display: flex; align-items: center;">
                         <div class="filter-btn-group">
-                            <a href="home?tab=new" class="filter-item ${currentSort == null || currentSort == 'new' ? 'active' : ''}">Newest</a>
-                            <a href="home?tab=active" class="filter-item ${currentSort == 'active' ? 'active' : ''}">Active</a>
-                            <a href="home?filter=unanswered" class="filter-item ${currentFilter == 'unanswered' ? 'active' : ''}">Unanswered</a>
+                            <a href="${pageContext.request.contextPath}/home?tab=new" class="filter-item ${currentSort == null || currentSort == 'new' ? 'active' : ''}">Newest</a>
+                            <a href="${pageContext.request.contextPath}/home?tab=active" class="filter-item ${currentSort == 'active' ? 'active' : ''}">Active</a>
+                            <a href="${pageContext.request.contextPath}/home?filter=unanswered" class="filter-item ${currentFilter == 'unanswered' ? 'active' : ''}">Unanswered</a>
                         </div>
                         <button class="btn-filter-toggle">Filter</button>
                     </div>
@@ -373,42 +370,37 @@
                     <div class="question-item">
                         <div class="stats-container">
                             <div class="stat-box votes">${q.score} votes</div>
-                            
                             <div class="stat-box ${q.answerCount > 0 ? 'status-answered' : 'status-none'}">
                                 ${q.answerCount} answers
                             </div>
-                            
                             <div class="stat-box">${q.viewCount} views</div>
                         </div>
-                        
+
                         <div class="question-summary">
-                            <a href="question?id=${q.questionId}" class="question-title">${q.title}</a>
-                            
+                            <a href="${pageContext.request.contextPath}/question?id=${q.questionId}" class="question-title">${q.title}</a>
                             <p class="question-excerpt">
                                 <c:choose>
-                                    <c:when test="${q.body.length() > 200}">
+                                    <c:when test="${q.body != null && q.body.length() > 200}">
                                         ${q.body.substring(0, 200)}...
                                     </c:when>
                                     <c:otherwise>${q.body}</c:otherwise>
                                 </c:choose>
                             </p>
-                            
                             <div class="meta-container">
                                 <div class="tags">
                                     <c:if test="${not empty q.tags}">
                                         <c:forEach items="${q.tags}" var="t">
-                                            <a href="home?q=[${t}]" class="tag">${t}</a>
+                                            <a href="${pageContext.request.contextPath}/home?q=[${t}]" class="tag">${t}</a>
                                         </c:forEach>
                                     </c:if>
                                     <c:if test="${empty q.tags}">
-                                         <a href="#" class="tag">java</a>
-                                         <a href="#" class="tag">web</a>
+                                        <a href="#" class="tag">java</a>
+                                        <a href="#" class="tag">web</a>
                                     </c:if>
                                 </div>
-                                
                                 <div class="user-card">
-                                    <a href="profile?id=${q.userId}">
-                                        <img src="${q.authorAvatar != null ? q.authorAvatar : 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png'}" 
+                                    <a href="${pageContext.request.contextPath}/profile?id=${q.userId}">
+                                        <img src="${(q.authorAvatar != null && not empty q.authorAvatar) ? q.authorAvatar : 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png'}" 
                                              width="16" height="16" style="border-radius: 3px; vertical-align: middle;">
                                         ${q.authorName}
                                     </a>
@@ -418,22 +410,21 @@
                         </div>
                     </div>
                 </c:forEach>
-                
+
                 <c:if test="${empty questions}">
                     <div style="padding: 20px; text-align: center; color: #6a737c;">
-                        No questions found. <a href="ask">Ask a question now!</a>
+                        No questions found. <a href="${pageContext.request.contextPath}/ask">Ask a question now!</a>
                     </div>
                 </c:if>
 
                 <c:if test="${totalPage > 1}">
                     <div class="pagination">
                         <c:forEach begin="1" end="${totalPage}" var="i">
-                            <a href="home?page=${i}&tab=${currentSort}&q=${currentKeyword}" 
+                            <a href="${pageContext.request.contextPath}/home?page=${i}&tab=${currentSort}&q=${currentKeyword}" 
                                class="${currentPage == i ? 'active' : ''}">${i}</a>
                         </c:forEach>
                     </div>
                 </c:if>
-
             </main>
 
             <aside class="right-sidebar">
@@ -447,16 +438,14 @@
                     </div>
                 </div>
                 <div class="popular-tags">
-                   <h3>Popular tags</h3>
-                   <div class="tags" style="flex-wrap: wrap;">
-                       <a href="#" class="tag">javascript</a>
-                       <a href="#" class="tag">python</a>
-                       <a href="#" class="tag">java</a>
-                   </div>
+                    <h3>Popular tags</h3>
+                    <div class="tags" style="flex-wrap: wrap;">
+                        <a href="#" class="tag">javascript</a>
+                        <a href="#" class="tag">python</a>
+                        <a href="#" class="tag">java</a>
+                    </div>
                 </div>
             </aside>
-
         </div>
-
     </body>
 </html>
