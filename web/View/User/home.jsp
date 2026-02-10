@@ -1,3 +1,7 @@
+<%@page contentType="text/html" pageEncoding="UTF-8"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+
 <!DOCTYPE html>
 <html lang="en">
     <head>
@@ -33,117 +37,12 @@
                 font-size: 13px;
             }
 
-            /* Header */
-            header {
-                width: 100%;
-                height: 56px;
-                background-color: #f8f9f9;
-                border-top: 3px solid var(--orange);
-                box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-                display: flex;
-                align-items: center;
-                padding: 0 20px;
-                position: fixed;
-                top: 0;
-                z-index: 100;
-                border-bottom: 1px solid var(--border-color);
-            }
-
-            .header-container {
-                width: 100%;
-                max-width: 1264px;
-                margin: 0 auto;
-                display: flex;
-                align-items: center;
-                justify-content: space-between;
-            }
-
-            .logo {
-                font-size: 18px;
-                display: flex;
-                align-items: center;
-                gap: 5px;
-                margin-right: 20px;
-                cursor: pointer;
-            }
-
-            .logo img {
-                width: 28px;
-                height: 28px;
-            }
-
-            .search-bar {
-                flex-grow: 1;
-                max-width: 700px;
-                position: relative;
-                margin: 0 10px;
-            }
-
-            .search-bar input {
-                width: 100%;
-                padding: 8px 10px 8px 32px;
-                border: 1px solid #babfc4;
-                border-radius: 3px;
-                font-size: 13px;
-                outline: none;
-            }
-
-            .search-bar input:focus {
-                border-color: #6bbbf7;
-                box-shadow: 0 0 0 4px rgba(0, 149, 255, 0.15);
-            }
-
-            .search-icon {
-                position: absolute;
-                left: 10px;
-                top: 50%;
-                transform: translateY(-50%);
-                color: #838C95;
-                font-size: 14px;
-            }
-
-            .user-nav {
-                display: flex;
-                align-items: center;
-                gap: 15px;
-                margin-left: 20px;
-            }
-
-            .user-profile {
-                display: flex;
-                align-items: center;
-                gap: 8px;
-                font-weight: bold;
-                color: #2D3E50;
-                cursor: pointer;
-            }
-
-            .user-profile img {
-                width: 24px;
-                height: 24px;
-                border-radius: 4px;
-            }
-
-            .btn-logout {
-                background-color: var(--blue-tag-bg);
-                color: var(--blue-tag-text);
-                border: 1px solid #7aa7c7;
-                padding: 8px 12px;
-                border-radius: 3px;
-                cursor: pointer;
-                font-weight: normal;
-            }
-
-            .btn-logout:hover {
-                background-color: #b3d3ea;
-            }
-
             /* Main Layout */
             .container {
                 max-width: 1264px;
-                margin: 56px auto 0; /* Offset header */
+                margin: 56px auto 0;
                 display: flex;
-                min-height: 100vh;
+                align-items: flex-start;
             }
 
             /* Left Sidebar */
@@ -151,31 +50,7 @@
                 width: 164px;
                 flex-shrink: 0;
                 padding-top: 25px;
-                border-right: 1px solid var(--border-color); /* Optional visual separator */
-            }
-
-            .nav-link {
-                display: block;
-                padding: 8px 8px 8px 8px; /* Indent for sub-items */
-                color: var(--gray-text);
-                text-decoration: none;
-                position: relative;
-            }
-
-            .nav-link.main {
-                padding-left: 8px;
-                margin-bottom: 5px;
-            }
-
-            .nav-link:hover {
-                color: var(--black-text);
-            }
-
-            .nav-link.active {
-                background-color: #F1F2F3;
-                color: var(--black-text);
-                font-weight: bold;
-                border-right: 3px solid var(--orange);
+                border-right: 1px solid var(--border-color);
             }
 
             /* Main Content */
@@ -183,6 +58,7 @@
                 flex-grow: 1;
                 padding: 24px;
                 border-left: 1px solid var(--border-color);
+                width: 100%;
             }
 
             .content-header {
@@ -207,6 +83,7 @@
                 font-size: 13px;
                 cursor: pointer;
                 box-shadow: inset 0 1px 0 0 rgba(255,255,255,0.4);
+                text-decoration: none;
             }
 
             .btn-primary:hover {
@@ -237,6 +114,8 @@
                 border-right: 1px solid #9fa6ad;
                 color: #6a737c;
                 cursor: pointer;
+                text-decoration: none;
+                font-size: 13px;
             }
 
             .filter-item:last-child {
@@ -251,6 +130,7 @@
 
             .filter-item:hover:not(.active) {
                 background-color: #f8f9f9;
+                color: #525960;
             }
 
             .btn-filter-toggle {
@@ -298,6 +178,10 @@
                 color: #2f6f44;
                 padding: 4px 6px;
                 border-radius: 3px;
+            }
+
+            .stat-box.status-none {
+                color: #6a737c;
             }
 
             .question-summary {
@@ -429,107 +313,118 @@
                 color: var(--black-text);
             }
 
-            /* Utility */
-            .u-blue {
-                color: var(--blue-link);
+            /* CSS Phân trang */
+            .pagination {
+                display: flex;
+                list-style: none;
+                margin-top: 30px;
+                gap: 5px;
+            }
+            .pagination a {
+                padding: 5px 10px;
+                border: 1px solid #d6d9dc;
+                border-radius: 3px;
+                text-decoration: none;
+                color: var(--black-text);
+            }
+            .pagination a.active {
+                background-color: var(--orange);
+                color: white;
+                border-color: var(--orange);
             }
         </style>
     </head>
     <body>
-        <header>
-            <div class="header-container">
-                <div class="logo">
-                    <div style="background-color: #F48024; padding: 5px; border-radius: 3px;">
-                        <img src="https://cdn-icons-png.flaticon.com/512/2111/2111628.png" alt="icon" style="filter: brightness(0) invert(1); width: 16px; height: 16px;">
-                    </div>
-                    <span><b>Dev</b>Query</span>
-                </div>
-
-                <div class="search-bar">
-                    <span class="search-icon">?</span>
-                    <input type="text" placeholder="Search...">
-                </div>
-
-                <div class="user-nav">
-                    <div class="user-profile">
-                        <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" alt="avatar">
-                        <span>User</span>
-                    </div>
-<a class="btn-logout" href="<%=request.getContextPath()%>/logout">Log out</a>
-                </div>
-            </div>
-        </header>
+        <jsp:include page="../Common/header.jsp" />
 
         <div class="container">
-            <aside class="left-sidebar">
-                <a href="#" class="nav-link main">Home</a>
-                <a href="#" class="nav-link active">Questions</a>
-                <a href="#" class="nav-link">Tags</a>
-                <a href="#" class="nav-link">Users</a>
-            </aside>
+
+            <div class="left-sidebar">
+                <jsp:include page="../Common/sidebar.jsp">
+                    <jsp:param name="page" value="bookmarks"/>
+                </jsp:include>
+            </div>
 
             <main class="main-content">
                 <div class="content-header">
-                    <h1 class="page-title">Newest Questions</h1>
-                    <button class="btn-primary">Ask Question</button>
+                    <h1 class="page-title">
+                        <c:if test="${currentKeyword != null}">Results for "${currentKeyword}"</c:if>
+                        <c:if test="${currentKeyword == null}">Top Questions</c:if>
+                        </h1>
+                        <a href="${pageContext.request.contextPath}/ask" class="btn-primary">Ask Question</a>
                 </div>
 
                 <div class="filters-container">
-                    <div class="total-questions">24,178,555 questions</div>
+                    <div class="total-questions">${totalQuestions} questions</div>
                     <div style="display: flex; align-items: center;">
                         <div class="filter-btn-group">
-                            <div class="filter-item active">Newest</div>
-                            <div class="filter-item">Active</div>
-                            <div class="filter-item">Bountied</div>
-                            <div class="filter-item">Unanswered</div>
-                            <div class="filter-item">More</div>
+                            <a href="${pageContext.request.contextPath}/home?tab=new" class="filter-item ${currentSort == null || currentSort == 'new' ? 'active' : ''}">Newest</a>
+                            <a href="${pageContext.request.contextPath}/home?tab=active" class="filter-item ${currentSort == 'active' ? 'active' : ''}">Active</a>
+                            <a href="${pageContext.request.contextPath}/home?filter=unanswered" class="filter-item ${currentFilter == 'unanswered' ? 'active' : ''}">Unanswered</a>
                         </div>
                         <button class="btn-filter-toggle">Filter</button>
                     </div>
                 </div>
 
-                <div class="question-item">
-                    <div class="stats-container">
-                        <div class="stat-box votes">0 votes</div>
-                        <div class="stat-box">0 answers</div>
-                        <div class="stat-box">2 views</div>
-                    </div>
-                    <div class="question-summary">
-                        <a href="#" class="question-title">tmux and copying to clipboard on Ubuntu 24.04.3</a>
-                        <p class="question-excerpt">I have been working on this for way too long. My setup is Ubuntu 24.04.3, running the generic gnome terminal emulator with zsh and tmux...</p>
-                        <div class="meta-container">
-                            <div class="tags">
-                                <a href="#" class="tag">tmux</a>
-                                <a href="#" class="tag">clipboard</a>
+                <c:forEach items="${questions}" var="q">
+                    <div class="question-item">
+                        <div class="stats-container">
+                            <div class="stat-box votes">${q.score} votes</div>
+                            <div class="stat-box ${q.answerCount > 0 ? 'status-answered' : 'status-none'}">
+                                ${q.answerCount} answers
                             </div>
-                            <div class="user-card">
-                                asked 1 min ago by <a href="#">why381</a>
+                            <div class="stat-box">${q.viewCount} views</div>
+                        </div>
+
+                        <div class="question-summary">
+                            <a href="${pageContext.request.contextPath}/question?id=${q.questionId}" class="question-title">${q.title}</a>
+                            <p class="question-excerpt">
+                                <c:choose>
+                                    <c:when test="${q.body != null && q.body.length() > 200}">
+                                        ${q.body.substring(0, 200)}...
+                                    </c:when>
+                                    <c:otherwise>${q.body}</c:otherwise>
+                                </c:choose>
+                            </p>
+                            <div class="meta-container">
+                                <div class="tags">
+                                    <c:if test="${not empty q.tags}">
+                                        <c:forEach items="${q.tags}" var="t">
+                                            <a href="${pageContext.request.contextPath}/home?q=[${t}]" class="tag">${t}</a>
+                                        </c:forEach>
+                                    </c:if>
+                                    <c:if test="${empty q.tags}">
+                                        <a href="#" class="tag">java</a>
+                                        <a href="#" class="tag">web</a>
+                                    </c:if>
+                                </div>
+                                <div class="user-card">
+                                    <a href="${pageContext.request.contextPath}/profile?id=${q.userId}">
+                                        <img src="${(q.authorAvatar != null && not empty q.authorAvatar) ? q.authorAvatar : 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png'}" 
+                                             width="16" height="16" style="border-radius: 3px; vertical-align: middle;">
+                                        ${q.authorName}
+                                    </a>
+                                    <span style="margin-left: 5px;">asked <fmt:formatDate value="${q.createdAt}" pattern="MMM dd, yyyy"/></span>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
+                </c:forEach>
 
-                <div class="question-item">
-                    <div class="stats-container">
-                        <div class="stat-box votes">0 votes</div>
-                        <div class="stat-box status-answered">1 answer</div>
-                        <div class="stat-box">2 views</div>
+                <c:if test="${empty questions}">
+                    <div style="padding: 20px; text-align: center; color: #6a737c;">
+                        No questions found. <a href="${pageContext.request.contextPath}/ask">Ask a question now!</a>
                     </div>
-                    <div class="question-summary">
-                        <a href="#" class="question-title">How to reduce MoE (Mixture of Experts) inference cost with dynamic expert selection?</a>
-                        <p class="question-excerpt">I'm running inference on Mixture-of-Experts models like Mixtral 8x7B and finding the compute costs high. The model uses fixed K=2 experts per token...</p>
-                        <div class="meta-container">
-                            <div class="tags">
-                                <a href="#" class="tag">python</a>
-                                <a href="#" class="tag">machine-learning</a>
-                            </div>
-                            <div class="user-card">
-                                asked 1 min ago by <a href="#">Gabriele Balsamo</a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                </c:if>
 
+                <c:if test="${totalPage > 1}">
+                    <div class="pagination">
+                        <c:forEach begin="1" end="${totalPage}" var="i">
+                            <a href="${pageContext.request.contextPath}/home?page=${i}&tab=${currentSort}&q=${currentKeyword}" 
+                               class="${currentPage == i ? 'active' : ''}">${i}</a>
+                        </c:forEach>
+                    </div>
+                </c:if>
             </main>
 
             <aside class="right-sidebar">
@@ -537,41 +432,20 @@
                     <div class="widget-header">The Dev Blog</div>
                     <div class="widget-content">
                         <ul class="widget-list">
-                            <li>
-                                <span class="widget-icon">??</span>
-                                <span>How Stack Overflow is taking on spam and bad actors</span>
-                            </li>
-                            <li>
-                                <span class="widget-icon">??</span>
-                                <span>How AWS re-invented the cloud</span>
-                            </li>
+                            <li><span class="widget-icon">📝</span><span>How Stack Overflow is taking on spam</span></li>
+                            <li><span class="widget-icon">🎧</span><span>How AWS re-invented the cloud</span></li>
                         </ul>
                     </div>
                 </div>
-
-                <div class="widget widget-gray">
-                    <div class="widget-header">Community Activity</div>
-                    <div class="widget-content">
-                        <ul class="widget-list" style="color: #6a737c; text-align: center; padding: 20px;">
-                            <li>(Placeholder for community stats)</li>
-                        </ul>
-                    </div>
-                </div>
-
                 <div class="popular-tags">
                     <h3>Popular tags</h3>
                     <div class="tags" style="flex-wrap: wrap;">
                         <a href="#" class="tag">javascript</a>
                         <a href="#" class="tag">python</a>
                         <a href="#" class="tag">java</a>
-                        <a href="#" class="tag">c#</a>
-                        <a href="#" class="tag">php</a>
-                        <a href="#" class="tag">android</a>
                     </div>
                 </div>
             </aside>
-
         </div>
-
     </body>
 </html>

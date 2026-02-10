@@ -4,8 +4,6 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 
 public class DBContext {
-
-    // SỬA user/pass theo SQL Server của bạn
     private static final String USER = "sa";
     private static final String PASS = "123";
 
