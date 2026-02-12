@@ -11,7 +11,7 @@ GO
 -- 1. USERS (Giữ nguyên, bỏ check role)
 CREATE TABLE [dbo].[Users](
 	[user_id] [bigint] IDENTITY(1,1) PRIMARY KEY,
-	[username] [varchar](50) NOT NULL UNIQUE,
+	[username] [nvarchar](50) NOT NULL UNIQUE,
 	[email] [varchar](120) NOT NULL UNIQUE,
 	[password_hash] [varchar](255) NOT NULL,
 	[role] [varchar](20) DEFAULT 'member', -- Xử lý validate trong Java

@@ -1,41 +1,34 @@
 package dto;
 
+import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.List;
 
 public class QuestionDTO {
+
     private long questionId;
     private long userId;
     private String title;
     private String body;
     private String codeSnippet;
+
     private int viewCount;
-    private boolean isClosed;
+    private boolean closed;
     private String closedReason;
-    private String createdAt;
-    private String updatedAt;
+
+    private Timestamp createdAt;
+    private Timestamp updatedAt;
+
     private int score;
-    private String username;
-    private List<String> tags;
+
+    private String authorName;
+    private String authorAvatar;
+    private int answerCount;
+
+    private List<String> tags = new ArrayList<>();
 
     public QuestionDTO() {}
 
-    public QuestionDTO(long questionId, long userId, String title, String body, String codeSnippet,
-                       int viewCount, boolean isClosed, String closedReason, String createdAt, 
-                       String updatedAt, int score) {
-        this.questionId = questionId;
-        this.userId = userId;
-        this.title = title;
-        this.body = body;
-        this.codeSnippet = codeSnippet;
-        this.viewCount = viewCount;
-        this.isClosed = isClosed;
-        this.closedReason = closedReason;
-        this.createdAt = createdAt;
-        this.updatedAt = updatedAt;
-        this.score = score;
-    }
-
-    // Getters and Setters
     public long getQuestionId() { return questionId; }
     public void setQuestionId(long questionId) { this.questionId = questionId; }
 
@@ -54,23 +47,29 @@ public class QuestionDTO {
     public int getViewCount() { return viewCount; }
     public void setViewCount(int viewCount) { this.viewCount = viewCount; }
 
-    public boolean isIsClosed() { return isClosed; }
-    public void setIsClosed(boolean isClosed) { this.isClosed = isClosed; }
+    public boolean isClosed() { return closed; }
+    public void setClosed(boolean closed) { this.closed = closed; }
 
     public String getClosedReason() { return closedReason; }
     public void setClosedReason(String closedReason) { this.closedReason = closedReason; }
 
-    public String getCreatedAt() { return createdAt; }
-    public void setCreatedAt(String createdAt) { this.createdAt = createdAt; }
+    public Timestamp getCreatedAt() { return createdAt; }
+    public void setCreatedAt(Timestamp createdAt) { this.createdAt = createdAt; }
 
-    public String getUpdatedAt() { return updatedAt; }
-    public void setUpdatedAt(String updatedAt) { this.updatedAt = updatedAt; }
+    public Timestamp getUpdatedAt() { return updatedAt; }
+    public void setUpdatedAt(Timestamp updatedAt) { this.updatedAt = updatedAt; }
 
     public int getScore() { return score; }
     public void setScore(int score) { this.score = score; }
 
-    public String getUsername() { return username; }
-    public void setUsername(String username) { this.username = username; }
+    public String getAuthorName() { return authorName; }
+    public void setAuthorName(String authorName) { this.authorName = authorName; }
+
+    public String getAuthorAvatar() { return authorAvatar; }
+    public void setAuthorAvatar(String authorAvatar) { this.authorAvatar = authorAvatar; }
+
+    public int getAnswerCount() { return answerCount; }
+    public void setAnswerCount(int answerCount) { this.answerCount = answerCount; }
 
     public List<String> getTags() { return tags; }
     public void setTags(List<String> tags) { this.tags = tags; }
