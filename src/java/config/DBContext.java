@@ -24,9 +24,21 @@ import java.sql.DriverManager;
 public class DBContext {
 
     // SỬA user/pass theo SQL Server của bạn
+<<<<<<< Updated upstream
      private static final String USER = "huylq";
      private static final String PASS = "123";
  
+=======
+<<<<<<< Updated upstream
+     private static final String USER = "sa";
+     private static final String USER = "huylq";
+     private static final String PASS = "123";
+=======
+    private static final String USER = "huylq";
+    private static final String PASS = "123";
+>>>>>>> Stashed changes
+
+>>>>>>> Stashed changes
     // Nếu bạn dùng instance MSSQLSERVER + port 1433 như ảnh
     private static final String URL =
              "jdbc:sqlserver://localhost:1433;databaseName=devquery;encrypt=true;trustServerCertificate=true;";

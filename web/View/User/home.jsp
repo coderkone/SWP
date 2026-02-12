@@ -372,7 +372,10 @@
             <main class="main-content">
                 <div class="content-header">
                     <h1 class="page-title">Newest Questions</h1>
+<<<<<<< Updated upstream
                      <button class="btn-primary">Ask Question</button>
+=======
+>>>>>>> Stashed changes
                      <a href="<%=request.getContextPath()%>/ask" style="text-decoration: none;">
                         <button class="btn-primary">Ask Question</button>
                     </a>
