@@ -1,58 +1,76 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package dto;
-import java.util.List;
-import java.util.ArrayList;
-import java.sql.Timestamp;
-import model.Question;
 
-/**
- *
- * @author ADMIN
- */
-public class QuestionDTO extends Question {
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
+
+public class QuestionDTO {
+
+    private long questionId;
+    private long userId;
+    private String title;
+    private String body;
+    private String codeSnippet;
+
+    private int viewCount;
+    private boolean closed;
+    private String closedReason;
+
+    private Timestamp createdAt;
+    private Timestamp updatedAt;
+
+    private int score;
+
     private String authorName;
     private String authorAvatar;
     private int answerCount;
 
-    public QuestionDTO() {
-    }
- 
-    public QuestionDTO(long questionId, long userId, String title, String body, String codeSnippet, int viewCount, boolean isClosed, String closedReason, Timestamp createdAt, Timestamp updatedAt, int score, String authorName, String authorAvatar, int answerCount) {
-        super(questionId, userId, title, body, codeSnippet, viewCount, isClosed, closedReason, createdAt, updatedAt, score);
-        this.authorName = authorName;
-        this.authorAvatar = authorAvatar;
-        this.answerCount = answerCount;
-    }
-    private List<String> tags = new ArrayList<>(); // Khởi tạo luôn để không bị Null
+    private List<String> tags = new ArrayList<>();
 
-    public List<String> getTags() {
-        return tags;
-    }
+    public QuestionDTO() {}
 
-    public void setTags(List<String> tags) {
-        this.tags = tags;
-    }
-    public String getAuthorName() { 
-        return authorName; 
-    }
-    public void setAuthorName(String authorName) { 
-        this.authorName = authorName; 
-    }
+    public long getQuestionId() { return questionId; }
+    public void setQuestionId(long questionId) { this.questionId = questionId; }
 
-    public String getAuthorAvatar() { 
-        return authorAvatar; 
-    }
-    public void setAuthorAvatar(String authorAvatar) { 
-        this.authorAvatar = authorAvatar; 
-    }
+    public long getUserId() { return userId; }
+    public void setUserId(long userId) { this.userId = userId; }
 
-    public int getAnswerCount() { 
-        return answerCount; 
-    }
-    public void setAnswerCount(int answerCount) { 
-        this.answerCount = answerCount; 
-    }
+    public String getTitle() { return title; }
+    public void setTitle(String title) { this.title = title; }
+
+    public String getBody() { return body; }
+    public void setBody(String body) { this.body = body; }
+
+    public String getCodeSnippet() { return codeSnippet; }
+    public void setCodeSnippet(String codeSnippet) { this.codeSnippet = codeSnippet; }
+
+    public int getViewCount() { return viewCount; }
+    public void setViewCount(int viewCount) { this.viewCount = viewCount; }
+
+    public boolean isClosed() { return closed; }
+    public void setClosed(boolean closed) { this.closed = closed; }
+
+    public String getClosedReason() { return closedReason; }
+    public void setClosedReason(String closedReason) { this.closedReason = closedReason; }
+
+    public Timestamp getCreatedAt() { return createdAt; }
+    public void setCreatedAt(Timestamp createdAt) { this.createdAt = createdAt; }
+
+    public Timestamp getUpdatedAt() { return updatedAt; }
+    public void setUpdatedAt(Timestamp updatedAt) { this.updatedAt = updatedAt; }
+
+    public int getScore() { return score; }
+    public void setScore(int score) { this.score = score; }
+
+    public String getAuthorName() { return authorName; }
+    public void setAuthorName(String authorName) { this.authorName = authorName; }
+
+    public String getAuthorAvatar() { return authorAvatar; }
+    public void setAuthorAvatar(String authorAvatar) { this.authorAvatar = authorAvatar; }
+
+    public int getAnswerCount() { return answerCount; }
+    public void setAnswerCount(int answerCount) { this.answerCount = answerCount; }
+
+    public List<String> getTags() { return tags; }
+    public void setTags(List<String> tags) { this.tags = tags; }
 }
