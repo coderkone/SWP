@@ -11,10 +11,7 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 import config.DBContext;
-/**
- *
- * @author Asus
- */
+
 public class SystemRuleDAO extends DBContext {
     public List<SystemRule> getAllRules(){
         List<SystemRule> list = new ArrayList<>();
@@ -31,6 +28,7 @@ public class SystemRuleDAO extends DBContext {
                 sr.setCreatedAt(rs.getTimestamp("created_at"));
                 sr.setUpdatedAt(rs.getTimestamp("updated_at"));
                 sr.setCreatedBy(rs.getLong("created_by"));
+                
                 long updatedBy = rs.getLong("updated_by");
                 if(rs.wasNull()){
                     sr.setUpdatedBy(null);
@@ -45,7 +43,4 @@ public class SystemRuleDAO extends DBContext {
         }
         return list;
     }
-    
-    
-
 }

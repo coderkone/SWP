@@ -28,6 +28,7 @@ public class SystemNotificationController extends HttpServlet {
     throws ServletException, IOException {
         SystemRuleDAO dao = new SystemRuleDAO();
         List<SystemRule> lists = dao.getAllRules();
+
         request.setAttribute("rules", lists);
         request.getRequestDispatcher("/View/User/systemRules.jsp").forward(request, response);
     } 
@@ -37,8 +38,4 @@ public class SystemNotificationController extends HttpServlet {
     throws ServletException, IOException {
        doGet(request,response);
     }
-
-   
-    
-
 }
