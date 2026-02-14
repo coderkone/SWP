@@ -20,7 +20,7 @@ import jakarta.servlet.http.HttpServletResponse;
  *
  * @author Asus
  */
-@WebServlet(name="SystemNotificationController", urlPatterns={"/System_Notification"})
+@WebServlet(name="SystemNotificationController", urlPatterns={"/SystemRules"})
 public class SystemNotificationController extends HttpServlet {
    
     @Override
