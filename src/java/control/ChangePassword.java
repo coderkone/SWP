@@ -55,7 +55,7 @@ public class ChangePassword extends HttpServlet {
         if(oldPass != null) oldPass= oldPass.trim();
         if(newPass != null) newPass= newPass.trim();
         if(confirmPass != null) confirmPass= confirmPass.trim();
-        
+         
         if(oldPass == null || oldPass.isEmpty() || newPass == null || newPass.isEmpty() || confirmPass == null || confirmPass.isEmpty()){
             request.setAttribute("error", "Please fill full information in all form");
             request.getRequestDispatcher("/View/User/changepassword.jsp").forward(request, response);
