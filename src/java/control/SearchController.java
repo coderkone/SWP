@@ -52,8 +52,16 @@ public class SearchController extends HttpServlet {
         if (filter == null) filter = "all";
 
         QuestionDAO dao = new QuestionDAO();
-        int page = 1; 
-        List<QuestionDTO> list = dao.getQuestions(page, 10, tab, keyword, filter);
+        int page = 1;
+        List<QuestionDTO> list;
+        
+        try {
+            list = dao.getQuestions(page, 10, tab, keyword, filter);
+        } catch (Exception e) {
+            System.err.println("Error searching questions: " + e.getMessage());
+            response.sendRedirect(request.getContextPath() + "/View/User/home.jsp?error=SearchFailed");
+            return;
+        }
 
         request.setAttribute("questions", list);
         request.setAttribute("currentKeyword", keyword);
