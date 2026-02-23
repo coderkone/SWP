@@ -79,12 +79,20 @@ public class Answer {
     public boolean isIsEdited() {
         return isEdited;
     }
+    
+    public boolean isEdited() {
+        return isEdited;
+    }
 
     public void setIsEdited(boolean isEdited) {
         this.isEdited = isEdited;
     }
 
     public boolean isIsAccepted() {
+        return isAccepted;
+    }
+    
+    public boolean isAccepted() {
         return isAccepted;
     }
 

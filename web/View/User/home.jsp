@@ -336,6 +336,30 @@
         </style>
     </head>
     <body>
+
+        <header>
+            <div class="header-container">
+                <div class="logo">
+                    <div style="background-color: #F48024; padding: 5px; border-radius: 3px;">
+                        <img src="https://cdn-icons-png.flaticon.com/512/2111/2111628.png" alt="icon" style="filter: brightness(0) invert(1); width: 16px; height: 16px;">
+                    </div>
+                    <span><b>Dev</b>Query</span>
+                </div>
+
+                <div class="search-bar">
+                    <span class="search-icon">?</span>
+                    <input type="text" placeholder="Search...">
+                </div>
+
+                <div class="user-nav">
+                    <div class="user-profile">
+                        <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" alt="avatar">
+                        <span>User</span>
+                    </div>
+<a class="btn-logout" href="<%=request.getContextPath()%>/logout">Log out</a>
+                </div>
+            </div>
+        </header>
         <jsp:include page="../Common/header.jsp" />
 
         <div class="container">
@@ -348,6 +372,15 @@
 
             <main class="main-content">
                 <div class="content-header">
+                    <h1 class="page-title">Newest Questions</h1>
+<<<<<<< Updated upstream
+                     <button class="btn-primary">Ask Question</button>
+=======
+>>>>>>> Stashed changes
+                     <a href="<%=request.getContextPath()%>/ask" style="text-decoration: none;">
+                        <button class="btn-primary">Ask Question</button>
+                    </a>
+                 </div>
                     <h1 class="page-title">
                         <c:if test="${currentKeyword != null}">Results for "${currentKeyword}"</c:if>
                         <c:if test="${currentKeyword == null}">Top Questions</c:if>
