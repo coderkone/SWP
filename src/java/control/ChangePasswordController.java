@@ -21,7 +21,7 @@ import jakarta.servlet.http.HttpSession;
  *
  * @author Asus
  */
-@WebServlet(name="ChangePassword", urlPatterns={"/ChangePassword"})
+@WebServlet(name="ChangePasswordController", urlPatterns={"/ChangePassword"})
 public class ChangePasswordController extends HttpServlet {
    
     @Override
