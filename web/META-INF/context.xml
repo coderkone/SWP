@@ -1,9 +1,2 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<<<<<<< Updated upstream
- <Context path="/DevQuery"/>
- 
-<Context path=""/>
- 
-=======
-<Context path="/DevQueryclone"/>
->>>>>>> Stashed changes
+<Context path="/DevQuery"/>

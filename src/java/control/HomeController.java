@@ -1,52 +1,47 @@
 package control;
 
-import dal.QuestionDAO;
-import dto.QuestionDTO;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
 import java.io.IOException;
-import java.util.*;
+import java.util.List;
+import dal.QuestionDAO;
+import dto.QuestionDTO;
 
 @WebServlet(name="HomeController", urlPatterns={"/home"})
 public class HomeController extends HttpServlet {
-    
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        
-        // 1. Lấy các tham số từ URL (ví dụ: home?page=2&q=java&tab=views)
-        String keyword = request.getParameter("q");
-        String sort = request.getParameter("tab"); // new, active, hot...
-        String filter = request.getParameter("filter"); // unanswered...
-        String pageStr = request.getParameter("page");
-
-        // 2. Xử lý phân trang
-        int pageIndex = 1;
-        int pageSize = 10; // Hiển thị 10 bài/trang
         try {
-            if (pageStr != null) pageIndex = Integer.parseInt(pageStr);
-        } catch (NumberFormatException e) {
-            pageIndex = 1;
+            QuestionDAO questionDAO = new QuestionDAO();
+            
+            System.out.println("DEBUG: HomeController - Loading questions...");
+            
+            // Lấy danh sách câu hỏi mới nhất (page 1, 10 items, sort by newest)
+            List<QuestionDTO> newestQuestions = questionDAO.getQuestions(1, 10, "newest", null, null);
+            
+            System.out.println("DEBUG: Loaded questions count: " + (newestQuestions != null ? newestQuestions.size() : "null"));
+            if (newestQuestions != null && !newestQuestions.isEmpty()) {
+                for (QuestionDTO q : newestQuestions) {
+                    System.out.println("  - Q" + q.getQuestionId() + ": " + q.getTitle());
+                }
+            }
+            
+            // Lấy tổng số câu hỏi
+            int totalQuestions = questionDAO.getTotalQuestions(null, null);
+            System.out.println("DEBUG: Total questions in DB: " + totalQuestions);
+            
+            // Đưa dữ liệu vào request attribute
+            request.setAttribute("newestQuestions", newestQuestions);
+            request.setAttribute("totalQuestions", totalQuestions);
+            
+        } catch (Exception e) {
+            System.err.println("ERROR in HomeController: " + e.getMessage());
+            e.printStackTrace();
+            request.setAttribute("error", "Error loading questions: " + e.getMessage());
         }
-
-        // 3. Gọi DAO lấy dữ liệu
-        QuestionDAO dao = new QuestionDAO();
-        List<QuestionDTO> list = dao.getQuestions(pageIndex, pageSize, sort, keyword, filter);
-        int totalRecords = dao.getTotalQuestions(keyword, filter);
-        int totalPage = (totalRecords % pageSize == 0) ? (totalRecords / pageSize) : (totalRecords / pageSize + 1);
-
-        // 4. Gửi dữ liệu sang trang JSP
-        request.setAttribute("questions", list);       // Danh sách câu hỏi
-        request.setAttribute("totalPage", totalPage);  // Tổng số trang
-        request.setAttribute("currentPage", pageIndex);// Trang hiện tại
-        request.setAttribute("totalQuestions", totalRecords); // Tổng số câu hỏi (để hiện con số 24,178,555)
         
-        // Gửi lại các tham số lọc để giữ trạng thái active cho nút bấm
-        request.setAttribute("currentSort", sort);
-        request.setAttribute("currentKeyword", keyword);
-        request.setAttribute("currentFilter", filter);
-
         request.getRequestDispatcher("/View/User/home.jsp").forward(request, response);
     }
 }

@@ -13,19 +13,10 @@ public class Tag {
     private String tagName;
     private String description;
     private boolean isActive;
-    private int questionCount;
-
-    public int getQuestionCount() {
-        return questionCount;
-    }
-
-    public void setQuestionCount(int questionCount) {
-        this.questionCount = questionCount;
-    }
 
     public Tag() {
     }
-     
+
     public Tag(long tagId, String tagName, String description, boolean isActive) {
         this.tagId = tagId;
         this.tagName = tagName;

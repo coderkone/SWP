@@ -611,6 +611,9 @@
     </div>
 </div>
 
+<!-- Footer -->
+<%@ include file="../Common/footer.jsp" %>
+
 <script>
     function toggleMenu() {
         var sidebar = document.getElementById('sidebar');

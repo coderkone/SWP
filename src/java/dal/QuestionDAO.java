@@ -1,17 +1,12 @@
-<<<<<<< Updated upstream
 package dal;
-=======
-    package dal;
->>>>>>> Stashed changes
-
+import config.DBContext;
+import dto.QuestionDTO;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
-import config.DBContext;
-import dto.QuestionDTO;
 
 public class QuestionDAO {
 
@@ -134,6 +129,9 @@ public class QuestionDAO {
 
         sql.append(" OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
 
+        System.out.println("DEBUG: QuestionDAO.getQuestions() SQL: " + sql.toString());
+        System.out.println("DEBUG: pageIndex=" + pageIndex + ", pageSize=" + pageSize + ", sortBy=" + sortBy);
+
         try (Connection con = db.getConnection();
              PreparedStatement st = con.prepareStatement(sql.toString())) {
 
@@ -148,12 +146,16 @@ public class QuestionDAO {
             st.setInt(idx++, pageSize);
 
             try (ResultSet rs = st.executeQuery()) {
+                int count = 0;
                 while (rs.next()) {
                     QuestionDTO q = mapQuestion(rs);
                     q.setAuthorAvatar(rs.getString("avatar_url"));
                     q.setAnswerCount(rs.getInt("ans_count"));
                     list.add(q);
+                    count++;
+                    System.out.println("DEBUG: Loaded question " + count + " - ID: " + q.getQuestionId() + ", Title: " + q.getTitle());
                 }
+                System.out.println("DEBUG: Total questions loaded: " + count);
             }
         }
 
