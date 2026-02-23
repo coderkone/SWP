@@ -7,7 +7,6 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>DevQuery - Newest Questions</title>
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
         <style>
             /* Reset & Base Variables */
             :root {
@@ -499,36 +498,8 @@
                             <div class="filter-item">Bountied</div>
                             <div class="filter-item">Unanswered</div>
                             <div class="filter-item">More</div>
-                    <div class="total-questions">${questions.size()} results</div>
-
-                    <div style="display: flex; align-items: center;">
-                        <div class="filter-btn-group">
-                            <%-- Giữ lại từ khóa tìm kiếm nếu có --%>
-                            <c:choose>
-                                <c:when test="${not empty currentKeyword}">
-                                    <c:set var="baseUrl" value="${pageContext.request.contextPath}/SearchController?q=${currentKeyword}&" />
-                                </c:when>
-                                <c:otherwise>
-                                    <c:set var="baseUrl" value="${pageContext.request.contextPath}/SearchController?" />
-                                </c:otherwise>
-                            </c:choose>
-                            <a href="${baseUrl}tab=newest" 
-                               class="filter-item ${ (empty currentSort || currentSort == 'newest') && currentFilter != 'unanswered' ? 'active' : '' }">
-                                Newest
-                            </a>
-                            <a href="${baseUrl}tab=active" 
-                               class="filter-item ${ currentSort == 'active' ? 'active' : '' }">
-                                Active
-                            </a>
-                            <a href="${baseUrl}tab=voted" 
-                               class="filter-item ${ currentSort == 'voted' ? 'active' : '' }">
-                                Voted
-                            </a>
-                            <a href="${baseUrl}filter=unanswered" 
-                               class="filter-item ${ currentFilter == 'unanswered' ? 'active' : '' }">
-                                Unanswered
-                            </a>
                         </div>
+                        <button class="btn-filter-toggle">Filter</button>
                     </div>
                 </div>
 
@@ -565,30 +536,6 @@
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                    </div>
-                </c:forEach>
-
-                <c:if test="${empty questions}">
-                    <div class="empty-state-container text-center pb-5">
-                        <div style="border-top: 1px solid #d6d9dc; width: 100%; margin-bottom: 40px;"></div>
-                        <img src="${pageContext.request.contextPath}/assets/img/KinhLup.png" 
-                             alt="No results" 
-                             style="width: 120px; margin-bottom: 20px; opacity: 0.6;">
-                        <h5 class="fw-bold mb-2" style="color: #232629;">We couldn't find anything matching your search</h5>
-                        <p class="text-secondary mb-3" style="font-size: 15px; max-width: 400px; margin: 0 auto;">
-                            Try different keywords or less specific search terms.
-                        </p>
-                        <a href="${pageContext.request.contextPath}/home" class="btn btn-outline-primary btn-sm mt-2">
-                            Clear search & Return home
-                        </a>
-                    </div>
-                </c:if>
-                <c:if test="${totalPage > 1}">
-                    <div class="pagination">
-                        <c:forEach begin="1" end="${totalPage}" var="i">
-                            <a href="${pageContext.request.contextPath}/home?page=${i}&tab=${currentSort}&q=${currentKeyword}" 
-                               class="${currentPage == i ? 'active' : ''}">${i}</a>
                         </c:forEach>
                     </c:when>
                     <c:otherwise>

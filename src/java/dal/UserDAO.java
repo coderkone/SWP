@@ -139,42 +139,4 @@ public class UserDAO {
         }
         return null;
     }
-    
-    // Lấy thông tin chi tiết cho trang Profile
-    public UserDTO getUserProfileById(long id) {
-        UserDTO user = null;
-        // Query join 2 bảng Users và User_Profile
-        String sql = "SELECT u.user_id, u.username, u.email, u.role, u.Reputation, u.created_at, "
-                   + "p.bio, p.location, p.website, p.avatar_url "
-                   + "FROM Users u "
-                   + "LEFT JOIN User_Profile p ON u.user_id = p.user_id "
-                   + "WHERE u.user_id = ?";
-        
-        try (Connection con = db.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
-            
-            ps.setLong(1, id);
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    user = new UserDTO();
-                    // Map dữ liệu từ DB vào DTO
-                    user.setUserId(rs.getLong("user_id"));
-                    user.setUsername(rs.getString("username"));
-                    user.setEmail(rs.getString("email"));
-                    user.setRole(rs.getString("role"));
-                    user.setReputation(rs.getInt("Reputation"));
-                    user.setCreatedAt(rs.getTimestamp("created_at"));
-                    
-                    // Các trường từ bảng Profile (có thể null)
-                    user.setBio(rs.getString("bio"));
-                    user.setLocation(rs.getString("location"));
-                    user.setWebsite(rs.getString("website"));
-                    user.setAvatarUrl(rs.getString("avatar_url"));
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return user;
-    }
 }
