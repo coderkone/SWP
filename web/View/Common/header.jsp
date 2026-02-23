@@ -54,6 +54,8 @@
         <div class="collapse navbar-collapse" id="navbarContent">
             
             <form class="d-flex flex-grow-1 mx-lg-4" action="${pageContext.request.contextPath}/search" method="GET">
+
+            <form class="d-flex mx-auto" style="max-width: 500px; width: 100%;" action="${pageContext.request.contextPath}/SearchController" method="GET">
                 <div class="input-group position-relative w-100">
                     <span class="position-absolute top-50 start-0 translate-middle-y ms-2 text-secondary z-index-1">
                         <i class="fa-solid fa-magnifying-glass"></i>

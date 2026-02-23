@@ -3,24 +3,24 @@ GO
 
 -- =============================================
 -- 1. TẠO DỮ LIỆU USERS (~15 users)
--- Password demo để dạng text cho dễ nhìn, thực tế bạn hash MD5/BCrypt
+-- Password: "123456789" (SHA256 hash)
 -- =============================================
 INSERT INTO [dbo].[Users] ([username], [email], [password_hash], [role], [Reputation]) VALUES
-('admin_master', 'admin@devquery.com', '$2a$10$adminhash', 'admin', 1000),
-('hoang_coder', 'hoang@gmail.com', '$2a$10$userhash', 'member', 150),
-('thuy_java', 'thuy.nguyen@fpt.vn', '$2a$10$userhash', 'moderator', 500),
-('tuan_sql', 'tuanit@yahoo.com', '$2a$10$userhash', 'member', 45),
-('david_lee', 'david.lee@us.com', '$2a$10$userhash', 'member', 10),
-('alice_wonder', 'alice@gmail.com', '$2a$10$userhash', 'member', 230),
-('bob_builder', 'bob.code@outlook.com', '$2a$10$userhash', 'member', 5),
-('charlie_react', 'charlie@fe.com', '$2a$10$userhash', 'member', 80),
-('nam_spring', 'nam.java@viettel.com', '$2a$10$userhash', 'member', 300),
-('lan_tester', 'lan.qa@cmc.vn', '$2a$10$userhash', 'member', 20),
-('hung_mobile', 'hung.android@samsung.com', '$2a$10$userhash', 'member', 110),
-('mai_design', 'mai.uiux@vng.com.vn', '$2a$10$userhash', 'member', 60),
-('newbie_coder', 'student1@fpt.edu.vn', '$2a$10$userhash', 'member', 0),
-('pro_backend', 'senior@nashtech.com', '$2a$10$userhash', 'member', 890),
-('bot_auto', 'bot@devquery.system', '$2a$10$bothash', 'member', 0);
+('admin_master', 'admin@devquery.com', '15e2b0d3c33891ebb0f1ef609ec419420c20e320ce94c65fbc8c979c0fde7dae', 'admin', 1000),
+('hoang_coder', 'hoang@gmail.com', '15e2b0d3c33891ebb0f1ef609ec419420c20e320ce94c65fbc8c979c0fde7dae', 'member', 150),
+('thuy_java', 'thuy.nguyen@fpt.vn', '15e2b0d3c33891ebb0f1ef609ec419420c20e320ce94c65fbc8c979c0fde7dae', 'moderator', 500),
+('tuan_sql', 'tuanit@yahoo.com', '15e2b0d3c33891ebb0f1ef609ec419420c20e320ce94c65fbc8c979c0fde7dae', 'member', 45),
+('david_lee', 'david.lee@us.com', '15e2b0d3c33891ebb0f1ef609ec419420c20e320ce94c65fbc8c979c0fde7dae', 'member', 10),
+('alice_wonder', 'alice@gmail.com', '15e2b0d3c33891ebb0f1ef609ec419420c20e320ce94c65fbc8c979c0fde7dae', 'member', 230),
+('bob_builder', 'bob.code@outlook.com', '15e2b0d3c33891ebb0f1ef609ec419420c20e320ce94c65fbc8c979c0fde7dae', 'member', 5),
+('charlie_react', 'charlie@fe.com', '15e2b0d3c33891ebb0f1ef609ec419420c20e320ce94c65fbc8c979c0fde7dae', 'member', 80),
+('nam_spring', 'nam.java@viettel.com', '15e2b0d3c33891ebb0f1ef609ec419420c20e320ce94c65fbc8c979c0fde7dae', 'member', 300),
+('lan_tester', 'lan.qa@cmc.vn', '15e2b0d3c33891ebb0f1ef609ec419420c20e320ce94c65fbc8c979c0fde7dae', 'member', 20),
+('hung_mobile', 'hung.android@samsung.com', '15e2b0d3c33891ebb0f1ef609ec419420c20e320ce94c65fbc8c979c0fde7dae', 'member', 110),
+('mai_design', 'mai.uiux@vng.com.vn', '15e2b0d3c33891ebb0f1ef609ec419420c20e320ce94c65fbc8c979c0fde7dae', 'member', 60),
+('newbie_coder', 'student1@fpt.edu.vn', '15e2b0d3c33891ebb0f1ef609ec419420c20e320ce94c65fbc8c979c0fde7dae', 'member', 0),
+('pro_backend', 'senior@nashtech.com', '15e2b0d3c33891ebb0f1ef609ec419420c20e320ce94c65fbc8c979c0fde7dae', 'member', 890),
+('bot_auto', 'bot@devquery.system', '15e2b0d3c33891ebb0f1ef609ec419420c20e320ce94c65fbc8c979c0fde7dae', 'member', 0);
 GO
 select * from Users
 -- =============================================
