@@ -592,14 +592,14 @@
                             <a href="${pageContext.request.contextPath}/home?page=${i}&tab=${currentSort}&q=${currentKeyword}" 
                                class="${currentPage == i ? 'active' : ''}">${i}</a>
                         </c:forEach>
-                    </c:when>
-                    <c:otherwise>
-                        <div style="padding: 40px; text-align: center; color: #6a737c;">
-                            <p style="font-size: 16px;">No questions found.</p>
-                            <a href="${pageContext.request.contextPath}/ask" style="color: #0a95ff; text-decoration: none;">Ask the first question</a>
-                        </div>
-                    </c:otherwise>
-                </c:choose>
+                    </div>
+                </c:if>
+                <c:if test="${totalPage <= 1}">
+                    <div style="padding: 40px; text-align: center; color: #6a737c;">
+                        <p style="font-size: 16px;">No questions found.</p>
+                        <a href="${pageContext.request.contextPath}/ask" style="color: #0a95ff; text-decoration: none;">Ask the first question</a>
+                    </div>
+                </c:if>
 
             </main>
 
