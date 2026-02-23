@@ -22,7 +22,7 @@ import jakarta.servlet.http.HttpSession;
  * @author Asus
  */
 @WebServlet(name="ChangePassword", urlPatterns={"/ChangePassword"})
-public class ChangePassword extends HttpServlet {
+public class ChangePasswordController extends HttpServlet {
    
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)

@@ -21,8 +21,8 @@ import util.TokenStore;
  *
  * @author Asus
  */
-@WebServlet(name="ForgotPassword", urlPatterns={"/ForgotPassword"})
-public class ForgotPassword extends HttpServlet {
+@WebServlet(name="ForgotPasswordController", urlPatterns={"/ForgotPassword"})
+public class ForgotPasswordController extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
     throws ServletException, IOException {

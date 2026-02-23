@@ -17,8 +17,8 @@ import util.TokenStore;
 import java.util.UUID;
 
 
-@WebServlet(name="ResetPassword", urlPatterns={"/resetPassword"})
-public class ResetPassword extends HttpServlet {
+@WebServlet(name="ResetPasswordController", urlPatterns={"/resetPassword"})
+public class ResetPasswordController extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
     throws ServletException, IOException {
