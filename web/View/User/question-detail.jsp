@@ -1,5 +1,6 @@
 <%@ page contentType="text/html; charset=UTF-8" %>
 <%@ page import="dto.QuestionDTO" %>
+<%@ page import="dto.AnswerDTO" %>
 <%@ page import="java.util.List" %>
 <!DOCTYPE html>
 <html lang="vi">
@@ -505,11 +506,11 @@
         <!-- Question -->
         <div class="question-box">
             <div class="vote-box">
-                <button class="vote-btn" title="Upvote">
+                <button class="vote-btn upvote-btn" title="Upvote" onclick="submitVote(<%= question.getQuestionId() %>, null, 'upvote')">
                     <i class="fa-solid fa-arrow-up"></i>
                 </button>
                 <div class="vote-count"><%= question.getScore() %></div>
-                <button class="vote-btn" title="Downvote">
+                <button class="vote-btn downvote-btn" title="Downvote" onclick="submitVote(<%= question.getQuestionId() %>, null, 'downvote')">
                     <i class="fa-solid fa-arrow-down"></i>
                 </button>
                 <button class="vote-btn" title="Star">
@@ -552,7 +553,7 @@
                         <i class="fa-solid fa-user"></i>
                     </div>
                     <div class="user-info">
-                        <a href="#" class="user-name"><%= question.getUsername() %></a>
+                        <a href="#" class="user-name"><%= question.getAuthorName() %></a>
                         <div class="user-meta">Member since today • reputation: 1</div>
                     </div>
                 </div>
@@ -563,13 +564,19 @@
         <div class="answers-section">
             <div class="section-header">Answers</div>
 
+            <%
+                java.util.List answers = (java.util.List) request.getAttribute("answers");
+                if (answers != null && !answers.isEmpty()) {
+                    for (Object answerObj : answers) {
+                        dto.AnswerDTO answer = (dto.AnswerDTO) answerObj;
+            %>
             <div class="answer-box">
                 <div class="vote-box">
-                    <button class="vote-btn" title="Upvote">
+                    <button class="vote-btn upvote-btn" title="Upvote" onclick="submitVote(null, <%= answer.getAnswerId() %>, 'upvote')">
                         <i class="fa-solid fa-arrow-up"></i>
                     </button>
-                    <div class="vote-count">0</div>
-                    <button class="vote-btn" title="Downvote">
+                    <div class="vote-count"><%= answer.getScore() %></div>
+                    <button class="vote-btn downvote-btn" title="Downvote" onclick="submitVote(null, <%= answer.getAnswerId() %>, 'downvote')">
                         <i class="fa-solid fa-arrow-down"></i>
                     </button>
                     <button class="vote-btn" title="Star">
@@ -578,12 +585,51 @@
                 </div>
 
                 <div class="answer-content">
+                    <div class="answer-body">
+                        <%= answer.getBody() %>
+                    </div>
+
+                    <% if (answer.getCodeSnippet() != null && !answer.getCodeSnippet().isEmpty()) { %>
+                    <div class="code-block">
+                        <code><%= answer.getCodeSnippet().replace("<", "&lt;").replace(">", "&gt;") %></code>
+                    </div>
+                    <% } %>
+
+                    <div class="question-meta">
+                        <div>
+                            <strong>answered</strong> <%= answer.getCreatedAt() %>
+                            <% if (answer.isIsEdited()) { %>
+                            <span style="color: #6a737c;"> (edited)</span>
+                            <% } %>
+                        </div>
+                    </div>
+
+                    <div class="user-card">
+                        <div class="user-avatar">
+                            <i class="fa-solid fa-user"></i>
+                        </div>
+                        <div class="user-info">
+                            <a href="#" class="user-name"><%= answer.getAuthorName() %></a>
+                            <div class="user-meta">Member since today • reputation: 1</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <%
+                    }
+                } else {
+            %>
+            <div class="answer-box">
+                <div class="answer-content">
                     <div class="empty-state">
                         <i class="fa-solid fa-lightbulb" style="font-size: 32px; margin-bottom: 10px;"></i>
                         <div>Chưa có câu trả lời nào</div>
                     </div>
                 </div>
             </div>
+            <%
+                }
+            %>
         </div>
 
         <!-- Add Answer Section -->
@@ -636,11 +682,56 @@
     </div>
 </div>
 
+<!-- Footer -->
+<%@ include file="../Common/footer.jsp" %>
+
 <script>
     function toggleMenu() {
         var sidebar = document.getElementById('sidebar');
         sidebar.classList.toggle('active');
         document.body.classList.toggle('sidebar-open');
+    }
+
+    function submitVote(questionId, answerId, voteType) {
+        // Check if user is logged in (this is a simple check)
+        // In a real app, you'd validate on the server side
+        
+        const formData = new FormData();
+        
+        if (questionId) {
+            formData.append('questionId', questionId);
+        }
+        
+        if (answerId) {
+            formData.append('answerId', answerId);
+        }
+        
+        formData.append('voteType', voteType);
+
+        fetch('${pageContext.request.contextPath}/vote/submit', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => {
+            if (response.status === 401) {
+                alert('Please log in to vote');
+                window.location.href = '${pageContext.request.contextPath}/View/User/login.jsp';
+                return null;
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data && data.success) {
+                // Update the vote count on the page
+                location.reload(); // Simple way to refresh the vote count
+            } else if (data && data.error) {
+                alert('Error: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while voting');
+        });
     }
 </script>
 </body>
