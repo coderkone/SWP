@@ -41,7 +41,22 @@ public class VoteDAO {
                         } else {
                             updatePs.setLong(3, answerId);
                         }
-                        return updatePs.executeUpdate() > 0;
+                        boolean updated = updatePs.executeUpdate() > 0;
+                        
+                        // Update score in Questions or Answers table
+                        if (updated) {
+                            try {
+                                if (questionId != null) {
+                                    updateQuestionScore(questionId);
+                                } else {
+                                    updateAnswerScore(answerId);
+                                }
+                            } catch (Exception e) {
+                                // Log but don't fail - vote was saved successfully
+                                System.err.println("Warning: Failed to update score after vote: " + e.getMessage());
+                            }
+                        }
+                        return updated;
                     }
                 }
             }
@@ -59,7 +74,22 @@ public class VoteDAO {
             ps.setObject(3, answerId);
             ps.setString(4, voteType);
 
-            return ps.executeUpdate() > 0;
+            boolean inserted = ps.executeUpdate() > 0;
+            
+            // Update score in Questions or Answers table
+            if (inserted) {
+                try {
+                    if (questionId != null) {
+                        updateQuestionScore(questionId);
+                    } else {
+                        updateAnswerScore(answerId);
+                    }
+                } catch (Exception e) {
+                    // Log but don't fail - vote was saved successfully
+                    System.err.println("Warning: Failed to update score after vote: " + e.getMessage());
+                }
+            }
+            return inserted;
         }
     }
 
@@ -109,6 +139,38 @@ public class VoteDAO {
         }
 
         return null;
+    }
+
+    // Cập nhật Score cho Question
+    private void updateQuestionScore(Long questionId) throws Exception {
+        String sql = "UPDATE Questions SET Score = (" +
+                "SELECT COUNT(CASE WHEN vote_type = 'upvote' THEN 1 END) - " +
+                "COUNT(CASE WHEN vote_type = 'downvote' THEN 1 END) FROM Votes " +
+                "WHERE question_id = ? AND answer_id IS NULL" +
+                ") WHERE question_id = ?";
+
+        try (Connection con = db.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setLong(1, questionId);
+            ps.setLong(2, questionId);
+            ps.executeUpdate();
+        }
+    }
+
+    // Cập nhật Score cho Answer
+    private void updateAnswerScore(Long answerId) throws Exception {
+        String sql = "UPDATE Answers SET Score = (" +
+                "SELECT COUNT(CASE WHEN vote_type = 'upvote' THEN 1 END) - " +
+                "COUNT(CASE WHEN vote_type = 'downvote' THEN 1 END) FROM Votes " +
+                "WHERE answer_id = ? AND question_id IS NULL" +
+                ") WHERE answer_id = ?";
+
+        try (Connection con = db.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setLong(1, answerId);
+            ps.setLong(2, answerId);
+            ps.executeUpdate();
+        }
     }
 
     public List<Vote> getVotesByQuestionId(long questionId) throws Exception {

@@ -220,6 +220,18 @@
             background-color: #e3e6e8;
         }
 
+        .vote-btn.voted-up {
+            background-color: #fff3cd;
+            border-color: #f59e0b;
+            color: #f59e0b;
+        }
+
+        .vote-btn.voted-down {
+            background-color: #fee2e2;
+            border-color: #ef4444;
+            color: #ef4444;
+        }
+
         .vote-count {
             font-size: 18px;
             font-weight: bold;
@@ -506,11 +518,19 @@
         <!-- Question -->
         <div class="question-box">
             <div class="vote-box">
-                <button class="vote-btn upvote-btn" title="Upvote" onclick="submitVote(<%= question.getQuestionId() %>, null, 'upvote')">
+                <%
+                    String questionUserVote = (String) request.getAttribute("questionUserVote");
+                    String upvoteClass = "upvote".equals(questionUserVote) ? " voted-up" : "";
+                    String downvoteClass = "downvote".equals(questionUserVote) ? " voted-down" : "";
+                    long qid = question.getQuestionId();
+                %>
+                <button id="question-upvote" class="vote-btn upvote-btn<%= upvoteClass %>" title="Upvote" 
+                        data-question-id="<%= qid %>" data-vote-type="upvote" onclick="handleVoteClick(this)">
                     <i class="fa-solid fa-arrow-up"></i>
                 </button>
                 <div class="vote-count"><%= question.getScore() %></div>
-                <button class="vote-btn downvote-btn" title="Downvote" onclick="submitVote(<%= question.getQuestionId() %>, null, 'downvote')">
+                <button id="question-downvote" class="vote-btn downvote-btn<%= downvoteClass %>" title="Downvote" 
+                        data-question-id="<%= qid %>" data-vote-type="downvote" onclick="handleVoteClick(this)">
                     <i class="fa-solid fa-arrow-down"></i>
                 </button>
                 <button class="vote-btn" title="Star">
@@ -566,17 +586,27 @@
 
             <%
                 java.util.List answers = (java.util.List) request.getAttribute("answers");
+                java.util.Map<Long, String> answerVotes = (java.util.Map<Long, String>) request.getAttribute("answerVotes");
+                if (answerVotes == null) {
+                    answerVotes = new java.util.HashMap<>();
+                }
+                
                 if (answers != null && !answers.isEmpty()) {
                     for (Object answerObj : answers) {
                         dto.AnswerDTO answer = (dto.AnswerDTO) answerObj;
+                        String answerUserVote = answerVotes.get(answer.getAnswerId());
+                        String answerUpvoteClass = "upvote".equals(answerUserVote) ? " voted-up" : "";
+                        String answerDownvoteClass = "downvote".equals(answerUserVote) ? " voted-down" : "";
             %>
             <div class="answer-box">
                 <div class="vote-box">
-                    <button class="vote-btn upvote-btn" title="Upvote" onclick="submitVote(null, <%= answer.getAnswerId() %>, 'upvote')">
+                    <button id="answer-upvote-<%= answer.getAnswerId() %>" class="vote-btn upvote-btn<%= answerUpvoteClass %>" title="Upvote" 
+                            data-answer-id="<%= answer.getAnswerId() %>" data-vote-type="upvote" onclick="handleVoteClick(this)">
                         <i class="fa-solid fa-arrow-up"></i>
                     </button>
                     <div class="vote-count"><%= answer.getScore() %></div>
-                    <button class="vote-btn downvote-btn" title="Downvote" onclick="submitVote(null, <%= answer.getAnswerId() %>, 'downvote')">
+                    <button id="answer-downvote-<%= answer.getAnswerId() %>" class="vote-btn downvote-btn<%= answerDownvoteClass %>" title="Downvote" 
+                            data-answer-id="<%= answer.getAnswerId() %>" data-vote-type="downvote" onclick="handleVoteClick(this)">
                         <i class="fa-solid fa-arrow-down"></i>
                     </button>
                     <button class="vote-btn" title="Star">
@@ -664,21 +694,39 @@
 
     <!-- Right Sidebar -->
     <div class="sidebar-right">
+        <% 
+            List<dto.QuestionDTO> relatedQuestions = (List<dto.QuestionDTO>) request.getAttribute("relatedQuestions");
+            if (relatedQuestions == null) {
+                relatedQuestions = new java.util.ArrayList<>();
+            }
+            
+            // Split related questions into linked and related
+            int mid = (relatedQuestions.size() + 1) / 2;
+            List<dto.QuestionDTO> linkedQuestions = relatedQuestions.subList(0, Math.min(mid, relatedQuestions.size()));
+            List<dto.QuestionDTO> relatedOnlyQuestions = relatedQuestions.subList(Math.min(mid, relatedQuestions.size()), relatedQuestions.size());
+        %>
+        
+        <% if (!linkedQuestions.isEmpty()) { %>
         <div class="card">
             <div class="card-title"><i class="fa-solid fa-link"></i> Linked</div>
             <div class="linked-box">
-                <a href="#" class="linked-link">Kiếu cách sử dụng trong Java</a>
-                <a href="#" class="linked-link">Exception handling best practices</a>
+                <% for (dto.QuestionDTO q : linkedQuestions) { %>
+                <a href="${pageContext.request.contextPath}/question/detail?id=<%= q.getQuestionId() %>" class="linked-link"><%= q.getTitle() %></a>
+                <% } %>
             </div>
         </div>
+        <% } %>
 
+        <% if (!relatedOnlyQuestions.isEmpty()) { %>
         <div class="card">
             <div class="card-title"><i class="fa-solid fa-fire"></i> Related</div>
             <div class="linked-box">
-                <a href="#" class="linked-link">NullPointerException trong Spring Boot</a>
-                <a href="#" class="linked-link">Cách xử lý Exception</a>
+                <% for (dto.QuestionDTO q : relatedOnlyQuestions) { %>
+                <a href="${pageContext.request.contextPath}/question/detail?id=<%= q.getQuestionId() %>" class="linked-link"><%= q.getTitle() %></a>
+                <% } %>
             </div>
         </div>
+        <% } %>
     </div>
 </div>
 
@@ -692,21 +740,45 @@
         document.body.classList.toggle('sidebar-open');
     }
 
-    function submitVote(questionId, answerId, voteType) {
-        // Check if user is logged in (this is a simple check)
-        // In a real app, you'd validate on the server side
+    function handleVoteClick(button) {
+        // Extract data from button attributes
+        const questionId = button.getAttribute('data-question-id') || null;
+        const answerId = button.getAttribute('data-answer-id') || null;
+        const voteType = button.getAttribute('data-vote-type');
         
+        console.log('handleVoteClick - questionId:', questionId, 'answerId:', answerId, 'voteType:', voteType);
+        
+        if (!voteType) {
+            alert('Invalid vote type');
+            return;
+        }
+        
+        submitVote(questionId, answerId, voteType);
+    }
+
+    function submitVote(questionId, answerId, voteType) {
         const formData = new FormData();
         
-        if (questionId) {
+        // Debug log
+        console.log('submitVote called with:', { questionId, answerId, voteType });
+        
+        // Only append if value is not null/undefined and is a valid number
+        if (questionId !== null && questionId !== undefined && !isNaN(questionId) && questionId !== '') {
             formData.append('questionId', questionId);
         }
         
-        if (answerId) {
+        if (answerId !== null && answerId !== undefined && !isNaN(answerId) && answerId !== '') {
             formData.append('answerId', answerId);
         }
         
-        formData.append('voteType', voteType);
+        if (voteType) {
+            formData.append('voteType', voteType);
+        }
+
+        // Log FormData
+        for (let pair of formData.entries()) {
+            console.log('FormData:', pair[0], '=', pair[1]);
+        }
 
         fetch('${pageContext.request.contextPath}/vote/submit', {
             method: 'POST',
@@ -714,23 +786,40 @@
         })
         .then(response => {
             if (response.status === 401) {
-                alert('Please log in to vote');
-                window.location.href = '${pageContext.request.contextPath}/View/User/login.jsp';
+                alert('Vui lòng đăng nhập để vote');
+                window.location.href = '${pageContext.request.contextPath}/auth/login';
                 return null;
             }
             return response.json();
         })
         .then(data => {
             if (data && data.success) {
-                // Update the vote count on the page
-                location.reload(); // Simple way to refresh the vote count
+                // Determine element IDs
+                const elementPrefix = questionId ? 'question' : `answer-${answerId}`;
+                const upvoteBtn = document.getElementById(`${elementPrefix}-upvote`);
+                const downvoteBtn = document.getElementById(`${elementPrefix}-downvote`);
+                const voteCountEl = upvoteBtn.parentElement.querySelector('.vote-count');
+                
+                // Update voting UI
+                if (voteType === 'upvote') {
+                    upvoteBtn.classList.add('voted-up');
+                    downvoteBtn.classList.remove('voted-down');
+                } else if (voteType === 'downvote') {
+                    downvoteBtn.classList.add('voted-down');
+                    upvoteBtn.classList.remove('voted-up');
+                }
+                
+                // Update vote count
+                if (voteCountEl) {
+                    voteCountEl.textContent = data.score;
+                }
             } else if (data && data.error) {
-                alert('Error: ' + data.error);
+                alert('Lỗi: ' + data.error);
             }
         })
         .catch(error => {
             console.error('Error:', error);
-            alert('An error occurred while voting');
+            alert('Có lỗi xảy ra khi vote');
         });
     }
 </script>

@@ -100,6 +100,45 @@ public class QuestionDetailController extends HttpServlet {
                 request.setAttribute("question", question);
                 request.setAttribute("answers", answers);
                 
+                // Load user's vote (if logged in)
+                try {
+                    HttpSession session = request.getSession(false);
+                    if (session != null && session.getAttribute("USER") != null) {
+                        dto.UserDTO user = (dto.UserDTO) session.getAttribute("USER");
+                        long userId = user.getUserId();
+                        
+                        // Get user's vote for question
+                        String questionUserVote = voteDao.getUserVote(userId, questionId, null);
+                        request.setAttribute("questionUserVote", questionUserVote);
+                        logError("Question user vote: " + questionUserVote);
+                        
+                        // Get user's votes for answers
+                        java.util.Map<Long, String> answerVotes = new java.util.HashMap<>();
+                        for (Object answerObj : answers) {
+                            dto.AnswerDTO answer = (dto.AnswerDTO) answerObj;
+                            String answerUserVote = voteDao.getUserVote(userId, null, answer.getAnswerId());
+                            if (answerUserVote != null) {
+                                answerVotes.put(answer.getAnswerId(), answerUserVote);
+                            }
+                        }
+                        request.setAttribute("answerVotes", answerVotes);
+                        logError("Loaded answer votes: " + answerVotes.size());
+                    }
+                } catch (Exception e) {
+                    logError("Error loading user votes: " + e.getMessage());
+                }
+                
+                // Load related questions (4 questions max)
+                try {
+                    logError("Loading related questions");
+                    List<QuestionDTO> relatedQuestions = questionDao.getRelatedQuestions(questionId, 4);
+                    request.setAttribute("relatedQuestions", relatedQuestions);
+                    logError("Loaded " + relatedQuestions.size() + " related questions");
+                } catch (Exception e) {
+                    logError("Error loading related questions: " + e.getMessage());
+                    request.setAttribute("relatedQuestions", new ArrayList<>());
+                }
+                
                 logError("Forwarding to JSP");
                 // Chuyển hướng đến file JSP giao diện chi tiết
                 request.getRequestDispatcher("/View/User/question-detail.jsp").forward(request, response);

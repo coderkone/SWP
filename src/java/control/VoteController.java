@@ -1,6 +1,7 @@
 package control;
 
 import dal.VoteDAO;
+import dto.UserDTO;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
@@ -22,27 +23,23 @@ public class VoteController extends HttpServlet {
         try {
             // Get user from session
             HttpSession session = request.getSession(false);
-            if (session == null || session.getAttribute("user") == null) {
+            if (session == null || session.getAttribute("USER") == null) {
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 out.println("{\"error\": \"Not authenticated\"}");
                 return;
             }
 
-            Object userObj = session.getAttribute("user");
+            Object userObj = session.getAttribute("USER");
             long userId = 0;
             
             // Extract userId from user object
-            if (userObj instanceof java.util.Map) {
-                java.util.Map userMap = (java.util.Map) userObj;
-                userId = ((Number) userMap.get("userId")).longValue();
+            if (userObj instanceof dto.UserDTO) {
+                dto.UserDTO user = (dto.UserDTO) userObj;
+                userId = user.getUserId();
             } else {
-                try {
-                    userId = (Long) userObj.getClass().getMethod("getUserId").invoke(userObj);
-                } catch (Exception e) {
-                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                    out.println("{\"error\": \"Not authenticated\"}");
-                    return;
-                }
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                out.println("{\"error\": \"Invalid user object\"}");
+                return;
             }
 
             // Get parameters
@@ -50,28 +47,52 @@ public class VoteController extends HttpServlet {
             String answerIdParam = request.getParameter("answerId");
             String voteType = request.getParameter("voteType"); // "upvote" or "downvote"
 
-            // Validate
-            if ((questionIdParam == null && answerIdParam == null) || voteType == null) {
+            // Debug log all parameters
+            System.out.println("Vote request - questionIdParam: " + questionIdParam + 
+                             ", answerIdParam: " + answerIdParam + 
+                             ", voteType: " + voteType);
+
+            // Normalize null strings
+            if ("null".equals(questionIdParam)) questionIdParam = null;
+            if ("null".equals(answerIdParam)) answerIdParam = null;
+
+            // Validate - must have at least one (question or answer) ID
+            if ((questionIdParam == null || questionIdParam.trim().isEmpty()) && 
+                (answerIdParam == null || answerIdParam.trim().isEmpty())) {
                 response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                out.println("{\"error\": \"Invalid parameters\"}");
+                out.println("{\"error\": \"Must provide either questionId or answerId\"}");
+                System.out.println("Vote validation failed: Both IDs are null/empty");
+                return;
+            }
+
+            if (voteType == null || voteType.trim().isEmpty()) {
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                out.println("{\"error\": \"voteType is required\"}");
+                System.out.println("Vote validation failed: voteType is null/empty");
                 return;
             }
 
             Long questionId = null;
             Long answerId = null;
 
-            if (questionIdParam != null && !questionIdParam.isEmpty()) {
-                questionId = Long.parseLong(questionIdParam);
-            }
+            try {
+                if (questionIdParam != null && !questionIdParam.trim().isEmpty()) {
+                    questionId = Long.parseLong(questionIdParam);
+                }
 
-            if (answerIdParam != null && !answerIdParam.isEmpty()) {
-                answerId = Long.parseLong(answerIdParam);
+                if (answerIdParam != null && !answerIdParam.trim().isEmpty()) {
+                    answerId = Long.parseLong(answerIdParam);
+                }
+            } catch (NumberFormatException e) {
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                out.println("{\"error\": \"Invalid ID format: " + e.getMessage() + "\"}");
+                return;
             }
 
             // Validate voteType
             if (!voteType.equals("upvote") && !voteType.equals("downvote")) {
                 response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                out.println("{\"error\": \"Invalid vote type\"}");
+                out.println("{\"error\": \"Invalid vote type. Must be 'upvote' or 'downvote'\"}");
                 return;
             }
 

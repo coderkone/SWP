@@ -3,6 +3,7 @@ package control;
 import dal.AnswerDAO;
 import dal.QuestionDAO;
 import dto.QuestionDTO;
+import dto.UserDTO;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
@@ -21,26 +22,21 @@ public class AnswerController extends HttpServlet {
         try {
             // Get user from session
             HttpSession session = request.getSession(false);
-            if (session == null || session.getAttribute("user") == null) {
-                response.sendRedirect(request.getContextPath() + "/View/User/login.jsp");
+            if (session == null || session.getAttribute("USER") == null) {
+                response.sendRedirect(request.getContextPath() + "/auth/login");
                 return;
             }
 
-            Object userObj = session.getAttribute("user");
+            Object userObj = session.getAttribute("USER");
             long userId = 0;
             
-            // Extract userId from user object (assuming it's a UserDTO or similar)
-            if (userObj instanceof java.util.Map) {
-                java.util.Map userMap = (java.util.Map) userObj;
-                userId = ((Number) userMap.get("userId")).longValue();
+            // Extract userId from UserDTO
+            if (userObj instanceof UserDTO) {
+                UserDTO user = (UserDTO) userObj;
+                userId = user.getUserId();
             } else {
-                // Try to get userId from object properties
-                try {
-                    userId = (Long) userObj.getClass().getMethod("getUserId").invoke(userObj);
-                } catch (Exception e) {
-                    response.sendRedirect(request.getContextPath() + "/View/User/login.jsp");
-                    return;
-                }
+                response.sendRedirect(request.getContextPath() + "/auth/login");
+                return;
             }
 
             // Get parameters

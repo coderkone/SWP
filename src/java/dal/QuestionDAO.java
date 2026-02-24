@@ -213,6 +213,37 @@ public class QuestionDAO {
         return getQuestions(1, 20, "newest", keyword, "all");
     }
 
+    // Lấy danh sách câu hỏi liên quan (có cùng tag)
+    public List<QuestionDTO> getRelatedQuestions(long questionId, int limit) throws Exception {
+        List<QuestionDTO> relatedQuestions = new ArrayList<>();
+        String sql = "SELECT TOP (?) q.*, u.username FROM Questions q " +
+                "JOIN Users u ON q.user_id = u.user_id " +
+                "WHERE q.question_id IN (" +
+                "  SELECT DISTINCT q2.question_id FROM Questions q2 " +
+                "  JOIN Question_Tags qt2 ON q2.question_id = qt2.question_id " +
+                "  WHERE qt2.tag_id IN (" +
+                "    SELECT qt.tag_id FROM Question_Tags qt WHERE qt.question_id = ?" +
+                "  ) AND q2.question_id != ?" +
+                ") ORDER BY q.created_at DESC";
+
+        try (Connection con = db.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setInt(1, limit);
+            ps.setLong(2, questionId);
+            ps.setLong(3, questionId);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    QuestionDTO q = mapQuestion(rs);
+                    q.setTags(getTagsByQuestionId(q.getQuestionId()));
+                    relatedQuestions.add(q);
+                }
+            }
+        }
+        return relatedQuestions;
+    }
+
     // Lấy danh sách Tags của một câu hỏi
     private List<String> getTagsByQuestionId(long questionId) throws Exception {
         List<String> tags = new ArrayList<>();
