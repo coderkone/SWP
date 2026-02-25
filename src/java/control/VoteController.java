@@ -56,12 +56,17 @@ public class VoteController extends HttpServlet {
             if ("null".equals(questionIdParam)) questionIdParam = null;
             if ("null".equals(answerIdParam)) answerIdParam = null;
 
-            // Validate - must have at least one (question or answer) ID
-            if ((questionIdParam == null || questionIdParam.trim().isEmpty()) && 
-                (answerIdParam == null || answerIdParam.trim().isEmpty())) {
+            // Validate - must have exactly one (question or answer) ID, not both
+            boolean hasQuestionId = questionIdParam != null && !questionIdParam.trim().isEmpty();
+            boolean hasAnswerId = answerIdParam != null && !answerIdParam.trim().isEmpty();
+            if (!hasQuestionId && !hasAnswerId) {
                 response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                 out.println("{\"error\": \"Must provide either questionId or answerId\"}");
-                System.out.println("Vote validation failed: Both IDs are null/empty");
+                return;
+            }
+            if (hasQuestionId && hasAnswerId) {
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                out.println("{\"error\": \"Provide either questionId or answerId, not both\"}");
                 return;
             }
 

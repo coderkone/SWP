@@ -794,19 +794,24 @@
         })
         .then(data => {
             if (data && data.success) {
-                // Determine element IDs
-                const elementPrefix = questionId ? 'question' : `answer-${answerId}`;
-                const upvoteBtn = document.getElementById(`${elementPrefix}-upvote`);
-                const downvoteBtn = document.getElementById(`${elementPrefix}-downvote`);
-                const voteCountEl = upvoteBtn.parentElement.querySelector('.vote-count');
+                // Determine element IDs (question: question-upvote; answer: answer-upvote-{id})
+                const upvoteBtn = questionId 
+                    ? document.getElementById('question-upvote') 
+                    : document.getElementById(`answer-upvote-${answerId}`);
+                const downvoteBtn = questionId 
+                    ? document.getElementById('question-downvote') 
+                    : document.getElementById(`answer-downvote-${answerId}`);
+                const voteCountEl = upvoteBtn ? upvoteBtn.parentElement.querySelector('.vote-count') : null;
                 
                 // Update voting UI
-                if (voteType === 'upvote') {
-                    upvoteBtn.classList.add('voted-up');
-                    downvoteBtn.classList.remove('voted-down');
-                } else if (voteType === 'downvote') {
-                    downvoteBtn.classList.add('voted-down');
-                    upvoteBtn.classList.remove('voted-up');
+                if (upvoteBtn && downvoteBtn) {
+                    if (voteType === 'upvote') {
+                        upvoteBtn.classList.add('voted-up');
+                        downvoteBtn.classList.remove('voted-down');
+                    } else if (voteType === 'downvote') {
+                        downvoteBtn.classList.add('voted-down');
+                        upvoteBtn.classList.remove('voted-up');
+                    }
                 }
                 
                 // Update vote count
