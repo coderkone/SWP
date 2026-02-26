@@ -61,9 +61,11 @@ public class ViewQuestionController extends HttpServlet {
             List answers = new ArrayList();
             try {
                 answers = answerDao.getAnswersByQuestionId(questionId);
+                Long acceptedId = question.getAcceptedAnswerId();
                 for (Object answerObj : answers) {
                     dto.AnswerDTO answer = (dto.AnswerDTO) answerObj;
                     answer.setScore(voteDao.getVoteScore(null, answer.getAnswerId()));
+                    answer.setIsAccepted(acceptedId != null && acceptedId.equals(answer.getAnswerId()));
                 }
             } catch (Exception e) { /* answers stay empty */ }
 
@@ -90,6 +92,16 @@ public class ViewQuestionController extends HttpServlet {
                 request.setAttribute("relatedQuestions", new ArrayList<>());
             }
 
+            try {
+                if (session != null && session.getAttribute("USER") != null) {
+                    dto.UserDTO u = (dto.UserDTO) session.getAttribute("USER");
+                    request.setAttribute("isQuestionOwner", u.getUserId() == question.getUserId());
+                } else {
+                    request.setAttribute("isQuestionOwner", false);
+                }
+            } catch (Exception e) {
+                request.setAttribute("isQuestionOwner", false);
+            }
             request.setAttribute("question", question);
             request.setAttribute("answers", answers);
             request.getRequestDispatcher("/View/User/question-detail.jsp").forward(request, response);

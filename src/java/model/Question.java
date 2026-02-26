@@ -20,6 +20,7 @@ public class Question {
     private Timestamp createdAt;
     private Timestamp updatedAt;
     private int score;
+    private Long acceptedAnswerId;
 
     public Question(long questionId, long userId, String title, String body, String codeSnippet, int viewCount, boolean isClosed, String closedReason, Timestamp createdAt, Timestamp updatedAt, int score) {
         this.questionId = questionId;
@@ -125,5 +126,12 @@ public class Question {
     public void setScore(int score) {
         this.score = score;
     }
-    
+
+    public Long getAcceptedAnswerId() {
+        return acceptedAnswerId;
+    }
+
+    public void setAcceptedAnswerId(Long acceptedAnswerId) {
+        this.acceptedAnswerId = acceptedAnswerId;
+    }
 }

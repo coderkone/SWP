@@ -238,6 +238,35 @@
             color: #232629;
         }
 
+        .answer-box.accepted {
+            border-left: 4px solid #2e7d32;
+            background-color: #f1f8f4;
+        }
+
+        .accept-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            font-size: 13px;
+            border: 1px solid #2e7d32;
+            background: white;
+            color: #2e7d32;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .accept-btn:hover {
+            background: #2e7d32;
+            color: white;
+        }
+
+        .accept-btn.accepted {
+            background: #2e7d32;
+            color: white;
+        }
+
         .question-content {
             flex: 1;
         }
@@ -587,18 +616,19 @@
             <%
                 java.util.List answers = (java.util.List) request.getAttribute("answers");
                 java.util.Map<Long, String> answerVotes = (java.util.Map<Long, String>) request.getAttribute("answerVotes");
-                if (answerVotes == null) {
-                    answerVotes = new java.util.HashMap<>();
-                }
-                
+                Boolean isQuestionOwner = (Boolean) request.getAttribute("isQuestionOwner");
+                if (answerVotes == null) answerVotes = new java.util.HashMap<>();
+                if (isQuestionOwner == null) isQuestionOwner = false;
+
                 if (answers != null && !answers.isEmpty()) {
                     for (Object answerObj : answers) {
                         dto.AnswerDTO answer = (dto.AnswerDTO) answerObj;
                         String answerUserVote = answerVotes.get(answer.getAnswerId());
                         String answerUpvoteClass = "upvote".equals(answerUserVote) ? " voted-up" : "";
                         String answerDownvoteClass = "downvote".equals(answerUserVote) ? " voted-down" : "";
+                        boolean accepted = answer.isIsAccepted();
             %>
-            <div class="answer-box">
+            <div class="answer-box<%= accepted ? " accepted" : "" %>" id="answer-<%= answer.getAnswerId() %>">
                 <div class="vote-box">
                     <button type="button" id="answer-upvote-<%= answer.getAnswerId() %>" class="vote-btn upvote-btn<%= answerUpvoteClass %>" title="Upvote" 
                             data-answer-id="<%= answer.getAnswerId() %>" data-vote-type="upvote" onclick="handleVoteClick(event, this)">
@@ -625,13 +655,22 @@
                     </div>
                     <% } %>
 
-                    <div class="question-meta">
+                    <div class="question-meta" style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
                         <div>
                             <strong>answered</strong> <%= answer.getCreatedAt() %>
                             <% if (answer.isIsEdited()) { %>
                             <span style="color: #6a737c;"> (edited)</span>
                             <% } %>
                         </div>
+                        <% if (isQuestionOwner) { %>
+                        <button type="button" class="accept-btn<%= accepted ? " accepted" : "" %>" 
+                                data-question-id="<%= question.getQuestionId() %>" data-answer-id="<%= answer.getAnswerId() %>"
+                                onclick="handleAcceptClick(event, this)" title="<%= accepted ? "Unaccept" : "Accept" %>">
+                            <i class="fa-solid fa-check"></i> <%= accepted ? "Accepted" : "Accept" %>
+                        </button>
+                        <% } else if (accepted) { %>
+                        <span style="color: #2e7d32; font-weight: 500;"><i class="fa-solid fa-check-circle"></i> Accepted</span>
+                        <% } %>
                     </div>
 
                     <div class="user-card">
@@ -738,6 +777,42 @@
         var sidebar = document.getElementById('sidebar');
         sidebar.classList.toggle('active');
         document.body.classList.toggle('sidebar-open');
+    }
+
+    function handleAcceptClick(ev, button) {
+        if (ev) ev.preventDefault();
+        const questionId = button.getAttribute('data-question-id');
+        const answerId = button.getAttribute('data-answer-id');
+        if (!questionId || !answerId) return;
+        const params = new URLSearchParams();
+        params.append('questionId', questionId);
+        params.append('answerId', answerId);
+        fetch('${pageContext.request.contextPath}/answer/accept', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: params
+        })
+        .then(r => r.text()).then(text => {
+            let data;
+            try { data = JSON.parse(text); } catch (e) { return; }
+            if (data && data.success) {
+                const box = document.getElementById('answer-' + answerId);
+                const btn = button;
+                const allBoxes = document.querySelectorAll('.answer-box.accepted');
+                const allBtns = document.querySelectorAll('.accept-btn.accepted');
+                allBoxes.forEach(b => b.classList.remove('accepted'));
+                allBtns.forEach(b => { b.classList.remove('accepted'); b.innerHTML = '<i class="fa-solid fa-check"></i> Accept'; });
+                if (data.accepted) {
+                    if (box) box.classList.add('accepted');
+                    btn.classList.add('accepted');
+                    btn.innerHTML = '<i class="fa-solid fa-check"></i> Accepted';
+                } else {
+                    btn.innerHTML = '<i class="fa-solid fa-check"></i> Accept';
+                }
+            } else if (data && data.error) {
+                alert('Lỗi: ' + data.error);
+            }
+        }).catch(err => alert('Có lỗi xảy ra'));
     }
 
     function handleVoteClick(ev, button) {

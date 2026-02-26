@@ -286,6 +286,34 @@ public class QuestionDAO {
         q.setScore(rs.getInt("Score"));
         q.setCreatedAt(rs.getTimestamp("created_at"));
         q.setAuthorName(rs.getString("username"));
+        try {
+            Object val = rs.getObject("accepted_answer_id");
+            q.setAcceptedAnswerId(val != null ? ((Number) val).longValue() : null);
+        } catch (SQLException e) { /* column may not exist yet */ }
         return q;
+    }
+
+    /** Set or clear accepted answer. Only one per question. Returns true if updated. */
+    public boolean setAcceptedAnswer(long questionId, Long answerId) throws Exception {
+        String sql = "UPDATE Questions SET accepted_answer_id = ?, updated_at = GETDATE() WHERE question_id = ?";
+        try (Connection con = db.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            if (answerId != null) {
+                ps.setLong(1, answerId);
+            } else {
+                ps.setNull(1, java.sql.Types.BIGINT);
+            }
+            ps.setLong(2, questionId);
+            return ps.executeUpdate() > 0;
+        }
+    }
+
+    /** Toggle accept: if answerId is currently accepted, unaccept; else accept it (and unaccept any other). */
+    public boolean toggleAcceptAnswer(long questionId, long answerId, long questionOwnerId) throws Exception {
+        QuestionDTO q = getQuestionById(questionId);
+        if (q == null || q.getUserId() != questionOwnerId) return false;
+        Long current = q.getAcceptedAnswerId();
+        Long newValue = (current != null && current == answerId) ? null : answerId;
+        return setAcceptedAnswer(questionId, newValue);
     }
 }

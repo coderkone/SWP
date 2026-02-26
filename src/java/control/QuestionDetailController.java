@@ -80,12 +80,14 @@ public class QuestionDetailController extends HttpServlet {
                     answers = answerDao.getAnswersByQuestionId(questionId);
                     logError("Loaded " + answers.size() + " answers");
                     
-                    // Set vote scores for answers
+                    // Set vote scores and accepted status for answers
+                    Long acceptedId = question.getAcceptedAnswerId();
                     for (Object answerObj : answers) {
                         try {
                             dto.AnswerDTO answer = (dto.AnswerDTO) answerObj;
                             int answerScore = voteDao.getVoteScore(null, answer.getAnswerId());
                             answer.setScore(answerScore);
+                            answer.setIsAccepted(acceptedId != null && acceptedId.equals(answer.getAnswerId()));
                         } catch (Exception e) {
                             logError("Error loading answer score: " + e.getMessage());
                         }
@@ -99,7 +101,17 @@ public class QuestionDetailController extends HttpServlet {
                 // 3. Đẩy dữ liệu sang JSP
                 request.setAttribute("question", question);
                 request.setAttribute("answers", answers);
-                
+                try {
+                    HttpSession s = request.getSession(false);
+                    if (s != null && s.getAttribute("USER") != null) {
+                        dto.UserDTO u = (dto.UserDTO) s.getAttribute("USER");
+                        request.setAttribute("isQuestionOwner", u.getUserId() == question.getUserId());
+                    } else {
+                        request.setAttribute("isQuestionOwner", false);
+                    }
+                } catch (Exception e) {
+                    request.setAttribute("isQuestionOwner", false);
+                }
                 // Load user's vote (if logged in)
                 try {
                     HttpSession session = request.getSession(false);

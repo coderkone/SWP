@@ -304,6 +304,14 @@
                 border-radius: 3px;
             }
 
+            .stat-box.status-accepted {
+                background-color: #2e7d32;
+                color: white;
+                border: 1px solid #2e7d32;
+                padding: 4px 6px;
+                border-radius: 3px;
+            }
+
             .question-summary {
                 flex-grow: 1;
             }
@@ -529,8 +537,8 @@
                             <div class="question-item">
                                 <div class="stats-container">
                                     <div class="stat-box votes">${question.score} votes</div>
-                                    <div class="stat-box ${question.answerCount > 0 ? 'status-answered' : ''}">
-                                        ${question.answerCount} ${question.answerCount == 1 ? 'answer' : 'answers'}
+                                    <div class="stat-box ${question.acceptedAnswerId != null ? 'status-accepted' : (question.answerCount > 0 ? 'status-answered' : '')}">
+                                        <c:if test="${question.acceptedAnswerId != null}"><i class="fa-solid fa-check" style="font-size: 11px;"></i> </c:if>${question.answerCount} ${question.answerCount == 1 ? 'answer' : 'answers'}
                                     </div>
                                     <div class="stat-box">${question.viewCount} views</div>
                                 </div>

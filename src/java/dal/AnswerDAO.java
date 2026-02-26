@@ -41,7 +41,7 @@ public class AnswerDAO {
     public List<AnswerDTO> getAnswersByQuestionId(long questionId) throws Exception {
         String sql = "SELECT a.*, u.username FROM Answers a " +
                 "JOIN Users u ON a.user_id = u.user_id WHERE a.question_id = ? " +
-                "ORDER BY a.is_accepted DESC, a.Score DESC, a.created_at DESC";
+                "ORDER BY CASE WHEN a.answer_id = (SELECT accepted_answer_id FROM Questions WHERE question_id = ?) THEN 1 ELSE 0 END DESC, a.Score DESC, a.created_at DESC";
 
         List<AnswerDTO> answers = new ArrayList<>();
 
@@ -49,6 +49,7 @@ public class AnswerDAO {
              PreparedStatement ps = con.prepareStatement(sql)) {
 
             ps.setLong(1, questionId);
+            ps.setLong(2, questionId);
 
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
