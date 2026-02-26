@@ -254,3 +254,4 @@ CREATE TABLE [dbo].[UserFollow](
     FOREIGN KEY (following_id) REFERENCES Users(user_id)
 )
 GO
+

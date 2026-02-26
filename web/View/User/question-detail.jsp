@@ -524,13 +524,13 @@
                     String downvoteClass = "downvote".equals(questionUserVote) ? " voted-down" : "";
                     long qid = question.getQuestionId();
                 %>
-                <button id="question-upvote" class="vote-btn upvote-btn<%= upvoteClass %>" title="Upvote" 
-                        data-question-id="<%= qid %>" data-vote-type="upvote" onclick="handleVoteClick(this)">
+                <button type="button" id="question-upvote" class="vote-btn upvote-btn<%= upvoteClass %>" title="Upvote" 
+                        data-question-id="<%= qid %>" data-vote-type="upvote" onclick="handleVoteClick(event, this)">
                     <i class="fa-solid fa-arrow-up"></i>
                 </button>
                 <div class="vote-count"><%= question.getScore() %></div>
-                <button id="question-downvote" class="vote-btn downvote-btn<%= downvoteClass %>" title="Downvote" 
-                        data-question-id="<%= qid %>" data-vote-type="downvote" onclick="handleVoteClick(this)">
+                <button type="button" id="question-downvote" class="vote-btn downvote-btn<%= downvoteClass %>" title="Downvote" 
+                        data-question-id="<%= qid %>" data-vote-type="downvote" onclick="handleVoteClick(event, this)">
                     <i class="fa-solid fa-arrow-down"></i>
                 </button>
                 <button class="vote-btn" title="Star">
@@ -600,13 +600,13 @@
             %>
             <div class="answer-box">
                 <div class="vote-box">
-                    <button id="answer-upvote-<%= answer.getAnswerId() %>" class="vote-btn upvote-btn<%= answerUpvoteClass %>" title="Upvote" 
-                            data-answer-id="<%= answer.getAnswerId() %>" data-vote-type="upvote" onclick="handleVoteClick(this)">
+                    <button type="button" id="answer-upvote-<%= answer.getAnswerId() %>" class="vote-btn upvote-btn<%= answerUpvoteClass %>" title="Upvote" 
+                            data-answer-id="<%= answer.getAnswerId() %>" data-vote-type="upvote" onclick="handleVoteClick(event, this)">
                         <i class="fa-solid fa-arrow-up"></i>
                     </button>
                     <div class="vote-count"><%= answer.getScore() %></div>
-                    <button id="answer-downvote-<%= answer.getAnswerId() %>" class="vote-btn downvote-btn<%= answerDownvoteClass %>" title="Downvote" 
-                            data-answer-id="<%= answer.getAnswerId() %>" data-vote-type="downvote" onclick="handleVoteClick(this)">
+                    <button type="button" id="answer-downvote-<%= answer.getAnswerId() %>" class="vote-btn downvote-btn<%= answerDownvoteClass %>" title="Downvote" 
+                            data-answer-id="<%= answer.getAnswerId() %>" data-vote-type="downvote" onclick="handleVoteClick(event, this)">
                         <i class="fa-solid fa-arrow-down"></i>
                     </button>
                     <button class="vote-btn" title="Star">
@@ -740,13 +740,12 @@
         document.body.classList.toggle('sidebar-open');
     }
 
-    function handleVoteClick(button) {
+    function handleVoteClick(ev, button) {
+        if (ev) ev.preventDefault();
         // Extract data from button attributes
         const questionId = button.getAttribute('data-question-id') || null;
         const answerId = button.getAttribute('data-answer-id') || null;
         const voteType = button.getAttribute('data-vote-type');
-        
-        console.log('handleVoteClick - questionId:', questionId, 'answerId:', answerId, 'voteType:', voteType);
         
         if (!voteType) {
             alert('Invalid vote type');
@@ -775,26 +774,31 @@
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
             body: params
         })
-        .then(response => {
-            if (response.status === 401) {
+        .then(response => response.text().then(text => ({ ok: response.ok, status: response.status, text: text })))
+        .then(({ ok, status, text }) => {
+            if (status === 401) {
                 alert('Vui lòng đăng nhập để vote');
                 window.location.href = '${pageContext.request.contextPath}/auth/login';
-                return null;
+                return;
             }
-            return response.json();
-        })
-        .then(data => {
+            let data;
+            try { data = JSON.parse(text); } catch (e) { alert('Lỗi phản hồi từ server'); return; }
             if (data && data.success) {
-                // Determine element IDs (question: question-upvote; answer: answer-upvote-{id})
-                const upvoteBtn = questionId 
-                    ? document.getElementById('question-upvote') 
-                    : document.getElementById(`answer-upvote-${answerId}`);
-                const downvoteBtn = questionId 
-                    ? document.getElementById('question-downvote') 
-                    : document.getElementById(`answer-downvote-${answerId}`);
-                const voteCountEl = upvoteBtn ? upvoteBtn.parentElement.querySelector('.vote-count') : null;
-                
-                // Update voting UI
+                const isQuestion = questionId != null && questionId !== '' && !isNaN(questionId);
+                let upvoteBtn, downvoteBtn, voteCountEl;
+                if (isQuestion) {
+                    upvoteBtn = document.getElementById('question-upvote');
+                    downvoteBtn = document.getElementById('question-downvote');
+                    voteCountEl = upvoteBtn && upvoteBtn.parentElement ? upvoteBtn.parentElement.querySelector('.vote-count') : null;
+                } else {
+                    const btn = document.querySelector('button[data-answer-id="' + answerId + '"]');
+                    if (btn) {
+                        const box = btn.closest('.vote-box');
+                        upvoteBtn = box ? box.querySelector('.upvote-btn') : null;
+                        downvoteBtn = box ? box.querySelector('.downvote-btn') : null;
+                        voteCountEl = box ? box.querySelector('.vote-count') : null;
+                    }
+                }
                 if (upvoteBtn && downvoteBtn) {
                     if (voteType === 'upvote') {
                         upvoteBtn.classList.add('voted-up');
@@ -804,11 +808,7 @@
                         upvoteBtn.classList.remove('voted-up');
                     }
                 }
-                
-                // Update vote count
-                if (voteCountEl) {
-                    voteCountEl.textContent = data.score;
-                }
+                if (voteCountEl) voteCountEl.textContent = data.score;
             } else if (data && data.error) {
                 alert('Lỗi: ' + data.error);
             }

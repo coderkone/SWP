@@ -20,6 +20,7 @@ public class VoteDAO {
         String checkSql = "SELECT * FROM Votes WHERE user_id = ? AND " +
                 (questionId != null ? "question_id = ? AND answer_id IS NULL" : "answer_id = ? AND question_id IS NULL");
 
+        boolean alreadyVoted = false;
         try (Connection con = db.getConnection();
              PreparedStatement checkPs = con.prepareStatement(checkSql)) {
 
@@ -31,37 +32,38 @@ public class VoteDAO {
             }
 
             try (ResultSet rs = checkPs.executeQuery()) {
-                if (rs.next()) {
-                    // User already voted, update the vote
-                    String updateSql = "UPDATE Votes SET vote_type = ?, created_at = GETDATE() WHERE user_id = ? AND " +
-                            (questionId != null ? "question_id = ?" : "answer_id = ?");
+                alreadyVoted = rs.next();
+            }
+        }
 
-                    try (PreparedStatement updatePs = con.prepareStatement(updateSql)) {
-                        updatePs.setString(1, dbVoteType);
-                        updatePs.setLong(2, userId);
+        if (alreadyVoted) {
+            // User already voted - update the vote (allows changing upvote<->downvote)
+            String updateSql = "UPDATE Votes SET vote_type = ?, created_at = GETDATE() WHERE user_id = ? AND " +
+                    (questionId != null ? "question_id = ? AND answer_id IS NULL" : "answer_id = ? AND question_id IS NULL");
+
+            try (Connection con = db.getConnection();
+                 PreparedStatement updatePs = con.prepareStatement(updateSql)) {
+                updatePs.setString(1, dbVoteType);
+                updatePs.setLong(2, userId);
+                if (questionId != null) {
+                    updatePs.setLong(3, questionId);
+                } else {
+                    updatePs.setLong(3, answerId);
+                }
+                boolean updated = updatePs.executeUpdate() > 0;
+
+                if (updated) {
+                    try {
                         if (questionId != null) {
-                            updatePs.setLong(3, questionId);
+                            updateQuestionScore(questionId);
                         } else {
-                            updatePs.setLong(3, answerId);
+                            updateAnswerScore(answerId);
                         }
-                        boolean updated = updatePs.executeUpdate() > 0;
-                        
-                        // Update score in Questions or Answers table
-                        if (updated) {
-                            try {
-                                if (questionId != null) {
-                                    updateQuestionScore(questionId);
-                                } else {
-                                    updateAnswerScore(answerId);
-                                }
-                            } catch (Exception e) {
-                                // Log but don't fail - vote was saved successfully
-                                System.err.println("Warning: Failed to update score after vote: " + e.getMessage());
-                            }
-                        }
-                        return updated;
+                    } catch (Exception e) {
+                        System.err.println("Warning: Failed to update score after vote: " + e.getMessage());
                     }
                 }
+                return updated;
             }
         }
 
