@@ -1,16 +1,22 @@
 package control;
 
+import dal.AnswerDAO;
 import dal.QuestionDAO;
+import dal.VoteDAO;
 import dto.QuestionDTO;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 @WebServlet(name = "ViewQuestionController", urlPatterns = {"/question"})
 public class ViewQuestionController extends HttpServlet {
 
     private final QuestionDAO questionDao = new QuestionDAO();
+    private final AnswerDAO answerDao = new AnswerDAO();
+    private final VoteDAO voteDao = new VoteDAO();
     private static final long VIEW_COOLDOWN_MS = 30 * 60 * 1000; // 30 minutes
 
     @Override
@@ -45,7 +51,47 @@ public class ViewQuestionController extends HttpServlet {
                 session.setAttribute(viewKey, currentTime);
             }
 
+            // Load vote score for question
+            try {
+                int questionScore = voteDao.getVoteScore(questionId, null);
+                question.setScore(questionScore);
+            } catch (Exception e) { /* use default score */ }
+
+            // Load answers with vote scores
+            List answers = new ArrayList();
+            try {
+                answers = answerDao.getAnswersByQuestionId(questionId);
+                for (Object answerObj : answers) {
+                    dto.AnswerDTO answer = (dto.AnswerDTO) answerObj;
+                    answer.setScore(voteDao.getVoteScore(null, answer.getAnswerId()));
+                }
+            } catch (Exception e) { /* answers stay empty */ }
+
+            // Load user's votes (if logged in)
+            try {
+                if (session != null && session.getAttribute("USER") != null) {
+                    dto.UserDTO user = (dto.UserDTO) session.getAttribute("USER");
+                    long userId = user.getUserId();
+                    request.setAttribute("questionUserVote", voteDao.getUserVote(userId, questionId, null));
+                    java.util.Map<Long, String> answerVotes = new java.util.HashMap<>();
+                    for (Object answerObj : answers) {
+                        dto.AnswerDTO answer = (dto.AnswerDTO) answerObj;
+                        String v = voteDao.getUserVote(userId, null, answer.getAnswerId());
+                        if (v != null) answerVotes.put(answer.getAnswerId(), v);
+                    }
+                    request.setAttribute("answerVotes", answerVotes);
+                }
+            } catch (Exception e) { /* no user votes */ }
+
+            // Load related questions
+            try {
+                request.setAttribute("relatedQuestions", questionDao.getRelatedQuestions(questionId, 4));
+            } catch (Exception e) {
+                request.setAttribute("relatedQuestions", new ArrayList<>());
+            }
+
             request.setAttribute("question", question);
+            request.setAttribute("answers", answers);
             request.getRequestDispatcher("/View/User/question-detail.jsp").forward(request, response);
 
         } catch (NumberFormatException e) {

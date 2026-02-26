@@ -757,32 +757,23 @@
     }
 
     function submitVote(questionId, answerId, voteType) {
-        const formData = new FormData();
-        
-        // Debug log
-        console.log('submitVote called with:', { questionId, answerId, voteType });
-        
-        // Only append if value is not null/undefined and is a valid number
-        if (questionId !== null && questionId !== undefined && !isNaN(questionId) && questionId !== '') {
-            formData.append('questionId', questionId);
+        // Use URLSearchParams (application/x-www-form-urlencoded) so servlet getParameter() works.
+        // FormData sends multipart/form-data which requires @MultipartConfig to parse.
+        const params = new URLSearchParams();
+        if (questionId !== null && questionId !== undefined && questionId !== '' && !isNaN(questionId)) {
+            params.append('questionId', questionId);
         }
-        
-        if (answerId !== null && answerId !== undefined && !isNaN(answerId) && answerId !== '') {
-            formData.append('answerId', answerId);
+        if (answerId !== null && answerId !== undefined && answerId !== '' && !isNaN(answerId)) {
+            params.append('answerId', answerId);
         }
-        
         if (voteType) {
-            formData.append('voteType', voteType);
-        }
-
-        // Log FormData
-        for (let pair of formData.entries()) {
-            console.log('FormData:', pair[0], '=', pair[1]);
+            params.append('voteType', voteType);
         }
 
         fetch('${pageContext.request.contextPath}/vote/submit', {
             method: 'POST',
-            body: formData
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: params
         })
         .then(response => {
             if (response.status === 401) {

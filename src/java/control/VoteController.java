@@ -123,7 +123,9 @@ public class VoteController extends HttpServlet {
         } catch (Exception e) {
             e.printStackTrace();
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            out.println("{\"error\": \"" + e.getMessage() + "\"}");
+            String msg = e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName();
+            msg = msg.replace("\\", "\\\\").replace("\"", "\\\"");
+            out.println("{\"error\": \"" + msg + "\"}");
         }
     }
 }

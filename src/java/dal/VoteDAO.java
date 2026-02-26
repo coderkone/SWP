@@ -13,6 +13,9 @@ public class VoteDAO {
     private final DBContext db = new DBContext();
 
     public boolean addVote(long userId, Long questionId, Long answerId, String voteType) throws Exception {
+        // DB CHECK constraint chk_vote_type allows only 'up'/'down' - convert from app format
+        String dbVoteType = toDbVoteType(voteType);
+
         // Check if user already voted
         String checkSql = "SELECT * FROM Votes WHERE user_id = ? AND " +
                 (questionId != null ? "question_id = ? AND answer_id IS NULL" : "answer_id = ? AND question_id IS NULL");
@@ -34,7 +37,7 @@ public class VoteDAO {
                             (questionId != null ? "question_id = ?" : "answer_id = ?");
 
                     try (PreparedStatement updatePs = con.prepareStatement(updateSql)) {
-                        updatePs.setString(1, voteType);
+                        updatePs.setString(1, dbVoteType);
                         updatePs.setLong(2, userId);
                         if (questionId != null) {
                             updatePs.setLong(3, questionId);
@@ -72,7 +75,7 @@ public class VoteDAO {
             ps.setLong(1, userId);
             ps.setObject(2, questionId);
             ps.setObject(3, answerId);
-            ps.setString(4, voteType);
+            ps.setString(4, dbVoteType);
 
             boolean inserted = ps.executeUpdate() > 0;
             
@@ -94,8 +97,9 @@ public class VoteDAO {
     }
 
     public int getVoteScore(Long questionId, Long answerId) throws Exception {
-        String sql = "SELECT COUNT(CASE WHEN vote_type = 'upvote' THEN 1 END) - " +
-                "COUNT(CASE WHEN vote_type = 'downvote' THEN 1 END) as score FROM Votes WHERE " +
+        // Support both 'upvote'/'downvote' (from app) and 'up'/'down' (from seed data)
+        String sql = "SELECT COUNT(CASE WHEN vote_type IN ('upvote', 'up') THEN 1 END) - " +
+                "COUNT(CASE WHEN vote_type IN ('downvote', 'down') THEN 1 END) as score FROM Votes WHERE " +
                 (questionId != null ? "question_id = ? AND answer_id IS NULL" : "answer_id = ? AND question_id IS NULL");
 
         try (Connection con = db.getConnection();
@@ -133,7 +137,7 @@ public class VoteDAO {
 
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    return rs.getString("vote_type");
+                    return normalizeVoteType(rs.getString("vote_type"));
                 }
             }
         }
@@ -141,11 +145,27 @@ public class VoteDAO {
         return null;
     }
 
+    /** Convert app format to DB format - chk_vote_type allows only 'up'/'down'. */
+    private String toDbVoteType(String voteType) {
+        if (voteType == null) return "up";
+        if ("upvote".equalsIgnoreCase(voteType)) return "up";
+        if ("downvote".equalsIgnoreCase(voteType)) return "down";
+        return voteType;
+    }
+
+    /** Normalize 'up'/'down' to 'upvote'/'downvote' for JSP compatibility. */
+    private String normalizeVoteType(String raw) {
+        if (raw == null) return null;
+        if ("up".equals(raw) || "upvote".equalsIgnoreCase(raw)) return "upvote";
+        if ("down".equals(raw) || "downvote".equalsIgnoreCase(raw)) return "downvote";
+        return raw;
+    }
+
     // Cập nhật Score cho Question
     private void updateQuestionScore(Long questionId) throws Exception {
         String sql = "UPDATE Questions SET Score = (" +
-                "SELECT COUNT(CASE WHEN vote_type = 'upvote' THEN 1 END) - " +
-                "COUNT(CASE WHEN vote_type = 'downvote' THEN 1 END) FROM Votes " +
+                "SELECT COUNT(CASE WHEN vote_type IN ('upvote', 'up') THEN 1 END) - " +
+                "COUNT(CASE WHEN vote_type IN ('downvote', 'down') THEN 1 END) FROM Votes " +
                 "WHERE question_id = ? AND answer_id IS NULL" +
                 ") WHERE question_id = ?";
 
@@ -160,8 +180,8 @@ public class VoteDAO {
     // Cập nhật Score cho Answer
     private void updateAnswerScore(Long answerId) throws Exception {
         String sql = "UPDATE Answers SET Score = (" +
-                "SELECT COUNT(CASE WHEN vote_type = 'upvote' THEN 1 END) - " +
-                "COUNT(CASE WHEN vote_type = 'downvote' THEN 1 END) FROM Votes " +
+                "SELECT COUNT(CASE WHEN vote_type IN ('upvote', 'up') THEN 1 END) - " +
+                "COUNT(CASE WHEN vote_type IN ('downvote', 'down') THEN 1 END) FROM Votes " +
                 "WHERE answer_id = ? AND question_id IS NULL" +
                 ") WHERE answer_id = ?";
 
