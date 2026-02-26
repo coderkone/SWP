@@ -1,6 +1,5 @@
 ﻿USE [master]
 GO
--- Drop Database [devquery_fixed]
 
 CREATE DATABASE [devquery]
 GO

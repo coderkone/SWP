@@ -23,6 +23,7 @@ INSERT INTO [dbo].[Users] ([username], [email], [password_hash], [role], [Reputa
 ('bot_auto', 'bot@devquery.system', '$2a$10$bothash', 'member', 0);
 GO
 select * from Users
+delete from Users where user_id=18
 -- =============================================
 -- 2. TẠO USER PROFILE (15 profiles)
 -- =============================================
