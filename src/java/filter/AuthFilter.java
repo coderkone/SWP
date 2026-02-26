@@ -6,7 +6,7 @@ import jakarta.servlet.annotation.WebFilter;
 import jakarta.servlet.http.*;
 import java.io.IOException;
 
-@WebFilter(filterName="Authfilter", urlPatterns={"/home", "/dashboard"})
+@WebFilter(filterName="Authfilter", urlPatterns={"/home", "/dashboard", "/admin/*"})
 public class AuthFilter implements Filter {
 
     @Override
@@ -24,9 +24,17 @@ public class AuthFilter implements Filter {
             return;
         }
 
-        // Nếu muốn chặn user vào dashboard:
-        String path = request.getServletPath(); // /home or /dashboard
-        if ("/dashboard".equals(path) && !("admin".equalsIgnoreCase(user.getRole()))) {
+        // Kiểm tra user bị inactive không được login
+        if ("inactive".equalsIgnoreCase(user.getStatus())) {
+            session.invalidate();
+            response.sendRedirect(request.getContextPath() + "/auth/login?error=inactive");
+            return;
+        }
+
+        // Chặn non-admin vào dashboard và admin routes
+        String path = request.getServletPath();
+        if ((path.startsWith("/admin") || "/dashboard".equals(path))
+                && !("admin".equalsIgnoreCase(user.getRole()))) {
             response.sendRedirect(request.getContextPath() + "/home");
             return;
         }

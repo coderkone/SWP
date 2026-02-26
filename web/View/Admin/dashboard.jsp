@@ -1,4 +1,7 @@
 <!DOCTYPE html>
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -320,29 +323,28 @@
         <div class="logo-area">
             <b>QUERY</b>&nbsp;ADMIN
         </div>
-        
+
         <nav class="nav-menu">
-            <a href="#" class="nav-item active">
-                <span class="nav-icon">?</span> Dashboard
+            <a href="${pageContext.request.contextPath}/dashboard" class="nav-item active">
+                <span class="nav-icon">📊</span> Dashboard
+            </a>
+            <a href="${pageContext.request.contextPath}/admin/users" class="nav-item">
+                <span class="nav-icon">👥</span> User Management
             </a>
             <a href="#" class="nav-item">
-                <span class="nav-icon">?</span> User Management
+                <span class="nav-icon">🏷️</span> Tag Management
             </a>
             <a href="#" class="nav-item">
-                <span class="nav-icon">??</span> Tag Management
+                <span class="nav-icon">📋</span> Content Reports
             </a>
             <a href="#" class="nav-item">
-                <span class="nav-icon">?</span> Content Reports
-                <span class="badge">5</span>
-            </a>
-            <a href="#" class="nav-item">
-                <span class="nav-icon">?</span> System Rules
+                <span class="nav-icon">⚙️</span> System Rules
             </a>
         </nav>
 
         <div class="logout-area">
-            <a href="#" class="nav-item">
-                <span class="nav-icon">?</span> Log Out
+            <a href="${pageContext.request.contextPath}/logout" class="nav-item">
+                <span class="nav-icon">🚪</span> Log Out
             </a>
         </div>
     </aside>
@@ -351,40 +353,48 @@
         <header class="top-header">
             <div class="page-title">Dashboard Overview</div>
             <div class="admin-profile">
-                <span class="admin-name">Admin</span>
+                <span class="admin-name">${sessionScope.USER.username}</span>
                 <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" alt="Admin Avatar" class="admin-avatar">
             </div>
         </header>
 
         <div class="dashboard-container">
-            
+
             <div class="stats-grid">
                 <div class="card">
                     <div class="card-title">Total Users</div>
-                    <div class="card-value">1,245</div>
-                    <div class="card-trend">? 12% from last week</div>
-                    <div class="card-icon-bg" style="background-color: #E1ECF4;">?</div>
+                    <div class="card-value">
+                        <fmt:formatNumber value="${totalUsers}" pattern="#,###"/>
+                    </div>
+                    <div class="card-trend">
+                        <a href="${pageContext.request.contextPath}/admin/users" style="color: inherit; text-decoration: none;">View all users →</a>
+                    </div>
+                    <div class="card-icon-bg" style="background-color: #E1ECF4;">👥</div>
                 </div>
 
                 <div class="card">
                     <div class="card-title">Questions</div>
-                    <div class="card-value">8,502</div>
-                    <div class="card-trend">? 5% from last week</div>
-                    <div class="card-icon-bg" style="background-color: #FFF4E5;">?</div>
+                    <div class="card-value">
+                        <fmt:formatNumber value="${totalQuestions}" pattern="#,###"/>
+                    </div>
+                    <div class="card-trend">Total questions posted</div>
+                    <div class="card-icon-bg" style="background-color: #FFF4E5;">❓</div>
                 </div>
 
                 <div class="card">
                     <div class="card-title">Answers</div>
-                    <div class="card-value">12,400</div>
-                    <div class="card-trend">? 8% from last week</div>
-                    <div class="card-icon-bg" style="background-color: #E3FCEF;">?</div>
+                    <div class="card-value">
+                        <fmt:formatNumber value="${totalAnswers}" pattern="#,###"/>
+                    </div>
+                    <div class="card-trend">Total answers posted</div>
+                    <div class="card-icon-bg" style="background-color: #E3FCEF;">💬</div>
                 </div>
 
                 <div class="card">
                     <div class="card-title">Pending Reports</div>
-                    <div class="card-value red">5</div>
-                    <div class="card-trend red">Needs attention</div>
-                    <div class="card-icon-bg" style="background-color: #FDEDED;">?</div>
+                    <div class="card-value red">0</div>
+                    <div class="card-trend">No pending reports</div>
+                    <div class="card-icon-bg" style="background-color: #FDEDED;">⚠️</div>
                 </div>
             </div>
 
@@ -442,12 +452,13 @@
             <div class="section-box">
                 <div class="section-header">
                     <div class="section-title">Newest Users</div>
+                    <a href="${pageContext.request.contextPath}/admin/users" class="btn-link">View All</a>
                 </div>
                 <table>
                     <thead>
                         <tr>
                             <th>ID</th>
-                            <th>Display Name</th>
+                            <th>Username</th>
                             <th>Email</th>
                             <th>Role</th>
                             <th>Status</th>
@@ -455,22 +466,38 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr>
-                            <td>101</td>
-                            <td>John Doe</td>
-                            <td>john@example.com</td>
-                            <td>User</td>
-                            <td><span class="status-badge status-active">Active</span></td>
-                            <td>2 mins ago</td>
-                        </tr>
-                        <tr>
-                            <td>102</td>
-                            <td>Jane Smith</td>
-                            <td>jane@test.com</td>
-                            <td>User</td>
-                            <td><span class="status-badge status-active">Active</span></td>
-                            <td>10 mins ago</td>
-                        </tr>
+                        <c:choose>
+                            <c:when test="${empty newestUsers}">
+                                <tr>
+                                    <td colspan="6" style="text-align: center; color: #838C95;">
+                                        No users found.
+                                    </td>
+                                </tr>
+                            </c:when>
+                            <c:otherwise>
+                                <c:forEach var="user" items="${newestUsers}">
+                                    <tr>
+                                        <td>${user.userId}</td>
+                                        <td><strong>${user.username}</strong></td>
+                                        <td>${user.email}</td>
+                                        <td>${user.role}</td>
+                                        <td>
+                                            <c:choose>
+                                                <c:when test="${user.status == 'active'}">
+                                                    <span class="status-badge status-active">Active</span>
+                                                </c:when>
+                                                <c:otherwise>
+                                                    <span class="status-badge status-pending">Inactive</span>
+                                                </c:otherwise>
+                                            </c:choose>
+                                        </td>
+                                        <td>
+                                            <fmt:formatDate value="${user.createdAt}" pattern="dd/MM/yyyy HH:mm"/>
+                                        </td>
+                                    </tr>
+                                </c:forEach>
+                            </c:otherwise>
+                        </c:choose>
                     </tbody>
                 </table>
             </div>

@@ -6,6 +6,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
 import util.PasswordUtil;
 import model.GithubUser;
 import model.GoogleUser;
@@ -52,7 +54,7 @@ public class UserDAO {
     }
 
     public UserDTO login(String email, String rawPassword) throws Exception {
-        String sql = "SELECT user_id, username, email, role FROM Users WHERE email = ? AND password_hash = ?";
+        String sql = "SELECT user_id, username, email, role, status FROM Users WHERE email = ? AND password_hash = ?";
         String hash = PasswordUtil.sha256(rawPassword);
 
         try (Connection con = db.getConnection();
@@ -62,12 +64,14 @@ public class UserDAO {
 
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    return new UserDTO(
+                    UserDTO user = new UserDTO(
                             rs.getLong("user_id"),
                             rs.getString("username"),
                             rs.getString("email"),
                             rs.getString("role")
                     );
+                    user.setStatus(rs.getString("status"));
+                    return user;
                 }
             }
         }
@@ -149,10 +153,10 @@ public class UserDAO {
                    + "FROM Users u "
                    + "LEFT JOIN User_Profile p ON u.user_id = p.user_id "
                    + "WHERE u.user_id = ?";
-        
+
         try (Connection con = db.getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
-            
+
             ps.setLong(1, id);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
@@ -164,7 +168,7 @@ public class UserDAO {
                     user.setRole(rs.getString("role"));
                     user.setReputation(rs.getInt("Reputation"));
                     user.setCreatedAt(rs.getTimestamp("created_at"));
-                    
+
                     // Các trường từ bảng Profile (có thể null)
                     user.setBio(rs.getString("bio"));
                     user.setLocation(rs.getString("location"));
@@ -176,5 +180,217 @@ public class UserDAO {
             e.printStackTrace();
         }
         return user;
+    }
+
+    // ==================== ADMIN USER MANAGEMENT ====================
+
+    // Lấy tổng số users
+    public int getUserCount() {
+        String sql = "SELECT COUNT(*) FROM Users";
+        try (Connection con = db.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+
+    // Lấy danh sách users với pagination
+    public List<UserDTO> getAllUsers(int page, int pageSize) {
+        List<UserDTO> users = new ArrayList<>();
+        String sql = "SELECT user_id, username, email, role, status, created_at, Reputation "
+                   + "FROM Users ORDER BY created_at DESC "
+                   + "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
+
+        try (Connection con = db.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, (page - 1) * pageSize);
+            ps.setInt(2, pageSize);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    UserDTO user = new UserDTO();
+                    user.setUserId(rs.getLong("user_id"));
+                    user.setUsername(rs.getString("username"));
+                    user.setEmail(rs.getString("email"));
+                    user.setRole(rs.getString("role"));
+                    user.setStatus(rs.getString("status"));
+                    user.setCreatedAt(rs.getTimestamp("created_at"));
+                    user.setReputation(rs.getInt("Reputation"));
+                    users.add(user);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return users;
+    }
+
+    // Tìm kiếm users
+    public List<UserDTO> searchUsers(String keyword, int limit) {
+        List<UserDTO> users = new ArrayList<>();
+        String sql = "SELECT TOP (?) user_id, username, email, role, status, created_at "
+                   + "FROM Users WHERE username LIKE ? OR email LIKE ?";
+
+        try (Connection con = db.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, limit);
+            ps.setString(2, "%" + keyword + "%");
+            ps.setString(3, "%" + keyword + "%");
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    UserDTO user = new UserDTO();
+                    user.setUserId(rs.getLong("user_id"));
+                    user.setUsername(rs.getString("username"));
+                    user.setEmail(rs.getString("email"));
+                    user.setRole(rs.getString("role"));
+                    user.setStatus(rs.getString("status"));
+                    user.setCreatedAt(rs.getTimestamp("created_at"));
+                    users.add(user);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return users;
+    }
+
+    // Lấy user theo ID (cho edit form)
+    public UserDTO getUserById(long userId) {
+        String sql = "SELECT user_id, username, email, role, status, created_at, Reputation FROM Users WHERE user_id = ?";
+
+        try (Connection con = db.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setLong(1, userId);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    UserDTO user = new UserDTO();
+                    user.setUserId(rs.getLong("user_id"));
+                    user.setUsername(rs.getString("username"));
+                    user.setEmail(rs.getString("email"));
+                    user.setRole(rs.getString("role"));
+                    user.setStatus(rs.getString("status"));
+                    user.setCreatedAt(rs.getTimestamp("created_at"));
+                    user.setReputation(rs.getInt("Reputation"));
+                    return user;
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    // Tạo user mới (admin)
+    public boolean createUser(String username, String email, String rawPassword, String role) {
+        String sql = "INSERT INTO Users(username, email, password_hash, role, status) VALUES (?, ?, ?, ?, 'active')";
+        String hash = PasswordUtil.sha256(rawPassword);
+
+        try (Connection con = db.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setString(1, username);
+            ps.setString(2, email);
+            ps.setString(3, hash);
+            ps.setString(4, role);
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    // Update user (role, status)
+    public boolean updateUser(long userId, String role, String status) {
+        String sql = "UPDATE Users SET role = ?, status = ?, updated_at = GETDATE() WHERE user_id = ?";
+
+        try (Connection con = db.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setString(1, role);
+            ps.setString(2, status);
+            ps.setLong(3, userId);
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    // Toggle status (active <-> inactive)
+    public boolean toggleUserStatus(long userId) {
+        String sql = "UPDATE Users SET status = CASE WHEN status = 'active' THEN 'inactive' ELSE 'active' END, "
+                   + "updated_at = GETDATE() WHERE user_id = ?";
+
+        try (Connection con = db.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setLong(1, userId);
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    // Lấy users mới nhất (cho dashboard)
+    public List<UserDTO> getNewestUsers(int limit) {
+        List<UserDTO> users = new ArrayList<>();
+        String sql = "SELECT TOP (?) user_id, username, email, role, status, created_at "
+                   + "FROM Users ORDER BY created_at DESC";
+
+        try (Connection con = db.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, limit);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    UserDTO user = new UserDTO();
+                    user.setUserId(rs.getLong("user_id"));
+                    user.setUsername(rs.getString("username"));
+                    user.setEmail(rs.getString("email"));
+                    user.setRole(rs.getString("role"));
+                    user.setStatus(rs.getString("status"));
+                    user.setCreatedAt(rs.getTimestamp("created_at"));
+                    users.add(user);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return users;
+    }
+
+    // Lấy tổng số questions (cho dashboard)
+    public int getQuestionCount() {
+        String sql = "SELECT COUNT(*) FROM Questions";
+        try (Connection con = db.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+
+    // Lấy tổng số answers (cho dashboard)
+    public int getAnswerCount() {
+        String sql = "SELECT COUNT(*) FROM Answers";
+        try (Connection con = db.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return 0;
     }
 }

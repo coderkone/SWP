@@ -103,6 +103,13 @@ public class AuthController extends HttpServlet {
             return;
         }
 
+        // Check inactive user
+        if ("inactive".equalsIgnoreCase(user.getStatus())) {
+            request.setAttribute("error", "Tài khoản của bạn đã bị khóa. Vui lòng liên hệ admin.");
+            request.getRequestDispatcher("/View/User/login.jsp").forward(request, response);
+            return;
+        }
+
         HttpSession session = request.getSession(true);
         session.setAttribute("USER", user);
 
