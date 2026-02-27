@@ -337,7 +337,7 @@
             <a href="#" class="nav-item">
                 <span class="nav-icon">📋</span> Content Reports
             </a>
-            <a href="#" class="nav-item">
+            <a href="${pageContext.request.contextPath}/admin/rules" class="nav-item">
                 <span class="nav-icon">⚙️</span> System Rules
             </a>
         </nav>

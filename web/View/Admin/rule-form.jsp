@@ -5,7 +5,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>${editMode ? 'Edit Tag' : 'Create Tag'} - DevQuery Admin</title>
+    <title>${editMode ? 'Sửa Nội quy' : 'Thêm Nội quy'} - DevQuery Admin</title>
     <style>
         :root {
             --sidebar-bg: #2D3E50;
@@ -124,11 +124,11 @@
 
         .container {
             padding: 30px;
-            max-width: 800px;
+            max-width: 900px;
             margin: 0 auto;
         }
 
-        .form-card {
+        .form-box {
             background-color: var(--card-bg);
             border: 1px solid var(--border-color);
             border-radius: 5px;
@@ -150,44 +150,35 @@
 
         .form-group label {
             display: block;
-            font-weight: 500;
-            color: var(--text-main);
             margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--text-main);
             font-size: 14px;
         }
 
-        .form-group label .required {
+        .form-group label span.required {
             color: #D0393E;
         }
 
-        .form-group input,
-        .form-group textarea,
-        .form-group select {
+        .form-control {
             width: 100%;
             padding: 10px 12px;
             border: 1px solid var(--border-color);
             border-radius: 4px;
             font-size: 14px;
             font-family: inherit;
+            transition: border-color 0.2s;
         }
 
-        .form-group input:focus,
-        .form-group textarea:focus,
-        .form-group select:focus {
+        .form-control:focus {
             outline: none;
             border-color: #0a95ff;
             box-shadow: 0 0 0 3px rgba(10, 149, 255, 0.1);
         }
 
-        .form-group textarea {
-            min-height: 100px;
+        textarea.form-control {
+            min-height: 200px;
             resize: vertical;
-        }
-
-        .form-group .hint {
-            font-size: 12px;
-            color: var(--text-sub);
-            margin-top: 5px;
         }
 
         .btn {
@@ -239,28 +230,10 @@
 
         .alert-error { background: #FDEDED; color: #D0393E; border: 1px solid #D0393E; }
 
-        .tag-info {
-            background-color: #f8f9f9;
-            border: 1px solid var(--border-color);
-            border-radius: 4px;
-            padding: 15px;
-            margin-bottom: 20px;
-        }
-
-        .tag-info-item {
-            display: flex;
-            justify-content: space-between;
-            padding: 5px 0;
-            font-size: 13px;
-        }
-
-        .tag-info-label {
+        .char-count {
+            font-size: 12px;
             color: var(--text-sub);
-        }
-
-        .tag-info-value {
-            font-weight: 500;
-            color: var(--text-main);
+            margin-top: 5px;
         }
     </style>
 </head>
@@ -278,13 +251,13 @@
         <a href="${pageContext.request.contextPath}/admin/users" class="nav-item">
             <span class="nav-icon">👥</span> User Management
         </a>
-        <a href="${pageContext.request.contextPath}/admin/tags" class="nav-item active">
+        <a href="${pageContext.request.contextPath}/admin/tags" class="nav-item">
             <span class="nav-icon">🏷️</span> Tag Management
         </a>
         <a href="#" class="nav-item">
             <span class="nav-icon">📋</span> Content Reports
         </a>
-        <a href="${pageContext.request.contextPath}/admin/rules" class="nav-item">
+        <a href="${pageContext.request.contextPath}/admin/rules" class="nav-item active">
             <span class="nav-icon">⚙️</span> System Rules
         </a>
     </nav>
@@ -298,7 +271,7 @@
 
 <main class="main-content">
     <header class="top-header">
-        <div class="page-title">${editMode ? 'Edit Tag' : 'Create New Tag'}</div>
+        <div class="page-title">${editMode ? 'Sửa Nội quy' : 'Thêm Nội quy mới'}</div>
         <div class="admin-profile">
             <span class="admin-name">${sessionScope.USER.username}</span>
             <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" alt="Admin Avatar" class="admin-avatar">
@@ -311,64 +284,51 @@
             <div class="alert alert-error">${error}</div>
         </c:if>
 
-        <div class="form-card">
-            <div class="form-title">${editMode ? 'Chỉnh sửa thông tin Tag' : 'Tạo Tag mới'}</div>
+        <div class="form-box">
+            <div class="form-title">
+                ${editMode ? 'Chỉnh sửa nội quy' : 'Tạo nội quy mới'}
+            </div>
 
-            <c:if test="${editMode && editTag != null}">
-                <div class="tag-info">
-                    <div class="tag-info-item">
-                        <span class="tag-info-label">Tag ID:</span>
-                        <span class="tag-info-value">${editTag.tagId}</span>
-                    </div>
-                    <div class="tag-info-item">
-                        <span class="tag-info-label">Questions sử dụng:</span>
-                        <span class="tag-info-value">${editTag.questionCount}</span>
-                    </div>
-                    <div class="tag-info-item">
-                        <span class="tag-info-label">Followers:</span>
-                        <span class="tag-info-value">${editTag.followerCount}</span>
-                    </div>
-                </div>
-            </c:if>
-
-            <form action="${pageContext.request.contextPath}/admin/tags/${editMode ? 'edit' : 'create'}"
-                  method="post" accept-charset="UTF-8">
+            <form action="${pageContext.request.contextPath}/admin/rules/${editMode ? 'edit' : 'create'}"
+                  method="post">
 
                 <c:if test="${editMode}">
-                    <input type="hidden" name="id" value="${editTag.tagId}">
+                    <input type="hidden" name="id" value="${rule.ruleId}">
                 </c:if>
 
                 <div class="form-group">
-                    <label for="tagName">Tag Name <span class="required">*</span></label>
-                    <input type="text" id="tagName" name="tagName" required maxlength="50"
-                           value="${editMode ? editTag.tagName : tagName}"
-                           placeholder="Nhập tên tag (vd: java, javascript, python)">
-                    <div class="hint">Tối đa 50 ký tự. Tag name phải là duy nhất.</div>
+                    <label for="title">
+                        Tiêu đề <span class="required">*</span>
+                    </label>
+                    <input type="text"
+                           id="title"
+                           name="title"
+                           class="form-control"
+                           maxlength="255"
+                           required
+                           placeholder="Nhập tiêu đề nội quy..."
+                           value="${editMode ? rule.title : title}">
+                    <div class="char-count">Tối đa 255 ký tự</div>
                 </div>
 
                 <div class="form-group">
-                    <label for="description">Description</label>
-                    <textarea id="description" name="description"
-                              placeholder="Mô tả ngắn về tag này...">${editMode ? editTag.description : description}</textarea>
-                    <div class="hint">Mô tả giúp người dùng hiểu về mục đích sử dụng tag.</div>
+                    <label for="content">
+                        Nội dung <span class="required">*</span>
+                    </label>
+                    <textarea id="content"
+                              name="content"
+                              class="form-control"
+                              required
+                              placeholder="Nhập nội dung chi tiết của nội quy...">${editMode ? rule.content : content}</textarea>
                 </div>
-
-                <c:if test="${editMode}">
-                    <div class="form-group">
-                        <label for="isActive">Status</label>
-                        <select id="isActive" name="isActive">
-                            <option value="1" ${editTag.active ? 'selected' : ''}>Active</option>
-                            <option value="0" ${!editTag.active ? 'selected' : ''}>Inactive</option>
-                        </select>
-                        <div class="hint">Tag inactive sẽ không hiển thị khi tạo/sửa question mới.</div>
-                    </div>
-                </c:if>
 
                 <div class="form-actions">
                     <button type="submit" class="btn btn-primary">
-                        ${editMode ? 'Cập nhật' : 'Tạo Tag'}
+                        ${editMode ? 'Cập nhật' : 'Tạo mới'}
                     </button>
-                    <a href="${pageContext.request.contextPath}/admin/tags" class="btn btn-secondary">Hủy</a>
+                    <a href="${pageContext.request.contextPath}/admin/rules" class="btn btn-secondary">
+                        Hủy
+                    </a>
                 </div>
             </form>
         </div>

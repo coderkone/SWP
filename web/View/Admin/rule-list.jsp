@@ -6,7 +6,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>User Management - DevQuery Admin</title>
+    <title>System Rules - DevQuery Admin</title>
     <style>
         :root {
             --sidebar-bg: #2D3E50;
@@ -183,19 +183,13 @@
             background-color: #f8f9f9;
         }
 
-        .btn-success {
-            background-color: #2f6f44;
-            color: white;
-        }
-
         .btn-danger {
             background-color: #D0393E;
             color: white;
         }
 
-        .btn-warning {
-            background-color: #f48024;
-            color: white;
+        .btn-danger:hover {
+            background-color: #b52e33;
         }
 
         .btn-sm {
@@ -248,28 +242,6 @@
 
         tr:hover { background-color: #f8f9f9; }
 
-        .status-badge {
-            padding: 4px 10px;
-            border-radius: 12px;
-            font-size: 11px;
-            font-weight: 500;
-            text-transform: uppercase;
-        }
-
-        .status-active { color: #2f6f44; background: #E3FCEF; }
-        .status-inactive { color: #D0393E; background: #FDEDED; }
-
-        .role-badge {
-            padding: 3px 8px;
-            border-radius: 3px;
-            font-size: 11px;
-            font-weight: 500;
-        }
-
-        .role-admin { color: #0074cc; background: #e1ecf4; }
-        .role-moderator { color: #5a32a3; background: #f3e8ff; }
-        .role-member { color: #525960; background: #e3e6e8; }
-
         .actions { display: flex; gap: 5px; }
 
         .pagination {
@@ -296,11 +268,6 @@
             border-color: var(--active-orange);
         }
 
-        .pagination .disabled {
-            color: #ccc;
-            pointer-events: none;
-        }
-
         .alert {
             padding: 12px 16px;
             border-radius: 4px;
@@ -316,6 +283,13 @@
             padding: 40px;
             color: var(--text-sub);
         }
+
+        .content-preview {
+            max-width: 400px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
     </style>
 </head>
 <body>
@@ -329,7 +303,7 @@
         <a href="${pageContext.request.contextPath}/dashboard" class="nav-item">
             <span class="nav-icon">📊</span> Dashboard
         </a>
-        <a href="${pageContext.request.contextPath}/admin/users" class="nav-item active">
+        <a href="${pageContext.request.contextPath}/admin/users" class="nav-item">
             <span class="nav-icon">👥</span> User Management
         </a>
         <a href="${pageContext.request.contextPath}/admin/tags" class="nav-item">
@@ -338,7 +312,7 @@
         <a href="#" class="nav-item">
             <span class="nav-icon">📋</span> Content Reports
         </a>
-        <a href="${pageContext.request.contextPath}/admin/rules" class="nav-item">
+        <a href="${pageContext.request.contextPath}/admin/rules" class="nav-item active">
             <span class="nav-icon">⚙️</span> System Rules
         </a>
     </nav>
@@ -352,7 +326,7 @@
 
 <main class="main-content">
     <header class="top-header">
-        <div class="page-title">User Management</div>
+        <div class="page-title">System Rules</div>
         <div class="admin-profile">
             <span class="admin-name">${sessionScope.USER.username}</span>
             <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" alt="Admin Avatar" class="admin-avatar">
@@ -362,131 +336,87 @@
     <div class="container">
 
         <c:if test="${param.success == 'created'}">
-            <div class="alert alert-success">User đã được tạo thành công!</div>
+            <div class="alert alert-success">Nội quy đã được tạo thành công!</div>
         </c:if>
         <c:if test="${param.success == 'updated'}">
-            <div class="alert alert-success">User đã được cập nhật thành công!</div>
+            <div class="alert alert-success">Nội quy đã được cập nhật thành công!</div>
         </c:if>
-        <c:if test="${param.success == 'toggled'}">
-            <div class="alert alert-success">Trạng thái user đã được thay đổi!</div>
+        <c:if test="${param.success == 'deleted'}">
+            <div class="alert alert-success">Nội quy đã được xóa thành công!</div>
         </c:if>
-        <c:if test="${param.error == 'self-toggle'}">
-            <div class="alert alert-error">Bạn không thể thay đổi trạng thái của chính mình!</div>
+        <c:if test="${param.error == 'notfound'}">
+            <div class="alert alert-error">Không tìm thấy nội quy!</div>
         </c:if>
-        <c:if test="${param.error == 'self-deactivate'}">
-            <div class="alert alert-error">Bạn không thể tự deactivate tài khoản của mình!</div>
+        <c:if test="${param.error == 'deletefailed'}">
+            <div class="alert alert-error">Không thể xóa nội quy. Vui lòng thử lại!</div>
         </c:if>
 
         <div class="toolbar">
-            <form action="${pageContext.request.contextPath}/admin/users/search" method="get" class="search-box">
-                <input type="text" name="q" placeholder="Tìm kiếm username hoặc email..."
+            <form action="${pageContext.request.contextPath}/admin/rules/search" method="get" class="search-box">
+                <input type="text" name="q" placeholder="Tìm kiếm theo tiêu đề..."
                        value="${searchKeyword}">
                 <button type="submit" class="btn btn-secondary">Tìm kiếm</button>
                 <c:if test="${not empty searchKeyword}">
-                    <a href="${pageContext.request.contextPath}/admin/users" class="btn btn-secondary">Xóa filter</a>
+                    <a href="${pageContext.request.contextPath}/admin/rules" class="btn btn-secondary">Xóa filter</a>
                 </c:if>
             </form>
 
-            <a href="${pageContext.request.contextPath}/admin/users/create" class="btn btn-primary">
-                + Thêm User
+            <a href="${pageContext.request.contextPath}/admin/rules/create" class="btn btn-primary">
+                + Thêm Nội quy
             </a>
-        </div>
-
-        <!-- Filter Form -->
-        <div class="toolbar" style="margin-bottom: 20px;">
-            <form action="${pageContext.request.contextPath}/admin/users" method="get" style="display: flex; gap: 10px; align-items: center;">
-                <label style="font-size: 14px; color: var(--text-sub);">Lọc theo:</label>
-                <select name="role" style="padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 4px; font-size: 14px;">
-                    <option value="">Tất cả Role</option>
-                    <option value="admin" ${filterRole == 'admin' ? 'selected' : ''}>Admin</option>
-                    <option value="moderator" ${filterRole == 'moderator' ? 'selected' : ''}>Moderator</option>
-                    <option value="member" ${filterRole == 'member' ? 'selected' : ''}>Member</option>
-                </select>
-                <select name="status" style="padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 4px; font-size: 14px;">
-                    <option value="">Tất cả Status</option>
-                    <option value="active" ${filterStatus == 'active' ? 'selected' : ''}>Active</option>
-                    <option value="inactive" ${filterStatus == 'inactive' ? 'selected' : ''}>Inactive</option>
-                </select>
-                <button type="submit" class="btn btn-secondary">Lọc</button>
-                <c:if test="${not empty filterRole || not empty filterStatus}">
-                    <a href="${pageContext.request.contextPath}/admin/users" class="btn btn-secondary">Xóa bộ lọc</a>
-                </c:if>
-            </form>
         </div>
 
         <div class="section-box">
             <div class="section-header">
                 <div class="section-title">
-                    Danh sách Users
+                    Danh sách Nội quy
                     <c:if test="${not empty searchKeyword}">
                         - Kết quả cho "${searchKeyword}"
                     </c:if>
                 </div>
                 <span style="color: var(--text-sub); font-size: 13px;">
-                    Tổng: ${totalUsers} users
+                    Tổng: ${totalRules} nội quy
                 </span>
             </div>
 
             <c:choose>
-                <c:when test="${empty users}">
+                <c:when test="${empty rules}">
                     <div class="empty-state">
-                        <p>Không tìm thấy user nào.</p>
+                        <p>Chưa có nội quy nào.</p>
                     </div>
                 </c:when>
                 <c:otherwise>
                     <table>
                         <thead>
                         <tr>
-                            <th>ID</th>
-                            <th>Username</th>
-                            <th>Email</th>
-                            <th>Role</th>
-                            <th>Status</th>
-                            <th>Created At</th>
-                            <th>Actions</th>
+                            <th style="width: 60px;">ID</th>
+                            <th style="width: 200px;">Tiêu đề</th>
+                            <th>Nội dung</th>
+                            <th style="width: 120px;">Người tạo</th>
+                            <th style="width: 140px;">Ngày tạo</th>
+                            <th style="width: 120px;">Actions</th>
                         </tr>
                         </thead>
                         <tbody>
-                        <c:forEach var="user" items="${users}">
+                        <c:forEach var="rule" items="${rules}">
                             <tr>
-                                <td>${user.userId}</td>
-                                <td><strong>${user.username}</strong></td>
-                                <td>${user.email}</td>
+                                <td>${rule.ruleId}</td>
+                                <td><strong>${rule.title}</strong></td>
+                                <td class="content-preview">${rule.getTruncatedContent(100)}</td>
+                                <td>${rule.createdByUsername}</td>
                                 <td>
-                                    <span class="role-badge role-${user.role}">${user.role}</span>
-                                </td>
-                                <td>
-                                    <c:choose>
-                                        <c:when test="${user.status == 'active'}">
-                                            <span class="status-badge status-active">Active</span>
-                                        </c:when>
-                                        <c:otherwise>
-                                            <span class="status-badge status-inactive">Inactive</span>
-                                        </c:otherwise>
-                                    </c:choose>
-                                </td>
-                                <td>
-                                    <fmt:formatDate value="${user.createdAt}" pattern="dd/MM/yyyy HH:mm"/>
+                                    <fmt:formatDate value="${rule.createdAt}" pattern="dd/MM/yyyy HH:mm"/>
                                 </td>
                                 <td class="actions">
-                                    <a href="${pageContext.request.contextPath}/admin/users/edit?id=${user.userId}"
+                                    <a href="${pageContext.request.contextPath}/admin/rules/edit?id=${rule.ruleId}"
                                        class="btn btn-secondary btn-sm">Edit</a>
 
-                                    <c:if test="${user.userId != sessionScope.USER.userId}">
-                                        <form action="${pageContext.request.contextPath}/admin/users/toggle-status"
-                                              method="post" style="display:inline;"
-                                              onsubmit="return confirm('Bạn có chắc muốn thay đổi trạng thái user này?');">
-                                            <input type="hidden" name="id" value="${user.userId}">
-                                            <c:choose>
-                                                <c:when test="${user.status == 'active'}">
-                                                    <button type="submit" class="btn btn-danger btn-sm">Deactivate</button>
-                                                </c:when>
-                                                <c:otherwise>
-                                                    <button type="submit" class="btn btn-success btn-sm">Activate</button>
-                                                </c:otherwise>
-                                            </c:choose>
-                                        </form>
-                                    </c:if>
+                                    <form action="${pageContext.request.contextPath}/admin/rules/delete"
+                                          method="post" style="display:inline;"
+                                          onsubmit="return confirm('Bạn có chắc muốn xóa nội quy này?');">
+                                        <input type="hidden" name="id" value="${rule.ruleId}">
+                                        <button type="submit" class="btn btn-danger btn-sm">Xóa</button>
+                                    </form>
                                 </td>
                             </tr>
                         </c:forEach>
@@ -499,7 +429,7 @@
         <c:if test="${totalPages > 1 && empty searchKeyword}">
             <div class="pagination">
                 <c:if test="${currentPage > 1}">
-                    <a href="${pageContext.request.contextPath}/admin/users?page=${currentPage - 1}&role=${filterRole}&status=${filterStatus}">« Prev</a>
+                    <a href="${pageContext.request.contextPath}/admin/rules?page=${currentPage - 1}">« Prev</a>
                 </c:if>
 
                 <c:forEach begin="1" end="${totalPages}" var="i">
@@ -508,13 +438,13 @@
                             <span class="active">${i}</span>
                         </c:when>
                         <c:otherwise>
-                            <a href="${pageContext.request.contextPath}/admin/users?page=${i}&role=${filterRole}&status=${filterStatus}">${i}</a>
+                            <a href="${pageContext.request.contextPath}/admin/rules?page=${i}">${i}</a>
                         </c:otherwise>
                     </c:choose>
                 </c:forEach>
 
                 <c:if test="${currentPage < totalPages}">
-                    <a href="${pageContext.request.contextPath}/admin/users?page=${currentPage + 1}&role=${filterRole}&status=${filterStatus}">Next »</a>
+                    <a href="${pageContext.request.contextPath}/admin/rules?page=${currentPage + 1}">Next »</a>
                 </c:if>
             </div>
         </c:if>
