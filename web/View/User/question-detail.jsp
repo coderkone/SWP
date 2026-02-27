@@ -622,20 +622,37 @@
                     java.util.List<dto.CommentDTO> questionComments = 
                         (java.util.List<dto.CommentDTO>) request.getAttribute("questionComments");
                     if (questionComments == null) questionComments = new java.util.ArrayList<>();
+                    
+                    // Determine if should be collapsed by default
+                    boolean questionCommentsCollapsed = questionComments.size() > 3;
                 %>
                 
                 <% if (!questionComments.isEmpty()) { %>
                 <div class="question-comments" style="margin-top: 20px; padding-top: 15px; border-top: 1px solid #e3e6e8;">
-                    <div style="font-size: 13px; font-weight: 500; color: #6a737c; margin-bottom: 12px;">Comments</div>
-                    <% for (dto.CommentDTO comment : questionComments) { %>
-                    <div class="comment-item" style="margin-bottom: 12px; font-size: 13px;">
-                        <div style="color: #6a737c; margin-bottom: 4px;">
-                            <span style="color: #0a95ff; font-weight: 500;"><%= comment.getAuthorName() %></span>
-                            <span style="margin-left: 8px;"><%= comment.getCreatedAt() %></span>
+                    <!-- Toggle Button -->
+                    <button type="button" id="question-comments-toggle-btn" 
+                            style="font-size: 13px; color: #0a95ff; background: none; border: none; cursor: pointer; padding: 0; margin-bottom: 12px;"
+                            onclick="toggleQuestionComments()">
+                        <span id="question-comments-toggle-text">
+                            <%= questionCommentsCollapsed ? 
+                                "Show comments (" + questionComments.size() + ")" : 
+                                "Hide comments (" + questionComments.size() + ")" %>
+                        </span>
+                    </button>
+                    
+                    <!-- Comments Container -->
+                    <div id="question-comments-container" 
+                         style="<%= questionCommentsCollapsed ? "display: none;" : "display: block;" %>">
+                        <% for (dto.CommentDTO comment : questionComments) { %>
+                        <div class="comment-item" style="margin-bottom: 12px; font-size: 13px;">
+                            <div style="color: #6a737c; margin-bottom: 4px;">
+                                <span style="color: #0a95ff; font-weight: 500;"><%= comment.getAuthorName() %></span>
+                                <span style="margin-left: 8px;"><%= comment.getCreatedAt() %></span>
+                            </div>
+                            <div style="color: #3b4045;"><%= comment.getBody() %></div>
                         </div>
-                        <div style="color: #3b4045;"><%= comment.getBody() %></div>
+                        <% } %>
                     </div>
-                    <% } %>
                 </div>
                 <% } %>
 
@@ -762,21 +779,40 @@
                         if (answerComments == null) answerComments = new java.util.HashMap<>();
                         java.util.List<dto.CommentDTO> comments = answerComments.get(answer.getAnswerId());
                         if (comments == null) comments = new java.util.ArrayList<>();
+                        
+                        // Determine if should be collapsed by default
+                        boolean answerCommentsCollapsed = comments.size() > 3;
                     %>
                     
                     <% if (!comments.isEmpty()) { %>
                     <div class="comments-section" style="margin-top: 15px; padding-top: 10px; border-top: 1px solid #e3e6e8;">
-                        <% for (dto.CommentDTO comment : comments) { %>
-                        <div class="comment-item" style="margin-bottom: 12px; font-size: 13px;">
-                            <div style="color: #6a737c; margin-bottom: 4px;">
-                                <span style="color: #0a95ff; font-weight: 500;"><%= comment.getAuthorName() %></span>
-                                <span style="margin-left: 8px;"><%= comment.getCreatedAt() %></span>
+                        <!-- Toggle Button -->
+                        <button type="button" id="answer-comments-toggle-btn-<%= answer.getAnswerId() %>" 
+                                style="font-size: 13px; color: #0a95ff; background: none; border: none; cursor: pointer; padding: 0; margin-bottom: 10px;"
+                                onclick="toggleAnswerComments(<%= answer.getAnswerId() %>)">
+                            <span id="answer-comments-toggle-text-<%= answer.getAnswerId() %>">
+                                <%= answerCommentsCollapsed ? 
+                                    "Show comments (" + comments.size() + ")" : 
+                                    "Hide comments (" + comments.size() + ")" %>
+                            </span>
+                        </button>
+                        
+                        <!-- Comments Container -->
+                        <div id="answer-comments-container-<%= answer.getAnswerId() %>" 
+                             style="<%= answerCommentsCollapsed ? "display: none;" : "display: block;" %>">
+                            <% for (dto.CommentDTO comment : comments) { %>
+                            <div class="comment-item" style="margin-bottom: 12px; font-size: 13px;">
+                                <div style="color: #6a737c; margin-bottom: 4px;">
+                                    <span style="color: #0a95ff; font-weight: 500;"><%= comment.getAuthorName() %></span>
+                                    <span style="margin-left: 8px;"><%= comment.getCreatedAt() %></span>
+                                </div>
+                                <div style="color: #3b4045;"><%= comment.getBody() %></div>
                             </div>
-                            <div style="color: #3b4045;"><%= comment.getBody() %></div>
+                            <% } %>
                         </div>
-                        <% } %>
                     </div>
                     <% } %>
+                    
                     <!-- Reply Button and Form -->
                     <div style="margin-top: 12px; padding-top: 10px; border-top: 1px solid #e3e6e8;">
                         <% if (isLoggedIn) { %>
@@ -1111,6 +1147,42 @@
             console.error('Error:', error);
             alert('Có lỗi xảy ra khi bookmark');
         });
+    }
+
+    // Toggle Question Comments
+    function toggleQuestionComments() {
+        const container = document.getElementById('question-comments-container');
+        const btn = document.getElementById('question-comments-toggle-btn');
+        const textSpan = document.getElementById('question-comments-toggle-text');
+        const isHidden = container.style.display === 'none';
+        
+        if (isHidden) {
+            container.style.display = 'block';
+            const commentCount = container.querySelectorAll('.comment-item').length;
+            textSpan.textContent = 'Hide comments (' + commentCount + ')';
+        } else {
+            container.style.display = 'none';
+            const commentCount = container.querySelectorAll('.comment-item').length;
+            textSpan.textContent = 'Show comments (' + commentCount + ')';
+        }
+    }
+
+    // Toggle Answer Comments
+    function toggleAnswerComments(answerId) {
+        const container = document.getElementById('answer-comments-container-' + answerId);
+        const btn = document.getElementById('answer-comments-toggle-btn-' + answerId);
+        const textSpan = document.getElementById('answer-comments-toggle-text-' + answerId);
+        const isHidden = container.style.display === 'none';
+        
+        if (isHidden) {
+            container.style.display = 'block';
+            const commentCount = container.querySelectorAll('.comment-item').length;
+            textSpan.textContent = 'Hide comments (' + commentCount + ')';
+        } else {
+            container.style.display = 'none';
+            const commentCount = container.querySelectorAll('.comment-item').length;
+            textSpan.textContent = 'Show comments (' + commentCount + ')';
+        }
     }
 </script>
 </body>
