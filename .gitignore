@@ -1,0 +1,24 @@
+# --- NetBeans (Cần thiết) ---
+/build/
+/dist/
+/nbproject/private/
+# Giữ lại /nbproject/project.xml và project.properties, chỉ bỏ folder private
+
+# --- IntelliJ IDEA (Rác từ người dùng IntelliJ) ---
+.idea/
+*.iml
+# File Abibas.iml và folder .idea trong hình là của IntelliJ, không cần thiết cho NetBeans/VSCode
+
+# --- PVS-Studio (Công cụ check code) ---
+.PVS-Studio/
+
+# --- VS Code (Cấu hình riêng của máy bạn) ---
+.vscode/
+
+# --- File hệ thống & Tạm ---
+.DS_Store
+Thumbs.db
+
+# --- (Tùy chọn) Bảo mật ---
+# Nếu file này chứa mật khẩu DB thật, hãy bỏ dấu # ở đầu dòng dưới để không lộ pass
+# DBConfig.properties
