@@ -352,7 +352,7 @@
                         <c:if test="${currentKeyword != null}">Results for "${currentKeyword}"</c:if>
                         <c:if test="${currentKeyword == null}">Top Questions</c:if>
                         </h1>
-                        <a href="${pageContext.request.contextPath}/ask" class="btn-primary">Ask Question</a>
+                        <a href="${pageContext.request.contextPath}/create" class="btn-primary">Ask Question</a>
                 </div>
 
                 <div class="filters-container">
