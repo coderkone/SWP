@@ -232,6 +232,12 @@
             color: #ef4444;
         }
 
+        .vote-btn.bookmarked {
+            background-color: #fff3cd;
+            border-color: #f59e0b;
+            color: #f59e0b;
+        }
+
         .vote-count {
             font-size: 18px;
             font-weight: bold;
@@ -551,6 +557,9 @@
                     String questionUserVote = (String) request.getAttribute("questionUserVote");
                     String upvoteClass = "upvote".equals(questionUserVote) ? " voted-up" : "";
                     String downvoteClass = "downvote".equals(questionUserVote) ? " voted-down" : "";
+                    Boolean isBookmarked = (Boolean) request.getAttribute("isBookmarked");
+                    if (isBookmarked == null) isBookmarked = false;
+                    String bookmarkClass = isBookmarked ? " bookmarked" : "";
                     long qid = question.getQuestionId();
                 %>
                 <button type="button" id="question-upvote" class="vote-btn upvote-btn<%= upvoteClass %>" title="Upvote" 
@@ -562,8 +571,9 @@
                         data-question-id="<%= qid %>" data-vote-type="downvote" onclick="handleVoteClick(event, this)">
                     <i class="fa-solid fa-arrow-down"></i>
                 </button>
-                <button class="vote-btn" title="Star">
-                    <i class="fa-solid fa-star"></i>
+                <button type="button" id="bookmark-btn" class="vote-btn<%= bookmarkClass %>" title="<%= isBookmarked ? "Remove bookmark" : "Bookmark" %>" 
+                        data-question-id="<%= qid %>" onclick="handleBookmarkClick(event, this)">
+                    <i class="fa-solid fa-bookmark"></i>
                 </button>
             </div>
 
@@ -606,6 +616,60 @@
                         <div class="user-meta">Member since today • reputation: 1</div>
                     </div>
                 </div>
+
+                <!-- Question Comments Section -->
+                <% 
+                    java.util.List<dto.CommentDTO> questionComments = 
+                        (java.util.List<dto.CommentDTO>) request.getAttribute("questionComments");
+                    if (questionComments == null) questionComments = new java.util.ArrayList<>();
+                %>
+                
+                <% if (!questionComments.isEmpty()) { %>
+                <div class="question-comments" style="margin-top: 20px; padding-top: 15px; border-top: 1px solid #e3e6e8;">
+                    <div style="font-size: 13px; font-weight: 500; color: #6a737c; margin-bottom: 12px;">Comments</div>
+                    <% for (dto.CommentDTO comment : questionComments) { %>
+                    <div class="comment-item" style="margin-bottom: 12px; font-size: 13px;">
+                        <div style="color: #6a737c; margin-bottom: 4px;">
+                            <span style="color: #0a95ff; font-weight: 500;"><%= comment.getAuthorName() %></span>
+                            <span style="margin-left: 8px;"><%= comment.getCreatedAt() %></span>
+                        </div>
+                        <div style="color: #3b4045;"><%= comment.getBody() %></div>
+                    </div>
+                    <% } %>
+                </div>
+                <% } %>
+
+                <!-- Add Comment Section -->
+                <div style="margin-top: 15px; padding-top: 10px; border-top: 1px solid #e3e6e8;">
+                    <%
+                        dto.UserDTO currentUser = (dto.UserDTO) session.getAttribute("USER");
+                        boolean isLoggedIn = currentUser != null;
+                    %>
+                    <% if (isLoggedIn) { %>
+                    <div id="add-question-comment-form" style="display: none; margin-top: 12px;">
+                        <form method="post" action="${pageContext.request.contextPath}/comment/add">
+                            <input type="hidden" name="questionId" value="<%= question.getQuestionId() %>">
+                            <div style="display: flex; gap: 8px;">
+                                <textarea name="commentBody" class="form-input" placeholder="Add a comment..." 
+                                        style="flex: 1; min-height: 60px; font-size: 13px; padding: 8px;" required></textarea>
+                            </div>
+                            <div style="display: flex; gap: 8px; margin-top: 8px;">
+                                <button type="submit" class="btn" style="padding: 6px 12px; font-size: 13px;">Add Comment</button>
+                                <button type="button" class="btn" style="padding: 6px 12px; font-size: 13px; background: #f1f2f3; color: #3b4045;" 
+                                        onclick="document.getElementById('add-question-comment-form').style.display='none'">Cancel</button>
+                            </div>
+                        </form>
+                    </div>
+                    <button type="button" id="add-question-comment-btn" class="reply-btn" style="font-size: 13px; color: #0a95ff; background: none; border: none; cursor: pointer; padding: 0;"
+                            onclick="document.getElementById('add-question-comment-form').style.display='block'; this.style.display='none';">
+                        Add a comment
+                    </button>
+                    <% } else { %>
+                    <a href="${pageContext.request.contextPath}/auth/login" style="font-size: 13px; color: #0a95ff; text-decoration: none;">
+                        Sign in to add a comment
+                    </a>
+                    <% } %>
+                </div>
             </div>
         </div>
 
@@ -639,8 +703,16 @@
                             data-answer-id="<%= answer.getAnswerId() %>" data-vote-type="downvote" onclick="handleVoteClick(event, this)">
                         <i class="fa-solid fa-arrow-down"></i>
                     </button>
-                    <button class="vote-btn" title="Star">
-                        <i class="fa-solid fa-star"></i>
+                    <%
+                        java.util.Map<Long, Boolean> answerBookmarks = (java.util.Map<Long, Boolean>) request.getAttribute("answerBookmarks");
+                        if (answerBookmarks == null) answerBookmarks = new java.util.HashMap<>();
+                        Boolean answerIsBookmarked = answerBookmarks.get(answer.getAnswerId());
+                        if (answerIsBookmarked == null) answerIsBookmarked = false;
+                        String answerBookmarkClass = answerIsBookmarked ? " bookmarked" : "";
+                    %>
+                    <button type="button" id="answer-bookmark-<%= answer.getAnswerId() %>" class="vote-btn<%= answerBookmarkClass %>" title="<%= answerIsBookmarked ? "Remove bookmark" : "Bookmark" %>" 
+                            data-answer-id="<%= answer.getAnswerId() %>" onclick="handleAnswerBookmarkClick(event, this)">
+                        <i class="fa-solid fa-bookmark"></i>
                     </button>
                 </div>
 
@@ -681,6 +753,57 @@
                             <a href="#" class="user-name"><%= answer.getAuthorName() %></a>
                             <div class="user-meta">Member since today • reputation: 1</div>
                         </div>
+                    </div>
+
+                    <!-- Comments Section -->
+                    <% 
+                        java.util.Map<Long, java.util.List<dto.CommentDTO>> answerComments = 
+                            (java.util.Map<Long, java.util.List<dto.CommentDTO>>) request.getAttribute("answerComments");
+                        if (answerComments == null) answerComments = new java.util.HashMap<>();
+                        java.util.List<dto.CommentDTO> comments = answerComments.get(answer.getAnswerId());
+                        if (comments == null) comments = new java.util.ArrayList<>();
+                    %>
+                    
+                    <% if (!comments.isEmpty()) { %>
+                    <div class="comments-section" style="margin-top: 15px; padding-top: 10px; border-top: 1px solid #e3e6e8;">
+                        <% for (dto.CommentDTO comment : comments) { %>
+                        <div class="comment-item" style="margin-bottom: 12px; font-size: 13px;">
+                            <div style="color: #6a737c; margin-bottom: 4px;">
+                                <span style="color: #0a95ff; font-weight: 500;"><%= comment.getAuthorName() %></span>
+                                <span style="margin-left: 8px;"><%= comment.getCreatedAt() %></span>
+                            </div>
+                            <div style="color: #3b4045;"><%= comment.getBody() %></div>
+                        </div>
+                        <% } %>
+                    </div>
+                    <% } %>
+                    <!-- Reply Button and Form -->
+                    <div style="margin-top: 12px; padding-top: 10px; border-top: 1px solid #e3e6e8;">
+                        <% if (isLoggedIn) { %>
+                        <div id="comment-form-<%= answer.getAnswerId() %>" style="display: none; margin-top: 12px;">
+                            <form method="post" action="${pageContext.request.contextPath}/comment/add">
+                                <input type="hidden" name="answerId" value="<%= answer.getAnswerId() %>">
+                                <input type="hidden" name="questionId" value="<%= question.getQuestionId() %>">
+                                <div style="display: flex; gap: 8px;">
+                                    <textarea name="commentBody" class="form-input" placeholder="Add a comment..." 
+                                            style="flex: 1; min-height: 60px; font-size: 13px; padding: 8px;" required></textarea>
+                                </div>
+                                <div style="display: flex; gap: 8px; margin-top: 8px;">
+                                    <button type="submit" class="btn" style="padding: 6px 12px; font-size: 13px;">Add Comment</button>
+                                    <button type="button" class="btn" style="padding: 6px 12px; font-size: 13px; background: #f1f2f3; color: #3b4045;" 
+                                            onclick="document.getElementById('comment-form-<%= answer.getAnswerId() %>').style.display='none'">Cancel</button>
+                                </div>
+                            </form>
+                        </div>
+                        <button type="button" class="reply-btn" style="font-size: 13px; color: #0a95ff; background: none; border: none; cursor: pointer; padding: 0;"
+                                onclick="document.getElementById('comment-form-<%= answer.getAnswerId() %>').style.display='block'; this.style.display='none';">
+                            Reply
+                        </button>
+                        <% } else { %>
+                        <a href="${pageContext.request.contextPath}/auth/login" style="font-size: 13px; color: #0a95ff; text-decoration: none;">
+                            Sign in to reply
+                        </a>
+                        <% } %>
                     </div>
                 </div>
             </div>
@@ -891,6 +1014,102 @@
         .catch(error => {
             console.error('Error:', error);
             alert('Có lỗi xảy ra khi vote');
+        });
+    }
+
+    function handleBookmarkClick(ev, button) {
+        if (ev) ev.preventDefault();
+        const questionId = button.getAttribute('data-question-id');
+        
+        if (!questionId) {
+            alert('Invalid question ID');
+            return;
+        }
+
+        toggleBookmark(questionId, button);
+    }
+
+    function toggleBookmark(questionId, button) {
+        const params = new URLSearchParams();
+        params.append('questionId', questionId);
+
+        fetch('${pageContext.request.contextPath}/bookmark/toggle', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: params
+        })
+        .then(response => response.text().then(text => ({ ok: response.ok, status: response.status, text: text })))
+        .then(({ ok, status, text }) => {
+            if (status === 401) {
+                window.location.href = '${pageContext.request.contextPath}/auth/login';
+                return;
+            }
+            let data;
+            try { data = JSON.parse(text); } catch (e) { alert('Lỗi phản hồi từ server'); return; }
+            if (data && data.success) {
+                const isBookmarked = data.isBookmarked;
+                if (isBookmarked) {
+                    button.classList.add('bookmarked');
+                    button.setAttribute('title', 'Remove bookmark');
+                } else {
+                    button.classList.remove('bookmarked');
+                    button.setAttribute('title', 'Bookmark');
+                }
+            } else if (data && data.message) {
+                alert('Lỗi: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Có lỗi xảy ra khi bookmark');
+        });
+    }
+
+    function handleAnswerBookmarkClick(ev, button) {
+        if (ev) ev.preventDefault();
+        const answerId = button.getAttribute('data-answer-id');
+        
+        if (!answerId) {
+            alert('Invalid answer ID');
+            return;
+        }
+
+        toggleAnswerBookmark(answerId, button);
+    }
+
+    function toggleAnswerBookmark(answerId, button) {
+        const params = new URLSearchParams();
+        params.append('answerId', answerId);
+
+        fetch('${pageContext.request.contextPath}/bookmark/toggle', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: params
+        })
+        .then(response => response.text().then(text => ({ ok: response.ok, status: response.status, text: text })))
+        .then(({ ok, status, text }) => {
+            if (status === 401) {
+                window.location.href = '${pageContext.request.contextPath}/auth/login';
+                return;
+            }
+            let data;
+            try { data = JSON.parse(text); } catch (e) { alert('Lỗi phản hồi từ server'); return; }
+            if (data && data.success) {
+                const isBookmarked = data.isBookmarked;
+                if (isBookmarked) {
+                    button.classList.add('bookmarked');
+                    button.setAttribute('title', 'Remove bookmark');
+                } else {
+                    button.classList.remove('bookmarked');
+                    button.setAttribute('title', 'Bookmark');
+                }
+            } else if (data && data.message) {
+                alert('Lỗi: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Có lỗi xảy ra khi bookmark');
         });
     }
 </script>

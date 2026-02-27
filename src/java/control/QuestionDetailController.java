@@ -2,8 +2,10 @@ package control;
 
 
 import dal.AnswerDAO;
+import dal.BookmarkDAO;
 import dal.QuestionDAO;
 import dal.VoteDAO;
+import dal.CommentDAO;
 import dto.QuestionDTO;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -22,6 +24,8 @@ public class QuestionDetailController extends HttpServlet {
     private final QuestionDAO questionDao = new QuestionDAO();
     private final AnswerDAO answerDao = new AnswerDAO();
     private final VoteDAO voteDao = new VoteDAO();
+    private final BookmarkDAO bookmarkDao = new BookmarkDAO();
+    private final CommentDAO commentDao = new CommentDAO();
     
     private void logError(String msg) {
         try {
@@ -101,6 +105,34 @@ public class QuestionDetailController extends HttpServlet {
                 // 3. Đẩy dữ liệu sang JSP
                 request.setAttribute("question", question);
                 request.setAttribute("answers", answers);
+                
+                // Load comments for question
+                try {
+                    logError("Loading comments for question");
+                    java.util.List<dto.CommentDTO> questionComments = commentDao.getCommentsByQuestionId(question.getQuestionId());
+                    request.setAttribute("questionComments", questionComments);
+                    logError("Loaded " + questionComments.size() + " comments for question");
+                } catch (Exception e) {
+                    logError("Error loading question comments: " + e.getMessage());
+                    request.setAttribute("questionComments", new java.util.ArrayList<>());
+                }
+                
+                // Load comments for each answer
+                try {
+                    logError("Loading comments for answers");
+                    java.util.Map<Long, java.util.List<dto.CommentDTO>> answerComments = new java.util.HashMap<>();
+                    for (Object answerObj : answers) {
+                        dto.AnswerDTO answer = (dto.AnswerDTO) answerObj;
+                        java.util.List<dto.CommentDTO> comments = commentDao.getCommentsByAnswerId(answer.getAnswerId());
+                        answerComments.put(answer.getAnswerId(), comments);
+                        logError("Loaded " + comments.size() + " comments for answer " + answer.getAnswerId());
+                    }
+                    request.setAttribute("answerComments", answerComments);
+                } catch (Exception e) {
+                    logError("Error loading comments: " + e.getMessage());
+                    request.setAttribute("answerComments", new java.util.HashMap<>());
+                }
+                
                 try {
                     HttpSession s = request.getSession(false);
                     if (s != null && s.getAttribute("USER") != null) {
@@ -135,6 +167,31 @@ public class QuestionDetailController extends HttpServlet {
                         }
                         request.setAttribute("answerVotes", answerVotes);
                         logError("Loaded answer votes: " + answerVotes.size());
+                        
+                        // Check if question is bookmarked
+                        try {
+                            boolean isBookmarked = bookmarkDao.checkIfBookmarked(userId, questionId);
+                            request.setAttribute("isBookmarked", isBookmarked);
+                            logError("Question is bookmarked: " + isBookmarked);
+                        } catch (Exception e) {
+                            logError("Error loading bookmark status: " + e.getMessage());
+                            request.setAttribute("isBookmarked", false);
+                        }
+                        
+                        // Check if answers are bookmarked
+                        try {
+                            java.util.Map<Long, Boolean> answerBookmarks = new java.util.HashMap<>();
+                            for (Object answerObj : answers) {
+                                dto.AnswerDTO answer = (dto.AnswerDTO) answerObj;
+                                boolean isAnswerBookmarked = bookmarkDao.checkIfAnswerBookmarked(userId, answer.getAnswerId());
+                                answerBookmarks.put(answer.getAnswerId(), isAnswerBookmarked);
+                            }
+                            request.setAttribute("answerBookmarks", answerBookmarks);
+                            logError("Loaded answer bookmarks: " + answerBookmarks.size());
+                        } catch (Exception e) {
+                            logError("Error loading answer bookmarks: " + e.getMessage());
+                            request.setAttribute("answerBookmarks", new java.util.HashMap<>());
+                        }
                     }
                 } catch (Exception e) {
                     logError("Error loading user votes: " + e.getMessage());

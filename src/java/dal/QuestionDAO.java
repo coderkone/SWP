@@ -122,7 +122,8 @@ public class QuestionDAO {
 
         StringBuilder sql = new StringBuilder(
                 "SELECT q.*, u.username, up.avatar_url, " +
-                "(SELECT COUNT(*) FROM Answers a WHERE a.question_id = q.question_id) as ans_count " +
+                "(SELECT COUNT(*) FROM Answers a WHERE a.question_id = q.question_id) as ans_count, " +
+                "(SELECT COUNT(*) FROM Answers a WHERE a.question_id = q.question_id AND a.is_accepted = 1) as has_accepted " +
                 "FROM Questions q " +
                 "JOIN Users u ON q.user_id = u.user_id " +
                 "LEFT JOIN User_Profile up ON u.user_id = up.user_id WHERE 1=1 ");
@@ -168,6 +169,7 @@ public class QuestionDAO {
                     QuestionDTO q = mapQuestion(rs);
                     q.setAuthorAvatar(rs.getString("avatar_url"));
                     q.setAnswerCount(rs.getInt("ans_count"));
+                    q.setHasAcceptedAnswer(rs.getInt("has_accepted") > 0);
                     q.setTags(getTagsByQuestionId(q.getQuestionId()));
                     list.add(q);
                 }
