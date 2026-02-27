@@ -33,7 +33,7 @@ public class GoogleCallbackController extends HttpServlet {
 
             if (user != null) {
                 request.getSession().setAttribute("user", user);
-                response.sendRedirect(request.getContextPath() + "/home");
+                response.sendRedirect(request.getContextPath() + "/SystemRules");
             } else {
                 response.sendRedirect(request.getContextPath() + "/View/User/login.jsp?error=GoogleLoginFailed");
             }
