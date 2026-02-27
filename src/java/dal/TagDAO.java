@@ -142,6 +142,62 @@ public class TagDAO {
         return false;
     }
 
+    // Đếm tags với filter status
+    public int getTagCountByStatus(String status) {
+        StringBuilder sql = new StringBuilder("SELECT COUNT(*) FROM Tags");
+        if ("active".equals(status)) {
+            sql.append(" WHERE IsActive = 1");
+        } else if ("inactive".equals(status)) {
+            sql.append(" WHERE IsActive = 0");
+        }
+
+        try (Connection con = db.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql.toString());
+             ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+
+    // Lấy tags với pagination + filter status
+    public List<TagDTO> getTagsByStatus(String status, int page, int pageSize) {
+        List<TagDTO> tags = new ArrayList<>();
+        StringBuilder sql = new StringBuilder(
+            "SELECT t.tag_id, t.tag_name, t.description, t.IsActive, " +
+            "(SELECT COUNT(*) FROM Question_Tags qt WHERE qt.tag_id = t.tag_id) as questionCount, " +
+            "(SELECT COUNT(*) FROM TagFollow tf WHERE tf.tag_id = t.tag_id) as followerCount " +
+            "FROM Tags t"
+        );
+
+        if ("active".equals(status)) {
+            sql.append(" WHERE t.IsActive = 1");
+        } else if ("inactive".equals(status)) {
+            sql.append(" WHERE t.IsActive = 0");
+        }
+
+        sql.append(" ORDER BY t.tag_name ASC OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
+
+        try (Connection con = db.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql.toString())) {
+            ps.setInt(1, (page - 1) * pageSize);
+            ps.setInt(2, pageSize);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    TagDTO tag = mapResultSetToTagDTO(rs);
+                    tags.add(tag);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return tags;
+    }
+
     // Merge tags: chuyển tất cả questions và followers từ source sang target, rồi xóa source
     public boolean mergeTags(long sourceTagId, long targetTagId) {
         if (sourceTagId == targetTagId) {

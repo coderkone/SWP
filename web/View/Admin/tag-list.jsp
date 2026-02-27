@@ -488,6 +488,22 @@
             </a>
         </div>
 
+        <!-- Filter Form -->
+        <div class="toolbar" style="margin-bottom: 20px;">
+            <form action="${pageContext.request.contextPath}/admin/tags" method="get" style="display: flex; gap: 10px; align-items: center;">
+                <label style="font-size: 14px; color: var(--text-sub);">Lọc theo Status:</label>
+                <select name="status" style="padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 4px; font-size: 14px;">
+                    <option value="">Tất cả</option>
+                    <option value="active" ${filterStatus == 'active' ? 'selected' : ''}>Active</option>
+                    <option value="inactive" ${filterStatus == 'inactive' ? 'selected' : ''}>Inactive</option>
+                </select>
+                <button type="submit" class="btn btn-secondary">Lọc</button>
+                <c:if test="${not empty filterStatus}">
+                    <a href="${pageContext.request.contextPath}/admin/tags" class="btn btn-secondary">Xóa bộ lọc</a>
+                </c:if>
+            </form>
+        </div>
+
         <div class="section-box">
             <div class="section-header">
                 <div class="section-title">
@@ -580,7 +596,7 @@
         <c:if test="${totalPages > 1 && empty searchKeyword}">
             <div class="pagination">
                 <c:if test="${currentPage > 1}">
-                    <a href="${pageContext.request.contextPath}/admin/tags?page=${currentPage - 1}">« Prev</a>
+                    <a href="${pageContext.request.contextPath}/admin/tags?page=${currentPage - 1}&status=${filterStatus}">« Prev</a>
                 </c:if>
 
                 <c:forEach begin="1" end="${totalPages}" var="i">
@@ -589,13 +605,13 @@
                             <span class="active">${i}</span>
                         </c:when>
                         <c:otherwise>
-                            <a href="${pageContext.request.contextPath}/admin/tags?page=${i}">${i}</a>
+                            <a href="${pageContext.request.contextPath}/admin/tags?page=${i}&status=${filterStatus}">${i}</a>
                         </c:otherwise>
                     </c:choose>
                 </c:forEach>
 
                 <c:if test="${currentPage < totalPages}">
-                    <a href="${pageContext.request.contextPath}/admin/tags?page=${currentPage + 1}">Next »</a>
+                    <a href="${pageContext.request.contextPath}/admin/tags?page=${currentPage + 1}&status=${filterStatus}">Next »</a>
                 </c:if>
             </div>
         </c:if>

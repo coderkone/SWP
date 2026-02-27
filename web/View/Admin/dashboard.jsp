@@ -505,8 +505,5 @@
         </div>
     </main>
 
-    <!-- Footer -->
-    <%@ include file="../Common/footer.jsp" %>
-
 </body>
 </html>

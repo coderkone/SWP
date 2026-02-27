@@ -65,7 +65,7 @@ public class UserManagementController extends HttpServlet {
         }
     }
 
-    // Hiển thị danh sách users với pagination
+    // Hiển thị danh sách users với pagination và filter
     private void handleList(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
@@ -80,14 +80,21 @@ public class UserManagementController extends HttpServlet {
             }
         }
 
-        List<UserDTO> users = dao.getAllUsers(page, PAGE_SIZE);
-        int totalUsers = dao.getUserCount();
+        // Filter parameters
+        String filterRole = request.getParameter("role");
+        String filterStatus = request.getParameter("status");
+
+        // Use filter methods
+        List<UserDTO> users = dao.getUsersByFilter(filterRole, filterStatus, page, PAGE_SIZE);
+        int totalUsers = dao.getUserCountByFilter(filterRole, filterStatus);
         int totalPages = (int) Math.ceil((double) totalUsers / PAGE_SIZE);
 
         request.setAttribute("users", users);
         request.setAttribute("currentPage", page);
         request.setAttribute("totalPages", totalPages);
         request.setAttribute("totalUsers", totalUsers);
+        request.setAttribute("filterRole", filterRole);
+        request.setAttribute("filterStatus", filterStatus);
 
         request.getRequestDispatcher("/View/Admin/user-list.jsp").forward(request, response);
     }

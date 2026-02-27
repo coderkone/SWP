@@ -70,7 +70,7 @@ public class TagManagementController extends HttpServlet {
         }
     }
 
-    // Hiển thị danh sách tags với pagination
+    // Hiển thị danh sách tags với pagination và filter
     private void handleList(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
@@ -85,8 +85,19 @@ public class TagManagementController extends HttpServlet {
             }
         }
 
-        List<TagDTO> tags = dao.getAllTags(page, PAGE_SIZE);
-        int totalTags = dao.getTagCount();
+        // Filter parameter
+        String filterStatus = request.getParameter("status");
+
+        // Use filter methods
+        List<TagDTO> tags;
+        int totalTags;
+        if (filterStatus != null && !filterStatus.isEmpty()) {
+            tags = dao.getTagsByStatus(filterStatus, page, PAGE_SIZE);
+            totalTags = dao.getTagCountByStatus(filterStatus);
+        } else {
+            tags = dao.getAllTags(page, PAGE_SIZE);
+            totalTags = dao.getTagCount();
+        }
         int totalPages = (int) Math.ceil((double) totalTags / PAGE_SIZE);
 
         // Lấy tất cả tags active cho dropdown merge
@@ -97,6 +108,7 @@ public class TagManagementController extends HttpServlet {
         request.setAttribute("currentPage", page);
         request.setAttribute("totalPages", totalPages);
         request.setAttribute("totalTags", totalTags);
+        request.setAttribute("filterStatus", filterStatus);
 
         request.getRequestDispatcher("/View/Admin/tag-list.jsp").forward(request, response);
     }

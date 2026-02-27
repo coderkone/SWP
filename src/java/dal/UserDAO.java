@@ -336,6 +336,86 @@ public class UserDAO {
         return false;
     }
 
+    // Đếm users với filter role và status
+    public int getUserCountByFilter(String role, String status) {
+        StringBuilder sql = new StringBuilder("SELECT COUNT(*) FROM Users WHERE 1=1");
+        List<String> params = new ArrayList<>();
+
+        if (role != null && !role.isEmpty()) {
+            sql.append(" AND role = ?");
+            params.add(role);
+        }
+        if (status != null && !status.isEmpty()) {
+            sql.append(" AND status = ?");
+            params.add(status);
+        }
+
+        try (Connection con = db.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql.toString())) {
+            for (int i = 0; i < params.size(); i++) {
+                ps.setString(i + 1, params.get(i));
+            }
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+
+    // Lấy users với pagination + filter
+    public List<UserDTO> getUsersByFilter(String role, String status, int page, int pageSize) {
+        List<UserDTO> users = new ArrayList<>();
+        StringBuilder sql = new StringBuilder(
+            "SELECT user_id, username, email, role, status, created_at, Reputation FROM Users WHERE 1=1"
+        );
+        List<Object> params = new ArrayList<>();
+
+        if (role != null && !role.isEmpty()) {
+            sql.append(" AND role = ?");
+            params.add(role);
+        }
+        if (status != null && !status.isEmpty()) {
+            sql.append(" AND status = ?");
+            params.add(status);
+        }
+        sql.append(" ORDER BY created_at DESC OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
+        params.add((page - 1) * pageSize);
+        params.add(pageSize);
+
+        try (Connection con = db.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql.toString())) {
+            for (int i = 0; i < params.size(); i++) {
+                Object param = params.get(i);
+                if (param instanceof String) {
+                    ps.setString(i + 1, (String) param);
+                } else {
+                    ps.setInt(i + 1, (Integer) param);
+                }
+            }
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    UserDTO user = new UserDTO();
+                    user.setUserId(rs.getLong("user_id"));
+                    user.setUsername(rs.getString("username"));
+                    user.setEmail(rs.getString("email"));
+                    user.setRole(rs.getString("role"));
+                    user.setStatus(rs.getString("status"));
+                    user.setCreatedAt(rs.getTimestamp("created_at"));
+                    user.setReputation(rs.getInt("Reputation"));
+                    users.add(user);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return users;
+    }
+
     // Lấy users mới nhất (cho dashboard)
     public List<UserDTO> getNewestUsers(int limit) {
         List<UserDTO> users = new ArrayList<>();
