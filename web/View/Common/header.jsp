@@ -95,10 +95,10 @@
 
                 <c:if test="${sessionScope.user == null}">
                     <li class="nav-item">
-                        <a class="btn btn-outline-primary btn-sm btn-auth px-3" href="${pageContext.request.contextPath}/login.jsp">Log in</a>
+                        <a class="btn btn-outline-primary btn-sm btn-auth px-3" href="${pageContext.request.contextPath}/auth/login">Log in</a>
                     </li>
                     <li class="nav-item">
-                        <a class="btn btn-primary btn-sm btn-auth px-3" href="${pageContext.request.contextPath}/register.jsp">Sign up</a>
+                        <a class="btn btn-primary btn-sm btn-auth px-3" href="${pageContext.request.contextPath}/auth/register">Sign up</a>
                     </li>
                 </c:if>
 

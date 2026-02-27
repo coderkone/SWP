@@ -16,7 +16,7 @@ public class QuestionDAO {
     // Tạo câu hỏi mới với tags
     public long createQuestion(long userId, String title, String body, String codeSnippet, String tagsStr) throws Exception {
         String sql = "INSERT INTO Questions (user_id, title, body, code_snippet, view_count, is_closed, created_at, updated_at, Score) " +
-                "VALUES (?, ?, ?, ?, 0, 0, GETDATE(), GETDATE(), 0)";
+                "VALUES (?, ?, ?, ?, 0, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 0)";
 
         long questionId = -1;
 
@@ -297,7 +297,7 @@ public class QuestionDAO {
 
     /** Set or clear accepted answer. Only one per question. Returns true if updated. */
     public boolean setAcceptedAnswer(long questionId, Long answerId) throws Exception {
-        String sql = "UPDATE Questions SET accepted_answer_id = ?, updated_at = GETDATE() WHERE question_id = ?";
+        String sql = "UPDATE Questions SET accepted_answer_id = ?, updated_at = CURRENT_TIMESTAMP WHERE question_id = ?";
         try (Connection con = db.getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
             if (answerId != null) {

@@ -2,7 +2,6 @@ package dal;
 
 import config.DBContext;
 import dto.AnswerDTO;
-import model.Answer;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -16,7 +15,7 @@ public class AnswerDAO {
 
     public long createAnswer(long questionId, long userId, String body, String codeSnippet) throws Exception {
         String sql = "INSERT INTO Answers (question_id, user_id, body, code_snippet, is_edited, is_accepted, created_at, updated_at, Score) " +
-                "VALUES (?, ?, ?, ?, 0, 0, GETDATE(), GETDATE(), 0)";
+                "VALUES (?, ?, ?, ?, 0, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 0)";
 
         long answerId = -1;
 
@@ -82,7 +81,7 @@ public class AnswerDAO {
     }
 
     public boolean updateAnswer(long answerId, String body, String codeSnippet) throws Exception {
-        String sql = "UPDATE Answers SET body = ?, code_snippet = ?, is_edited = 1, updated_at = GETDATE() WHERE answer_id = ?";
+        String sql = "UPDATE Answers SET body = ?, code_snippet = ?, is_edited = 1, updated_at = CURRENT_TIMESTAMP WHERE answer_id = ?";
 
         try (Connection con = db.getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {

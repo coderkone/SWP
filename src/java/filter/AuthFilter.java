@@ -6,7 +6,7 @@ import jakarta.servlet.annotation.WebFilter;
 import jakarta.servlet.http.*;
 import java.io.IOException;
 
-@WebFilter(filterName="Authfilter", urlPatterns={"/home", "/dashboard"})
+@WebFilter(filterName="Authfilter", urlPatterns={"/dashboard"})
 public class AuthFilter implements Filter {
 
     @Override
