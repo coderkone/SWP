@@ -13,8 +13,8 @@ public class DBContext {
     private static final String URL;
 
     static {
-        String user = "huylq";
-        String pass = "123";
+        String user = "sa";
+        String pass = "123456";
         
         try {
             // Cố gắng đọc từ DBconfig.properties

@@ -331,7 +331,7 @@
             <a href="${pageContext.request.contextPath}/admin/users" class="nav-item">
                 <span class="nav-icon">👥</span> User Management
             </a>
-            <a href="#" class="nav-item">
+            <a href="${pageContext.request.contextPath}/admin/tags" class="nav-item">
                 <span class="nav-icon">🏷️</span> Tag Management
             </a>
             <a href="#" class="nav-item">

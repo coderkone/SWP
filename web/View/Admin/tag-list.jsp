@@ -6,7 +6,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>User Management - DevQuery Admin</title>
+    <title>Tag Management - DevQuery Admin</title>
     <style>
         :root {
             --sidebar-bg: #2D3E50;
@@ -259,18 +259,26 @@
         .status-active { color: #2f6f44; background: #E3FCEF; }
         .status-inactive { color: #D0393E; background: #FDEDED; }
 
-        .role-badge {
-            padding: 3px 8px;
+        .tag-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            background-color: #e1ecf4;
+            color: #39739d;
             border-radius: 3px;
-            font-size: 11px;
+            font-size: 12px;
             font-weight: 500;
         }
 
-        .role-admin { color: #0074cc; background: #e1ecf4; }
-        .role-moderator { color: #5a32a3; background: #f3e8ff; }
-        .role-member { color: #525960; background: #e3e6e8; }
+        .count-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            background-color: #f8f9f9;
+            color: var(--text-sub);
+            border-radius: 10px;
+            font-size: 11px;
+        }
 
-        .actions { display: flex; gap: 5px; }
+        .actions { display: flex; gap: 5px; flex-wrap: wrap; }
 
         .pagination {
             display: flex;
@@ -296,11 +304,6 @@
             border-color: var(--active-orange);
         }
 
-        .pagination .disabled {
-            color: #ccc;
-            pointer-events: none;
-        }
-
         .alert {
             padding: 12px 16px;
             border-radius: 4px;
@@ -316,6 +319,89 @@
             padding: 40px;
             color: var(--text-sub);
         }
+
+        .description-cell {
+            max-width: 300px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 100;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 10% auto;
+            padding: 25px;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: var(--text-main);
+        }
+
+        .modal-close {
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--text-sub);
+        }
+
+        .modal-close:hover { color: var(--text-main); }
+
+        .modal-body { margin-bottom: 20px; }
+
+        .modal-body label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--text-main);
+        }
+
+        .modal-body select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .modal-warning {
+            background-color: #FFF4E5;
+            border: 1px solid #f48024;
+            color: #925d22;
+            padding: 12px;
+            border-radius: 4px;
+            margin-top: 15px;
+            font-size: 13px;
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
     </style>
 </head>
 <body>
@@ -329,10 +415,10 @@
         <a href="${pageContext.request.contextPath}/dashboard" class="nav-item">
             <span class="nav-icon">📊</span> Dashboard
         </a>
-        <a href="${pageContext.request.contextPath}/admin/users" class="nav-item active">
+        <a href="${pageContext.request.contextPath}/admin/users" class="nav-item">
             <span class="nav-icon">👥</span> User Management
         </a>
-        <a href="${pageContext.request.contextPath}/admin/tags" class="nav-item">
+        <a href="${pageContext.request.contextPath}/admin/tags" class="nav-item active">
             <span class="nav-icon">🏷️</span> Tag Management
         </a>
         <a href="#" class="nav-item">
@@ -352,7 +438,7 @@
 
 <main class="main-content">
     <header class="top-header">
-        <div class="page-title">User Management</div>
+        <div class="page-title">Tag Management</div>
         <div class="admin-profile">
             <span class="admin-name">${sessionScope.USER.username}</span>
             <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" alt="Admin Avatar" class="admin-avatar">
@@ -361,54 +447,64 @@
 
     <div class="container">
 
+        <!-- Success/Error messages -->
         <c:if test="${param.success == 'created'}">
-            <div class="alert alert-success">User đã được tạo thành công!</div>
+            <div class="alert alert-success">Tag đã được tạo thành công!</div>
         </c:if>
         <c:if test="${param.success == 'updated'}">
-            <div class="alert alert-success">User đã được cập nhật thành công!</div>
+            <div class="alert alert-success">Tag đã được cập nhật thành công!</div>
         </c:if>
         <c:if test="${param.success == 'toggled'}">
-            <div class="alert alert-success">Trạng thái user đã được thay đổi!</div>
+            <div class="alert alert-success">Trạng thái tag đã được thay đổi!</div>
         </c:if>
-        <c:if test="${param.error == 'self-toggle'}">
-            <div class="alert alert-error">Bạn không thể thay đổi trạng thái của chính mình!</div>
+        <c:if test="${param.success == 'merged'}">
+            <div class="alert alert-success">Tags đã được gộp thành công!</div>
         </c:if>
-        <c:if test="${param.error == 'self-deactivate'}">
-            <div class="alert alert-error">Bạn không thể tự deactivate tài khoản của mình!</div>
+        <c:if test="${param.error == 'notfound'}">
+            <div class="alert alert-error">Không tìm thấy tag!</div>
+        </c:if>
+        <c:if test="${param.error == 'merge-same'}">
+            <div class="alert alert-error">Không thể gộp tag vào chính nó!</div>
+        </c:if>
+        <c:if test="${param.error == 'merge-failed'}">
+            <div class="alert alert-error">Không thể gộp tags. Vui lòng thử lại!</div>
+        </c:if>
+        <c:if test="${param.error == 'merge-invalid'}">
+            <div class="alert alert-error">Thông tin gộp tag không hợp lệ!</div>
         </c:if>
 
         <div class="toolbar">
-            <form action="${pageContext.request.contextPath}/admin/users/search" method="get" class="search-box">
-                <input type="text" name="q" placeholder="Tìm kiếm username hoặc email..."
+            <form action="${pageContext.request.contextPath}/admin/tags/search" method="get" class="search-box">
+                <input type="text" name="q" placeholder="Tìm kiếm tag..."
                        value="${searchKeyword}">
                 <button type="submit" class="btn btn-secondary">Tìm kiếm</button>
                 <c:if test="${not empty searchKeyword}">
-                    <a href="${pageContext.request.contextPath}/admin/users" class="btn btn-secondary">Xóa filter</a>
+                    <a href="${pageContext.request.contextPath}/admin/tags" class="btn btn-secondary">Xóa filter</a>
                 </c:if>
             </form>
 
-            <a href="${pageContext.request.contextPath}/admin/users/create" class="btn btn-primary">
-                + Thêm User
+            <a href="${pageContext.request.contextPath}/admin/tags/create" class="btn btn-primary">
+                + Thêm Tag
             </a>
         </div>
 
         <div class="section-box">
             <div class="section-header">
                 <div class="section-title">
-                    Danh sách Users
+                    Danh sách Tags
                     <c:if test="${not empty searchKeyword}">
                         - Kết quả cho "${searchKeyword}"
                     </c:if>
                 </div>
                 <span style="color: var(--text-sub); font-size: 13px;">
-                    Tổng: ${totalUsers} users
+                    Tổng: ${totalTags} tags
                 </span>
             </div>
 
             <c:choose>
-                <c:when test="${empty users}">
+                <c:when test="${empty tags}">
                     <div class="empty-state">
-                        <p>Không tìm thấy user nào.</p>
+                        <p>Không tìm thấy tag nào.</p>
                     </div>
                 </c:when>
                 <c:otherwise>
@@ -416,26 +512,33 @@
                         <thead>
                         <tr>
                             <th>ID</th>
-                            <th>Username</th>
-                            <th>Email</th>
-                            <th>Role</th>
+                            <th>Tag Name</th>
+                            <th>Description</th>
+                            <th>Questions</th>
+                            <th>Followers</th>
                             <th>Status</th>
-                            <th>Created At</th>
                             <th>Actions</th>
                         </tr>
                         </thead>
                         <tbody>
-                        <c:forEach var="user" items="${users}">
+                        <c:forEach var="tag" items="${tags}">
                             <tr>
-                                <td>${user.userId}</td>
-                                <td><strong>${user.username}</strong></td>
-                                <td>${user.email}</td>
+                                <td>${tag.tagId}</td>
                                 <td>
-                                    <span class="role-badge role-${user.role}">${user.role}</span>
+                                    <span class="tag-badge">${tag.tagName}</span>
+                                </td>
+                                <td class="description-cell" title="${tag.description}">
+                                    ${tag.description}
+                                </td>
+                                <td>
+                                    <span class="count-badge">${tag.questionCount}</span>
+                                </td>
+                                <td>
+                                    <span class="count-badge">${tag.followerCount}</span>
                                 </td>
                                 <td>
                                     <c:choose>
-                                        <c:when test="${user.status == 'active'}">
+                                        <c:when test="${tag.active}">
                                             <span class="status-badge status-active">Active</span>
                                         </c:when>
                                         <c:otherwise>
@@ -443,28 +546,28 @@
                                         </c:otherwise>
                                     </c:choose>
                                 </td>
-                                <td>
-                                    <fmt:formatDate value="${user.createdAt}" pattern="dd/MM/yyyy HH:mm"/>
-                                </td>
                                 <td class="actions">
-                                    <a href="${pageContext.request.contextPath}/admin/users/edit?id=${user.userId}"
+                                    <a href="${pageContext.request.contextPath}/admin/tags/edit?id=${tag.tagId}"
                                        class="btn btn-secondary btn-sm">Edit</a>
 
-                                    <c:if test="${user.userId != sessionScope.USER.userId}">
-                                        <form action="${pageContext.request.contextPath}/admin/users/toggle-status"
-                                              method="post" style="display:inline;"
-                                              onsubmit="return confirm('Bạn có chắc muốn thay đổi trạng thái user này?');">
-                                            <input type="hidden" name="id" value="${user.userId}">
-                                            <c:choose>
-                                                <c:when test="${user.status == 'active'}">
-                                                    <button type="submit" class="btn btn-danger btn-sm">Deactivate</button>
-                                                </c:when>
-                                                <c:otherwise>
-                                                    <button type="submit" class="btn btn-success btn-sm">Activate</button>
-                                                </c:otherwise>
-                                            </c:choose>
-                                        </form>
-                                    </c:if>
+                                    <form action="${pageContext.request.contextPath}/admin/tags/toggle-status"
+                                          method="post" style="display:inline;"
+                                          onsubmit="return confirm('Bạn có chắc muốn thay đổi trạng thái tag này?');">
+                                        <input type="hidden" name="id" value="${tag.tagId}">
+                                        <c:choose>
+                                            <c:when test="${tag.active}">
+                                                <button type="submit" class="btn btn-danger btn-sm">Deactivate</button>
+                                            </c:when>
+                                            <c:otherwise>
+                                                <button type="submit" class="btn btn-success btn-sm">Activate</button>
+                                            </c:otherwise>
+                                        </c:choose>
+                                    </form>
+
+                                    <button type="button" class="btn btn-warning btn-sm"
+                                            onclick="openMergeModal(${tag.tagId}, '${tag.tagName}', ${tag.questionCount})">
+                                        Merge
+                                    </button>
                                 </td>
                             </tr>
                         </c:forEach>
@@ -477,7 +580,7 @@
         <c:if test="${totalPages > 1 && empty searchKeyword}">
             <div class="pagination">
                 <c:if test="${currentPage > 1}">
-                    <a href="${pageContext.request.contextPath}/admin/users?page=${currentPage - 1}">« Prev</a>
+                    <a href="${pageContext.request.contextPath}/admin/tags?page=${currentPage - 1}">« Prev</a>
                 </c:if>
 
                 <c:forEach begin="1" end="${totalPages}" var="i">
@@ -486,19 +589,96 @@
                             <span class="active">${i}</span>
                         </c:when>
                         <c:otherwise>
-                            <a href="${pageContext.request.contextPath}/admin/users?page=${i}">${i}</a>
+                            <a href="${pageContext.request.contextPath}/admin/tags?page=${i}">${i}</a>
                         </c:otherwise>
                     </c:choose>
                 </c:forEach>
 
                 <c:if test="${currentPage < totalPages}">
-                    <a href="${pageContext.request.contextPath}/admin/users?page=${currentPage + 1}">Next »</a>
+                    <a href="${pageContext.request.contextPath}/admin/tags?page=${currentPage + 1}">Next »</a>
                 </c:if>
             </div>
         </c:if>
 
     </div>
 </main>
+
+<!-- Merge Modal -->
+<div id="mergeModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <div class="modal-title">Gộp Tag</div>
+            <span class="modal-close" onclick="closeMergeModal()">&times;</span>
+        </div>
+        <form action="${pageContext.request.contextPath}/admin/tags/merge" method="post" id="mergeForm">
+            <input type="hidden" name="sourceId" id="mergeSourceId">
+            <div class="modal-body">
+                <p style="margin-bottom: 15px;">
+                    Gộp tag <strong id="mergeSourceName"></strong> vào tag khác:
+                </p>
+                <label for="targetId">Chọn tag đích:</label>
+                <select name="targetId" id="targetId" required>
+                    <option value="">-- Chọn tag --</option>
+                    <c:forEach var="t" items="${allActiveTags}">
+                        <option value="${t.tagId}">${t.tagName} (${t.questionCount} questions)</option>
+                    </c:forEach>
+                </select>
+                <div class="modal-warning">
+                    <strong>Cảnh báo:</strong> Tất cả <span id="mergeQuestionCount">0</span> questions và followers
+                    sẽ được chuyển sang tag đích. Tag <span id="mergeSourceName2"></span> sẽ bị xóa vĩnh viễn.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeMergeModal()">Hủy</button>
+                <button type="submit" class="btn btn-warning">Xác nhận Merge</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function openMergeModal(sourceId, sourceName, questionCount) {
+        document.getElementById('mergeSourceId').value = sourceId;
+        document.getElementById('mergeSourceName').textContent = sourceName;
+        document.getElementById('mergeSourceName2').textContent = sourceName;
+        document.getElementById('mergeQuestionCount').textContent = questionCount;
+
+        // Remove source tag from target options
+        var targetSelect = document.getElementById('targetId');
+        for (var i = 0; i < targetSelect.options.length; i++) {
+            if (targetSelect.options[i].value == sourceId) {
+                targetSelect.options[i].style.display = 'none';
+            } else {
+                targetSelect.options[i].style.display = '';
+            }
+        }
+        targetSelect.value = '';
+
+        document.getElementById('mergeModal').style.display = 'block';
+    }
+
+    function closeMergeModal() {
+        document.getElementById('mergeModal').style.display = 'none';
+    }
+
+    // Close modal when clicking outside
+    window.onclick = function(event) {
+        var modal = document.getElementById('mergeModal');
+        if (event.target == modal) {
+            closeMergeModal();
+        }
+    }
+
+    // Confirm merge before submit
+    document.getElementById('mergeForm').onsubmit = function() {
+        var targetSelect = document.getElementById('targetId');
+        if (!targetSelect.value) {
+            alert('Vui lòng chọn tag đích!');
+            return false;
+        }
+        return confirm('Bạn có chắc chắn muốn gộp tag này? Hành động này không thể hoàn tác!');
+    }
+</script>
 
 </body>
 </html>
