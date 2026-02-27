@@ -22,3 +22,4 @@ Thumbs.db
 # --- (Tùy chọn) Bảo mật ---
 # Nếu file này chứa mật khẩu DB thật, hãy bỏ dấu # ở đầu dòng dưới để không lộ pass
 # DBConfig.properties
+DBContext.java
