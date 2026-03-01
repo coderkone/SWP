@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import dto.QuestionDTO;
@@ -130,7 +131,7 @@ public class QuestionDAO extends DBContext {
         return 0;
     }
     
-    // 4. Hàm Search rút gọn (Optional)
+    // 4. Hàm Search (Optional)
     public List<QuestionDTO> searchQuestions(String keyword) {
         return getQuestions(1, 20, "newest", keyword, "all");
     }
@@ -156,5 +157,139 @@ public class QuestionDAO extends DBContext {
             e.printStackTrace();
         }
         return tags;
+    }
+    
+    // 6. Hàm thêm Câu hỏi mới kèm Tags (Sử dụng Transaction)
+    // Hàm quản lý transaction
+    public boolean insertQuestionWithTags(long userId, String title, String body, String tagsInput, int userReputation) throws Exception {
+        Connection conn = null;
+        try {
+            conn = getConnection();
+            conn.setAutoCommit(false); // Bắt đầu Transaction
+
+            // Bước 1: Gọi hàm phụ để Insert Question
+            long questionId = insertQuestionCore(conn, userId, title, body);
+
+            // Bước 2: Gọi hàm phụ để xử lý Tags, truyền thêm userReputation vào
+            if (questionId != -1 && tagsInput != null && !tagsInput.trim().isEmpty()) {
+                processTagsForQuestion(conn, questionId, tagsInput, userReputation);
+            }
+
+            conn.commit(); // Thành công thì lưu
+            return true;
+
+        } catch (Exception e) {
+            try { if (conn != null) conn.rollback(); } catch (SQLException ex) { ex.printStackTrace(); }
+            e.printStackTrace();
+            // Ném lỗi ngược lên Controller để nó biết tại sao lỗi (do database hay do điểm uy tín)
+            throw e; 
+        } finally {
+            try {
+                if (conn != null) {
+                    conn.setAutoCommit(true);
+                    conn.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+    // insert câu hỏi mới bảng Questions
+    private long insertQuestionCore(Connection conn, long userId, String title, String body) throws SQLException {
+        String sql = "INSERT INTO Questions (user_id, title, body) VALUES (?, ?, ?)";
+        // Dùng try-with-resources để tự động đóng PreparedStatement và ResultSet
+        try (PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            ps.setLong(1, userId);
+            ps.setString(2, title);
+            ps.setString(3, body);
+            ps.executeUpdate();
+            
+            try (ResultSet rs = ps.getGeneratedKeys()) {
+                if (rs.next()) {
+                    return rs.getLong(1);
+                }
+            }
+        }
+        return -1;
+    }
+    // Hàm kiểm tra tag
+    public List<String> findNewTags(String tagsInput) {
+        List<String> newTags = new ArrayList<>();
+        if (tagsInput == null || tagsInput.trim().isEmpty()) return newTags;
+
+        String[] tagsArray = tagsInput.split(",");
+        String sqlCheck = "SELECT tag_id FROM Tags WHERE tag_name = ?";
+
+        try (Connection conn = getConnection();
+             PreparedStatement psCheck = conn.prepareStatement(sqlCheck)) {
+
+            for (String tag : tagsArray) {
+                String tagName = tag.trim().toLowerCase();
+                if (tagName.isEmpty()) continue;
+
+                psCheck.setString(1, tagName);
+                try (ResultSet rs = psCheck.executeQuery()) {
+                    // Nếu rs.next() là false nghĩa là tag này chưa có trong Database
+                    if (!rs.next()) {
+                        newTags.add(tagName);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return newTags;
+    }
+    // Xử lý tag và check Reputation
+    private void processTagsForQuestion(Connection conn, long questionId, String tagsInput, int userReputation) throws Exception {
+        String[] tagsArray = tagsInput.split(",");
+        String sqlCheck = "SELECT tag_id FROM Tags WHERE tag_name = ?";
+        String sqlInsertTag = "INSERT INTO Tags (tag_name) VALUES (?)";
+        String sqlInsertQT = "INSERT INTO Question_Tags (question_id, tag_id) VALUES (?, ?)";
+
+        try (PreparedStatement psCheck = conn.prepareStatement(sqlCheck);
+             PreparedStatement psInsertTag = conn.prepareStatement(sqlInsertTag, Statement.RETURN_GENERATED_KEYS);
+             PreparedStatement psInsertQT = conn.prepareStatement(sqlInsertQT)) {
+
+            for (String tag : tagsArray) {
+                String tagName = tag.trim().toLowerCase();
+                if (tagName.isEmpty()) continue;
+
+                long tagId = -1;
+                
+                // A. Check xem tag này đã tồn tại trong DB chưa
+                psCheck.setString(1, tagName);
+                try (ResultSet rsCheck = psCheck.executeQuery()) {
+                    if (rsCheck.next()) {
+                        tagId = rsCheck.getLong("tag_id"); // Tag cũ, ai cũng dùng được
+                    }
+                }
+
+                // B. Nếu là TAG MỚI HOÀN TOÀN -> Bắt đầu check uy tín
+                if (tagId == -1) {
+                    // Giả sử mốc uy tín cần thiết là 50 điểm (bạn có thể thay đổi số này)
+                    if (userReputation < 50) {
+                        // Ném ra Exception để Rollback toàn bộ và báo lỗi
+                        throw new Exception("NOT_ENOUGH_REP:" + tagName);
+                    }
+
+                    // Nếu đủ điểm uy tín thì mới cho tạo Tag mới
+                    psInsertTag.setString(1, tagName);
+                    psInsertTag.executeUpdate();
+                    try (ResultSet rsNew = psInsertTag.getGeneratedKeys()) {
+                        if (rsNew.next()) {
+                            tagId = rsNew.getLong(1);
+                        }
+                    }
+                }
+
+                // C. Link Question và Tag
+                if (tagId != -1) {
+                    psInsertQT.setLong(1, questionId);
+                    psInsertQT.setLong(2, tagId);
+                    psInsertQT.executeUpdate();
+                }
+            }
+        }
     }
 }

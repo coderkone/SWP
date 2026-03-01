@@ -177,7 +177,7 @@
                             </div>
 
                             <ul class="nav profile-tabs mt-4">
-                                <li class="nav-item"><a class="nav-link" href="#">Profile</a></li>
+                                <li class="nav-item"><a class="nav-link" href="../DevQuery/profile">Profile</a></li>
                                 <li class="nav-item"><a class="nav-link" href="#">Activity</a></li>
                                 <li class="nav-item"><a class="nav-link active" href="#">Saves</a></li>
                                 <li class="nav-item"><a class="nav-link" href="#">Settings</a></li>

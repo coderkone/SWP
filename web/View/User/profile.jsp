@@ -199,7 +199,7 @@
                 <div class="profile-tabs">
                     <a href="#" class="tab-link active">Profile</a>
                     <a href="#" class="tab-link">Activity</a>
-                    <a href="#" class="tab-link">Saves</a>
+                    <a href="../DevQuery/saves" class="tab-link">Saves</a>
                     <a href="#" class="tab-link">Settings</a>
                 </div>
 

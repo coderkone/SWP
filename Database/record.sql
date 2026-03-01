@@ -23,7 +23,9 @@ INSERT INTO [dbo].[Users] ([username], [email], [password_hash], [role], [Reputa
 ('bot_auto', 'bot@devquery.system', '$2a$10$bothash', 'member', 0);
 GO
 select * from Users
-delete from Users where user_id=18
+delete from Users where user_id=18;
+GO
+
 -- =============================================
 -- 2. TẠO USER PROFILE (15 profiles)
 -- =============================================
@@ -225,5 +227,11 @@ INSERT INTO [dbo].[Notifications] ([user_id], [type], [content], [is_read]) VALU
 (13, 'answer', N'Thuy_java đã trả lời câu hỏi của bạn.', 0),
 (2, 'comment', N'Có bình luận mới trong bài viết SQL của bạn.', 1),
 (12, 'badge', N'Chúc mừng! Bạn nhận được huy hiệu Good Answer.', 0),
-(14, 'system', N'Bảo trì hệ thống vào 12h đêm nay.', 0);
+(14, 'system', N'Bảo trì hệ thống vào 12h đêm nay.', 0),
+(17, 'system', N'Chào mừng bạn chính thức gia nhập cộng đồng DevQuery!', 0),
+(17, 'comment', N'Ai đó vừa để lại bình luận trong bài viết của bạn.', 0),
+(17, 'badge', N'Bạn vừa nhận được huy hiệu: Thành viên mới.', 0),
+(17, 'comment', N'Ai đó vừa để lại bình luận trong bài viết lúc nãy của bạn.', 0),
+(17, 'badge', N'Bạn vừa nhận được huy hiệu: Thành viên cũ.', 0),
+(17, 'badge', N'Bạn vừa nhận được huy hiệu: Thành viên đẹp trai.', 0);
 GO
