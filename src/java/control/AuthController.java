@@ -133,7 +133,7 @@ public class AuthController extends HttpServlet {
         if (role != null && role.equalsIgnoreCase("admin")) {
             response.sendRedirect(request.getContextPath() + "/dashboard");
         } else {
-            response.sendRedirect(request.getContextPath() + "/SystemRules");
+            response.sendRedirect(request.getContextPath() + "/home");
         }
     }
 }
