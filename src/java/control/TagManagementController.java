@@ -102,66 +102,66 @@ public class TagManagementController extends HttpServlet {
         }
         int totalPages = (int) Math.ceil((double) totalTags / PAGE_SIZE);
 
-    //     // Lấy tất cả tags active cho dropdown merge
-    //     List<TagDTO> allActiveTags = dao.getAllActiveTags();
+        // Lấy tất cả tags active cho dropdown merge
+        List<TagDTO> allActiveTags = dao.getAllActiveTags();
 
-    //     request.setAttribute("tags", tags);
-    //     request.setAttribute("allActiveTags", allActiveTags);
-    //     request.setAttribute("currentPage", page);
-    //     request.setAttribute("totalPages", totalPages);
-    //     request.setAttribute("totalTags", totalTags);
-    //     request.setAttribute("filterStatus", filterStatus);
+        request.setAttribute("tags", tags);
+        request.setAttribute("allActiveTags", allActiveTags);
+        request.setAttribute("currentPage", page);
+        request.setAttribute("totalPages", totalPages);
+        request.setAttribute("totalTags", totalTags);
+        request.setAttribute("filterStatus", filterStatus);
 
-    //     request.getRequestDispatcher("/View/Admin/tag-list.jsp").forward(request, response);
-    // }
+        request.getRequestDispatcher("/View/Admin/tag-list.jsp").forward(request, response);
+    }
 
-    // // Form tạo tag mới
-    // private void handleCreateForm(HttpServletRequest request, HttpServletResponse response)
-    //         throws ServletException, IOException {
-    //     request.setAttribute("editMode", false);
-    //     request.getRequestDispatcher("/View/Admin/tag-form.jsp").forward(request, response);
-    // }
+    // Form tạo tag mới
+    private void handleCreateForm(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        request.setAttribute("editMode", false);
+        request.getRequestDispatcher("/View/Admin/tag-form.jsp").forward(request, response);
+    }
 
-    // // Xử lý tạo tag
-    // private void handleCreateSubmit(HttpServletRequest request, HttpServletResponse response)
-    //         throws ServletException, IOException {
+    // Xử lý tạo tag
+    private void handleCreateSubmit(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
 
-    //     String tagName = request.getParameter("tagName");
-    //     String description = request.getParameter("description");
+        String tagName = request.getParameter("tagName");
+        String description = request.getParameter("description");
 
-    //     // Validation
-    //     if (tagName == null || tagName.trim().isEmpty()) {
-    //         request.setAttribute("error", "Tag name không được để trống.");
-    //         request.setAttribute("editMode", false);
-    //         request.getRequestDispatcher("/View/Admin/tag-form.jsp").forward(request, response);
-    //         return;
-    //     }
+        // Validation
+        if (tagName == null || tagName.trim().isEmpty()) {
+            request.setAttribute("error", "Tag name không được để trống.");
+            request.setAttribute("editMode", false);
+            request.getRequestDispatcher("/View/Admin/tag-form.jsp").forward(request, response);
+            return;
+        }
 
-    //     if (tagName.trim().length() > 50) {
-    //         request.setAttribute("error", "Tag name không được quá 50 ký tự.");
-    //         request.setAttribute("editMode", false);
-    //         request.getRequestDispatcher("/View/Admin/tag-form.jsp").forward(request, response);
-    //         return;
-    //     }
+        if (tagName.trim().length() > 50) {
+            request.setAttribute("error", "Tag name không được quá 50 ký tự.");
+            request.setAttribute("editMode", false);
+            request.getRequestDispatcher("/View/Admin/tag-form.jsp").forward(request, response);
+            return;
+        }
 
-    //     if (dao.tagNameExists(tagName.trim())) {
-    //         request.setAttribute("error", "Tag name đã tồn tại.");
-    //         request.setAttribute("tagName", tagName);
-    //         request.setAttribute("description", description);
-    //         request.setAttribute("editMode", false);
-    //         request.getRequestDispatcher("/View/Admin/tag-form.jsp").forward(request, response);
-    //         return;
-    //     }
+        if (dao.tagNameExists(tagName.trim())) {
+            request.setAttribute("error", "Tag name đã tồn tại.");
+            request.setAttribute("tagName", tagName);
+            request.setAttribute("description", description);
+            request.setAttribute("editMode", false);
+            request.getRequestDispatcher("/View/Admin/tag-form.jsp").forward(request, response);
+            return;
+        }
 
-    //     boolean success = dao.createTag(tagName.trim(), description);
-    //     if (success) {
-    //         response.sendRedirect(request.getContextPath() + "/admin/tags?success=created");
-    //     } else {
-    //         request.setAttribute("error", "Không thể tạo tag. Vui lòng thử lại.");
-    //         request.setAttribute("editMode", false);
-    //         request.getRequestDispatcher("/View/Admin/tag-form.jsp").forward(request, response);
-    //     }
-    // }
+        boolean success = dao.createTag(tagName.trim(), description);
+        if (success) {
+            response.sendRedirect(request.getContextPath() + "/admin/tags?success=created");
+        } else {
+            request.setAttribute("error", "Không thể tạo tag. Vui lòng thử lại.");
+            request.setAttribute("editMode", false);
+            request.getRequestDispatcher("/View/Admin/tag-form.jsp").forward(request, response);
+        }
+    }
 
     // // Form edit tag
     // private void handleEditForm(HttpServletRequest request, HttpServletResponse response)

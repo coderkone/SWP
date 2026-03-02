@@ -96,8 +96,8 @@ public class TagDAO {
         return null;
     }
 
-    
-    // Tạo tag mới
+
+    // Tạo tag mới  
     public boolean createTag(String tagName, String description) {
         String sql = "INSERT INTO Tags(tag_name, description, IsActive) VALUES (?, ?, 1)";
 
