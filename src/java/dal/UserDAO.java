@@ -323,7 +323,6 @@ public class UserDAO {
         }
         return false;
     }
-
     // Toggle status (active <-> inactive)
     public boolean toggleUserStatus(long userId) {
         String sql = "UPDATE Users SET status = CASE WHEN status = 'active' THEN 'inactive' ELSE 'active' END, "
