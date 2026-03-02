@@ -275,62 +275,62 @@ public class TagManagementController extends HttpServlet {
         }
     }
 
-    // // Merge tags
-    // private void handleMerge(HttpServletRequest request, HttpServletResponse response)
-    //         throws ServletException, IOException {
+    // Merge tags
+    private void handleMerge(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
 
-    //     String sourceIdParam = request.getParameter("sourceId");
-    //     String targetIdParam = request.getParameter("targetId");
+        String sourceIdParam = request.getParameter("sourceId");
+        String targetIdParam = request.getParameter("targetId");
 
-    //     if (sourceIdParam == null || sourceIdParam.isEmpty() ||
-    //         targetIdParam == null || targetIdParam.isEmpty()) {
-    //         response.sendRedirect(request.getContextPath() + "/admin/tags?error=merge-invalid");
-    //         return;
-    //     }
+        if (sourceIdParam == null || sourceIdParam.isEmpty() ||
+            targetIdParam == null || targetIdParam.isEmpty()) {
+            response.sendRedirect(request.getContextPath() + "/admin/tags?error=merge-invalid");
+            return;
+        }
 
-    //     try {
-    //         long sourceId = Long.parseLong(sourceIdParam);
-    //         long targetId = Long.parseLong(targetIdParam);
+        try {
+            long sourceId = Long.parseLong(sourceIdParam);
+            long targetId = Long.parseLong(targetIdParam);
 
-    //         if (sourceId == targetId) {
-    //             response.sendRedirect(request.getContextPath() + "/admin/tags?error=merge-same");
-    //             return;
-    //         }
+            if (sourceId == targetId) {
+                response.sendRedirect(request.getContextPath() + "/admin/tags?error=merge-same");
+                return;
+            }
 
-    //         boolean success = dao.mergeTags(sourceId, targetId);
+            boolean success = dao.mergeTags(sourceId, targetId);
 
-    //         if (success) {
-    //             response.sendRedirect(request.getContextPath() + "/admin/tags?success=merged");
-    //         } else {
-    //             response.sendRedirect(request.getContextPath() + "/admin/tags?error=merge-failed");
-    //         }
+            if (success) {
+                response.sendRedirect(request.getContextPath() + "/admin/tags?success=merged");
+            } else {
+                response.sendRedirect(request.getContextPath() + "/admin/tags?error=merge-failed");
+            }
 
-    //     } catch (NumberFormatException e) {
-    //         response.sendRedirect(request.getContextPath() + "/admin/tags?error=merge-invalid");
-    //     }
-    // }
+        } catch (NumberFormatException e) {
+            response.sendRedirect(request.getContextPath() + "/admin/tags?error=merge-invalid");
+        }
+    }
 
-    // // Search tags
-    // private void handleSearch(HttpServletRequest request, HttpServletResponse response)
-    //         throws ServletException, IOException {
+    // Search tags
+    private void handleSearch(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
 
-    //     String keyword = request.getParameter("q");
-    //     if (keyword == null || keyword.trim().isEmpty()) {
-    //         response.sendRedirect(request.getContextPath() + "/admin/tags");
-    //         return;
-    //     }
+        String keyword = request.getParameter("q");
+        if (keyword == null || keyword.trim().isEmpty()) {
+            response.sendRedirect(request.getContextPath() + "/admin/tags");
+            return;
+        }
 
-    //     List<TagDTO> tags = dao.searchTags(keyword.trim(), 50);
-    //     List<TagDTO> allActiveTags = dao.getAllActiveTags();
-    //     int totalTags = tags.size();
+        List<TagDTO> tags = dao.searchTags(keyword.trim(), 50);
+        List<TagDTO> allActiveTags = dao.getAllActiveTags();
+        int totalTags = tags.size();
 
-    //     request.setAttribute("tags", tags);
-    //     request.setAttribute("allActiveTags", allActiveTags);
-    //     request.setAttribute("searchKeyword", keyword);
-    //     request.setAttribute("currentPage", 1);
-    //     request.setAttribute("totalPages", 1);
-    //     request.setAttribute("totalTags", totalTags);
+        request.setAttribute("tags", tags);
+        request.setAttribute("allActiveTags", allActiveTags);
+        request.setAttribute("searchKeyword", keyword);
+        request.setAttribute("currentPage", 1);
+        request.setAttribute("totalPages", 1);
+        request.setAttribute("totalTags", totalTags);
 
-    //     request.getRequestDispatcher("/View/Admin/tag-list.jsp").forward(request, response);
-    // }
+        request.getRequestDispatcher("/View/Admin/tag-list.jsp").forward(request, response);
+    }
 }

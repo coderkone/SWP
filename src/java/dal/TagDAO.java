@@ -142,7 +142,7 @@ public class TagDAO {
         return false;
     }
 
-    
+
     // Đếm tags với filter status
     public int getTagCountByStatus(String status) {
         StringBuilder sql = new StringBuilder("SELECT COUNT(*) FROM Tags");
@@ -199,6 +199,7 @@ public class TagDAO {
         return tags;
     }
 
+    
     // Merge tags: chuyển tất cả questions và followers từ source sang target, rồi xóa source
     public boolean mergeTags(long sourceTagId, long targetTagId) {
         if (sourceTagId == targetTagId) {
