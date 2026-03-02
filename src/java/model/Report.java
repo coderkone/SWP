@@ -30,25 +30,25 @@ public class Report {
         this.createdAt = createdAt;
     }
 
-    public long getReportId() {
-        return reportId;
-    }
+    // public long getReportId() {
+    //     return reportId;
+    // }
 
-    public void setReportId(long reportId) {
-        this.reportId = reportId;
-    }
+    // public void setReportId(long reportId) {
+    //     this.reportId = reportId;
+    // }
 
-    public long getReporterId() {
-        return reporterId;
-    }
+    // public long getReporterId() {
+    //     return reporterId;
+    // }
 
-    public void setReporterId(long reporterId) {
-        this.reporterId = reporterId;
-    }
+    // public void setReporterId(long reporterId) {
+    //     this.reporterId = reporterId;
+    // }
 
-    public String getTargetType() {
-        return targetType;
-    }
+    // public String getTargetType() {
+    //     return targetType;
+    // }
 
     public void setTargetType(String targetType) {
         this.targetType = targetType;

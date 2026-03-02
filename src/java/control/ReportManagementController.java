@@ -53,43 +53,43 @@ public class ReportManagementController extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-    //     // Check admin role
-    //     HttpSession session = request.getSession();
-    //     UserDTO currentUser = (UserDTO) session.getAttribute("USER");
-    //     if (currentUser == null || !"admin".equals(currentUser.getRole())) {
-    //         response.sendRedirect(request.getContextPath() + "/login");
-    //         return;
-    //     }
+        // Check admin role
+        HttpSession session = request.getSession();
+        UserDTO currentUser = (UserDTO) session.getAttribute("USER");
+        if (currentUser == null || !"admin".equals(currentUser.getRole())) {
+            response.sendRedirect(request.getContextPath() + "/login");
+            return;
+        }
 
-    //     request.setCharacterEncoding("UTF-8");
-    //     String path = request.getServletPath();
+        request.setCharacterEncoding("UTF-8");
+        String path = request.getServletPath();
 
-    //     switch (path) {
-    //         case "/admin/reports/approve":
-    //             handleApprove(request, response);
-    //             break;
-    //         case "/admin/reports/reject":
-    //             handleReject(request, response);
-    //             break;
-    //         default:
-    //             response.sendRedirect(request.getContextPath() + "/admin/reports");
-    //     }
-    // }
+        switch (path) {
+            case "/admin/reports/approve":
+                handleApprove(request, response);
+                break;
+            case "/admin/reports/reject":
+                handleReject(request, response);
+                break;
+            default:
+                response.sendRedirect(request.getContextPath() + "/admin/reports");
+        }
+    }
 
-    // // Hien thi danh sach reports voi pagination va filter
-    // private void handleList(HttpServletRequest request, HttpServletResponse response)
-    //         throws ServletException, IOException {
+    // Hien thi danh sach reports voi pagination va filter
+    private void handleList(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
 
-    //     int page = 1;
-    //     String pageParam = request.getParameter("page");
-    //     if (pageParam != null && !pageParam.isEmpty()) {
-    //         try {
-    //             page = Integer.parseInt(pageParam);
-    //             if (page < 1) page = 1;
-    //         } catch (NumberFormatException e) {
-    //             page = 1;
-    //         }
-    //     }
+        int page = 1;
+        String pageParam = request.getParameter("page");
+        if (pageParam != null && !pageParam.isEmpty()) {
+            try {
+                page = Integer.parseInt(pageParam);
+                if (page < 1) page = 1;
+            } catch (NumberFormatException e) {
+                page = 1;
+            }
+        }
 
     //     // Filter parameters
     //     String filterStatus = request.getParameter("status");

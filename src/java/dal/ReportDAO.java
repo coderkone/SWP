@@ -13,40 +13,40 @@ public class ReportDAO {
 
     private final DBContext db = new DBContext();
 
-    // Lay tong so reports
-    public int getReportCount() {
-        String sql = "SELECT COUNT(*) FROM Reports";
-        try (Connection con = db.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
-            if (rs.next()) {
-                return rs.getInt(1);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return 0;
-    }
-    // Dem reports theo status
-    public int getReportCountByStatus(String status) {
-        StringBuilder sql = new StringBuilder("SELECT COUNT(*) FROM Reports");
-        if ("open".equals(status)) {
-            sql.append(" WHERE status = 'open'");
-        } else if ("resolved".equals(status)) {
-            sql.append(" WHERE status = 'resolved'");
-        }
+    // // Lay tong so reports
+    // public int getReportCount() {
+    //     String sql = "SELECT COUNT(*) FROM Reports";
+    //     try (Connection con = db.getConnection();
+    //          PreparedStatement ps = con.prepareStatement(sql);
+    //          ResultSet rs = ps.executeQuery()) {
+    //         if (rs.next()) {
+    //             return rs.getInt(1);
+    //         }
+    //     } catch (Exception e) {
+    //         e.printStackTrace();
+    //     }
+    //     return 0;
+    // }
+    // // Dem reports theo status
+    // public int getReportCountByStatus(String status) {
+    //     StringBuilder sql = new StringBuilder("SELECT COUNT(*) FROM Reports");
+    //     if ("open".equals(status)) {
+    //         sql.append(" WHERE status = 'open'");
+    //     } else if ("resolved".equals(status)) {
+    //         sql.append(" WHERE status = 'resolved'");
+    //     }
 
-        try (Connection con = db.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql.toString());
-             ResultSet rs = ps.executeQuery()) {
-            if (rs.next()) {
-                return rs.getInt(1);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return 0;
-    }
+    //     try (Connection con = db.getConnection();
+    //          PreparedStatement ps = con.prepareStatement(sql.toString());
+    //          ResultSet rs = ps.executeQuery()) {
+    //         if (rs.next()) {
+    //             return rs.getInt(1);
+    //         }
+    //     } catch (Exception e) {
+    //         e.printStackTrace();
+    //     }
+    //     return 0;
+    // }
 
     // Dem reports theo filter (status + date range)
     public int getReportCountFiltered(String status, Date fromDate, Date toDate) {
