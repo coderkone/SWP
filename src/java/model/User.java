@@ -3,6 +3,7 @@ package model;
 
 import java.sql.Timestamp;
 
+
 public class User {
     private long userId;
     private String username;
