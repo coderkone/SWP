@@ -191,64 +191,64 @@ public class TagManagementController extends HttpServlet {
         }
     }
 
-    // // Xử lý edit tag
-    // private void handleEditSubmit(HttpServletRequest request, HttpServletResponse response)
-    //         throws ServletException, IOException {
+    // Xử lý edit tag
+    private void handleEditSubmit(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
 
-    //     String idParam = request.getParameter("id");
-    //     String tagName = request.getParameter("tagName");
-    //     String description = request.getParameter("description");
-    //     String isActiveParam = request.getParameter("isActive");
+        String idParam = request.getParameter("id");
+        String tagName = request.getParameter("tagName");
+        String description = request.getParameter("description");
+        String isActiveParam = request.getParameter("isActive");
 
-    //     if (idParam == null || idParam.isEmpty()) {
-    //         response.sendRedirect(request.getContextPath() + "/admin/tags");
-    //         return;
-    //     }
+        if (idParam == null || idParam.isEmpty()) {
+            response.sendRedirect(request.getContextPath() + "/admin/tags");
+            return;
+        }
 
-    //     try {
-    //         long tagId = Long.parseLong(idParam);
+        try {
+            long tagId = Long.parseLong(idParam);
 
-    //         // Validation
-    //         if (tagName == null || tagName.trim().isEmpty()) {
-    //             TagDTO tag = dao.getTagById(tagId);
-    //             request.setAttribute("editTag", tag);
-    //             request.setAttribute("error", "Tag name không được để trống.");
-    //             request.setAttribute("editMode", true);
-    //             request.getRequestDispatcher("/View/Admin/tag-form.jsp").forward(request, response);
-    //             return;
-    //         }
+            // Validation
+            if (tagName == null || tagName.trim().isEmpty()) {
+                TagDTO tag = dao.getTagById(tagId);
+                request.setAttribute("editTag", tag);
+                request.setAttribute("error", "Tag name không được để trống.");
+                request.setAttribute("editMode", true);
+                request.getRequestDispatcher("/View/Admin/tag-form.jsp").forward(request, response);
+                return;
+            }
 
-    //         if (tagName.trim().length() > 50) {
-    //             TagDTO tag = dao.getTagById(tagId);
-    //             request.setAttribute("editTag", tag);
-    //             request.setAttribute("error", "Tag name không được quá 50 ký tự.");
-    //             request.setAttribute("editMode", true);
-    //             request.getRequestDispatcher("/View/Admin/tag-form.jsp").forward(request, response);
-    //             return;
-    //         }
+            if (tagName.trim().length() > 50) {
+                TagDTO tag = dao.getTagById(tagId);
+                request.setAttribute("editTag", tag);
+                request.setAttribute("error", "Tag name không được quá 50 ký tự.");
+                request.setAttribute("editMode", true);
+                request.getRequestDispatcher("/View/Admin/tag-form.jsp").forward(request, response);
+                return;
+            }
 
-    //         if (dao.tagNameExistsExcluding(tagName.trim(), tagId)) {
-    //             TagDTO tag = dao.getTagById(tagId);
-    //             request.setAttribute("editTag", tag);
-    //             request.setAttribute("error", "Tag name đã tồn tại.");
-    //             request.setAttribute("editMode", true);
-    //             request.getRequestDispatcher("/View/Admin/tag-form.jsp").forward(request, response);
-    //             return;
-    //         }
+            if (dao.tagNameExistsExcluding(tagName.trim(), tagId)) {
+                TagDTO tag = dao.getTagById(tagId);
+                request.setAttribute("editTag", tag);
+                request.setAttribute("error", "Tag name đã tồn tại.");
+                request.setAttribute("editMode", true);
+                request.getRequestDispatcher("/View/Admin/tag-form.jsp").forward(request, response);
+                return;
+            }
 
-    //         boolean isActive = "1".equals(isActiveParam) || "true".equals(isActiveParam);
-    //         boolean success = dao.updateTag(tagId, tagName.trim(), description, isActive);
+            boolean isActive = "1".equals(isActiveParam) || "true".equals(isActiveParam);
+            boolean success = dao.updateTag(tagId, tagName.trim(), description, isActive);
 
-    //         if (success) {
-    //             response.sendRedirect(request.getContextPath() + "/admin/tags?success=updated");
-    //         } else {
-    //             response.sendRedirect(request.getContextPath() + "/admin/tags?error=update-failed");
-    //         }
+            if (success) {
+                response.sendRedirect(request.getContextPath() + "/admin/tags?success=updated");
+            } else {
+                response.sendRedirect(request.getContextPath() + "/admin/tags?error=update-failed");
+            }
 
-    //     } catch (NumberFormatException e) {
-    //         response.sendRedirect(request.getContextPath() + "/admin/tags");
-    //     }
-    // }
+        } catch (NumberFormatException e) {
+            response.sendRedirect(request.getContextPath() + "/admin/tags");
+        }
+    }
 
     // // Toggle status (Active <-> Inactive)
     // private void handleToggleStatus(HttpServletRequest request, HttpServletResponse response)
