@@ -307,7 +307,6 @@ public class UserDAO {
         return false;
     }
     
-    
     // Update user (role, status)
     public boolean updateUser(long userId, String role, String status) {
         String sql = "UPDATE Users SET role = ?, status = ?, updated_at = GETDATE() WHERE user_id = ?";
