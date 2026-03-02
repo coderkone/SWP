@@ -291,4 +291,3 @@ public class UserManagementController extends HttpServlet {
         return "active".equals(status) || "inactive".equals(status);
     }
 }
-

@@ -524,3 +524,4 @@ public class UserDAO {
         return trend;
     }
 }
+
