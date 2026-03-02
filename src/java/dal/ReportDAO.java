@@ -82,7 +82,7 @@ public class ReportDAO {
         return 0;
     }
 
-    
+
     // Lay danh sach reports voi pagination
     public List<ReportDTO> getAllReports(int page, int pageSize) {
         List<ReportDTO> reports = new ArrayList<>();
@@ -318,72 +318,169 @@ public class ReportDAO {
         }
     }
 
-    private void loadAnswerContent(Connection con, ReportDTO report, long answerId) throws Exception {
-        String sql = "SELECT a.answer_id, a.question_id, a.body, a.user_id, u.username, q.title as question_title " +
-                     "FROM Answers a " +
-                     "JOIN Users u ON a.user_id = u.user_id " +
-                     "JOIN Questions q ON a.question_id = q.question_id " +
-                     "WHERE a.answer_id = ?";
+   import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
+// Ví dụ: đặt trong ReportDAO hoặc class helper của ReportDAO
+public class ReportContentLoader {
+
+    private static final String TYPE_QUESTION = "question";
+    private static final String TYPE_ANSWER   = "answer";
+    private static final String TYPE_COMMENT  = "comment";
+
+    /**
+     * Load nội dung target (question/answer/comment) vào report:
+     * - questionId (để điều hướng về trang Question detail)
+     * - targetTitle (thường là title của question liên quan)
+     * - targetBody
+     * - targetAuthorId, targetAuthorName
+     *
+     * @return true nếu load được, false nếu target không tồn tại / type không hỗ trợ
+     */
+    public boolean loadTargetContent(Connection con, ReportDTO report) throws SQLException {
+        if (con == null) throw new IllegalArgumentException("Connection is null");
+        if (report == null) throw new IllegalArgumentException("ReportDTO is null");
+
+        String targetType = report.getTargetType();
+        long targetId = report.getTargetId();
+
+        if (targetType == null || targetType.trim().isEmpty() || targetId <= 0) {
+            return false;
+        }
+
+        targetType = targetType.trim().toLowerCase();
+
+        switch (targetType) {
+            case TYPE_QUESTION:
+                return loadQuestionContent(con, report, targetId);
+
+            case TYPE_ANSWER:
+                return loadAnswerContent(con, report, targetId);
+
+            case TYPE_COMMENT:
+                return loadCommentContent(con, report, targetId);
+
+            default:
+                return false;
+        }
+    }
+
+    // ===================== QUESTION =====================
+
+    private boolean loadQuestionContent(Connection con, ReportDTO report, long questionId) throws SQLException {
+        String sql =
+            "SELECT q.question_id, q.title, q.body, q.user_id, u.username " +
+            "FROM Questions q " +
+            "JOIN Users u ON q.user_id = u.user_id " +
+            "WHERE q.question_id = ?";
 
         try (PreparedStatement ps = con.prepareStatement(sql)) {
-            ps.setLong(1, answerId);
+            ps.setLong(1, questionId);
+
             try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    report.setQuestionId(rs.getLong("question_id"));
-                    report.setTargetTitle(rs.getString("question_title"));
-                    report.setTargetBody(rs.getString("body"));
-                    report.setTargetAuthorId(rs.getLong("user_id"));
-                    report.setTargetAuthorName(rs.getString("username"));
-                }
+                if (!rs.next()) return false;
+
+                report.setQuestionId(rs.getLong("question_id"));
+                report.setTargetTitle(rs.getString("title"));   // title question
+                report.setTargetBody(rs.getString("body"));     // body question
+                report.setTargetAuthorId(rs.getLong("user_id"));
+                report.setTargetAuthorName(rs.getString("username"));
+                return true;
             }
         }
     }
 
-    private void loadCommentContent(Connection con, ReportDTO report, long commentId) throws Exception {
-        String sql = "SELECT c.comment_id, c.body, c.user_id, c.question_id, c.answer_id, u.username " +
-                     "FROM Comments c " +
-                     "JOIN Users u ON c.user_id = u.user_id " +
-                     "WHERE c.comment_id = ?";
+    // ===================== ANSWER =====================
+
+    private boolean loadAnswerContent(Connection con, ReportDTO report, long answerId) throws SQLException {
+        String sql =
+            "SELECT a.answer_id, a.question_id, a.body, a.user_id, u.username, q.title AS question_title " +
+            "FROM Answers a " +
+            "JOIN Users u ON a.user_id = u.user_id " +
+            "JOIN Questions q ON a.question_id = q.question_id " +
+            "WHERE a.answer_id = ?";
+
+        try (PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setLong(1, answerId);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (!rs.next()) return false;
+
+                report.setQuestionId(rs.getLong("question_id"));          // để điều hướng về question
+                report.setTargetTitle(rs.getString("question_title"));    // title question chứa answer
+                report.setTargetBody(rs.getString("body"));               // body answer
+                report.setTargetAuthorId(rs.getLong("user_id"));
+                report.setTargetAuthorName(rs.getString("username"));
+                return true;
+            }
+        }
+    }
+
+    // ===================== COMMENT =====================
+
+    /**
+     * Comment có thể thuộc:
+     * - Question: c.question_id != null
+     * - Answer:   c.answer_id != null (-> join Answers để suy ra question_id)
+     *
+     * Dùng COALESCE để lấy question_id chuẩn, rồi join Questions để lấy title.
+     */
+    private boolean loadCommentContent(Connection con, ReportDTO report, long commentId) throws SQLException {
+        String sql =
+            "SELECT c.comment_id, c.body, c.user_id, u.username, " +
+            "       COALESCE(c.question_id, a.question_id) AS derived_question_id, " +
+            "       q.title AS question_title " +
+            "FROM Comments c " +
+            "JOIN Users u ON c.user_id = u.user_id " +
+            "LEFT JOIN Answers a ON c.answer_id = a.answer_id " +
+            "LEFT JOIN Questions q ON q.question_id = COALESCE(c.question_id, a.question_id) " +
+            "WHERE c.comment_id = ?";
 
         try (PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setLong(1, commentId);
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    report.setTargetBody(rs.getString("body"));
-                    report.setTargetAuthorId(rs.getLong("user_id"));
-                    report.setTargetAuthorName(rs.getString("username"));
 
-                    // Get question_id from comment
-                    long qId = rs.getLong("question_id");
-                    if (qId > 0) {
-                        report.setQuestionId(qId);
-                    } else {
-                        // Comment on answer, get question_id from answer
-                        long aId = rs.getLong("answer_id");
-                        if (aId > 0) {
-                            report.setQuestionId(getQuestionIdFromAnswer(con, aId));
-                        }
-                    }
+            try (ResultSet rs = ps.executeQuery()) {
+                if (!rs.next()) return false;
+
+                report.setTargetBody(rs.getString("body"));      // body comment
+                report.setTargetAuthorId(rs.getLong("user_id"));
+                report.setTargetAuthorName(rs.getString("username"));
+
+                long qId = rs.getLong("derived_question_id");
+                if (!rs.wasNull() && qId > 0) {
+                    report.setQuestionId(qId);
                 }
+
+                // title question liên quan (nếu có)
+                report.setTargetTitle(rs.getString("question_title"));
+                return true;
             }
         }
     }
 
-    private long getQuestionIdFromAnswer(Connection con, long answerId) throws Exception {
+    // ===================== OPTIONAL HELPER =====================
+    // Nếu bạn vẫn muốn dùng ở nơi khác (không còn cần trong loadCommentContent)
+
+    private Long getQuestionIdFromAnswer(Connection con, long answerId) throws SQLException {
         String sql = "SELECT question_id FROM Answers WHERE answer_id = ?";
         try (PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setLong(1, answerId);
+
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    return rs.getLong("question_id");
+                    long qId = rs.getLong("question_id");
+                    return rs.wasNull() ? null : qId;
                 }
             }
         }
-        return 0;
+        return null;
     }
 
-    // Helper method to map ResultSet to ReportDTO
-    private ReportDTO mapResultSetToReportDTO(ResultSet rs) throws Exception {
+    // ===================== MAP REPORT LIST =====================
+
+    public ReportDTO mapResultSetToReportDTO(ResultSet rs) throws SQLException {
         ReportDTO report = new ReportDTO();
         report.setReportId(rs.getLong("report_id"));
         report.setReporterId(rs.getLong("reporter_id"));
