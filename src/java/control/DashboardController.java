@@ -39,18 +39,18 @@ public class DashboardController extends HttpServlet {
         // List<Map<String, Object>> userTrend = userDAO.getUserRegistrationTrend(7);
         // List<Map<String, Object>> questionTrend = userDAO.getQuestionTrend(7);
 
-        // Set attributes cho JSP
-        request.setAttribute("totalUsers", totalUsers);
-        request.setAttribute("totalQuestions", totalQuestions);
-        request.setAttribute("totalAnswers", totalAnswers);
-        request.setAttribute("pendingReports", pendingReports);
-        request.setAttribute("newestUsers", newestUsers);
-        request.setAttribute("recentReports", recentReports);
-        request.setAttribute("userTrend", userTrend);
-        request.setAttribute("questionTrend", questionTrend);
+    //     // Set attributes cho JSP
+    //     request.setAttribute("totalUsers", totalUsers);
+    //     request.setAttribute("totalQuestions", totalQuestions);
+    //     request.setAttribute("totalAnswers", totalAnswers);
+    //     request.setAttribute("pendingReports", pendingReports);
+    //     request.setAttribute("newestUsers", newestUsers);
+    //     request.setAttribute("recentReports", recentReports);
+    //     request.setAttribute("userTrend", userTrend);
+    //     request.setAttribute("questionTrend", questionTrend);
 
-        request.getRequestDispatcher("/View/Admin/dashboard.jsp").forward(request, response);
-    }
+    //     request.getRequestDispatcher("/View/Admin/dashboard.jsp").forward(request, response);
+    // }
 }
 
 

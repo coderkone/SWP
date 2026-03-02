@@ -2,7 +2,6 @@ package dal;
 
 import config.DBContext;
 import dto.AnswerDTO;
-import model.Answer;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -19,7 +18,6 @@ public class AnswerDAO {
                 "VALUES (?, ?, ?, ?, 0, 0, GETDATE(), GETDATE(), 0)";
 
         long answerId = -1;
-
         try (Connection con = db.getConnection();
              PreparedStatement ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 

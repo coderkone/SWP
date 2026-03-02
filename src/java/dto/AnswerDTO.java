@@ -1,7 +1,7 @@
 package dto;
 
-import model.Answer;
 import java.sql.Timestamp;
+import model.Answer;
 
 public class AnswerDTO extends Answer {
     private String authorName;
@@ -19,7 +19,6 @@ public class AnswerDTO extends Answer {
         this.authorAvatar = authorAvatar;
         this.voteCount = voteCount;
     }
-
     public String getAuthorName() {
         return authorName;
     }

@@ -22,7 +22,6 @@ public class Answer {
 
     public Answer() {
     }
-
     public Answer(long answerId, long questionId, long userId, String body, String codeSnippet, boolean isEdited, boolean isAccepted, Timestamp createdAt, Timestamp updatedAt, int score) {
         this.answerId = answerId;
         this.questionId = questionId;
