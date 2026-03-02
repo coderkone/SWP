@@ -389,7 +389,6 @@
                     <div class="card-trend">Total answers posted</div>
                     <div class="card-icon-bg" style="background-color: #E3FCEF;">💬</div>
                 </div>
-
                 <div class="card">
                     <div class="card-title">Pending Reports</div>
                     <div class="card-value ${pendingReports > 0 ? 'red' : ''}">${pendingReports}</div>
@@ -612,3 +611,10 @@
 
 </body>
 </html>
+
+
+
+
+
+
+

@@ -25,8 +25,7 @@ public class DashboardController extends HttpServlet {
         int totalUsers = userDAO.getUserCount();
         int totalQuestions = userDAO.getQuestionCount();
         int totalAnswers = userDAO.getAnswerCount();
-
-        // Lấy số report pending (thay cho hardcoded 0)
+ // Lấy số report pending (thay cho hardcoded 0)
         int pendingReports = reportDAO.getReportCountByStatus("open");
 
         // Lấy 5 users mới nhất
@@ -52,5 +51,3 @@ public class DashboardController extends HttpServlet {
         request.getRequestDispatcher("/View/Admin/dashboard.jsp").forward(request, response);
     }
 }
-
-
