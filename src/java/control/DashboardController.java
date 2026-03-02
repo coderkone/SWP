@@ -32,12 +32,12 @@ public class DashboardController extends HttpServlet {
         // Lấy 5 users mới nhất
         List<UserDTO> newestUsers = userDAO.getNewestUsers(5);
 
-        // // Lấy 5 reports mới nhất (thay cho fake data)
-        // List<ReportDTO> recentReports = reportDAO.getAllReports(1, 5);
+        // Lấy 5 reports mới nhất (thay cho fake data)
+        List<ReportDTO> recentReports = reportDAO.getAllReports(1, 5);
 
-        // // Lấy data cho chart (7 ngày)
-        // List<Map<String, Object>> userTrend = userDAO.getUserRegistrationTrend(7);
-        // List<Map<String, Object>> questionTrend = userDAO.getQuestionTrend(7);
+        // Lấy data cho chart (7 ngày)
+        List<Map<String, Object>> userTrend = userDAO.getUserRegistrationTrend(7);
+        List<Map<String, Object>> questionTrend = userDAO.getQuestionTrend(7);
 
     //     // Set attributes cho JSP
     //     request.setAttribute("totalUsers", totalUsers);
