@@ -10,6 +10,7 @@ public class TagDTO {
 
     public TagDTO() {
     }
+    
     public TagDTO(long tagId, String tagName, String description, boolean isActive) {
         this.tagId = tagId;
         this.tagName = tagName;
