@@ -163,20 +163,20 @@ public class ReportManagementController extends HttpServlet {
         }
     }
 
-    // // Xac nhan vi pham -> soft delete content + resolve report
-    // private void handleApprove(HttpServletRequest request, HttpServletResponse response)
-    //         throws ServletException, IOException {
+    // Xac nhan vi pham -> soft delete content + resolve report
+    private void handleApprove(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
 
-    //     HttpSession session = request.getSession();
-    //     UserDTO currentUser = (UserDTO) session.getAttribute("USER");
+        HttpSession session = request.getSession();
+        UserDTO currentUser = (UserDTO) session.getAttribute("USER");
 
-    //     String idParam = request.getParameter("id");
-    //     String note = request.getParameter("note");
+        String idParam = request.getParameter("id");
+        String note = request.getParameter("note");
 
-    //     if (idParam == null || idParam.isEmpty()) {
-    //         response.sendRedirect(request.getContextPath() + "/admin/reports");
-    //         return;
-    //     }
+        if (idParam == null || idParam.isEmpty()) {
+            response.sendRedirect(request.getContextPath() + "/admin/reports");
+            return;
+        }
 
     //     try {
     //         long reportId = Long.parseLong(idParam);

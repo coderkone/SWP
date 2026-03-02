@@ -36,17 +36,17 @@ public class ReportDAO {
             sql.append(" WHERE status = 'resolved'");
         }
 
-    //     try (Connection con = db.getConnection();
-    //          PreparedStatement ps = con.prepareStatement(sql.toString());
-    //          ResultSet rs = ps.executeQuery()) {
-    //         if (rs.next()) {
-    //             return rs.getInt(1);
-    //         }
-    //     } catch (Exception e) {
-    //         e.printStackTrace();
-    //     }
-    //     return 0;
-    // }
+        try (Connection con = db.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql.toString());
+             ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
 
     // Dem reports theo filter (status + date range)
     public int getReportCountFiltered(String status, Date fromDate, Date toDate) {
