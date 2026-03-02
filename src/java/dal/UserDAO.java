@@ -288,7 +288,6 @@ public class UserDAO {
         }
         return null;
     }
-
     // Tạo user mới (admin)
     public boolean createUser(String username, String email, String rawPassword, String role) {
         String sql = "INSERT INTO Users(username, email, password_hash, role, status) VALUES (?, ?, ?, ?, 'active')";

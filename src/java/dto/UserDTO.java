@@ -64,7 +64,6 @@ public class UserDTO {
     public String getDisplayAvatar() {
         if (avatarUrl != null && !avatarUrl.isEmpty()) {
             return avatarUrl;
-            
         }
         // Link ảnh mặc định (bạn nhớ copy 1 ảnh default.png vào thư mục assets/img)
         return "assets/img/default-avatar.png"; 
