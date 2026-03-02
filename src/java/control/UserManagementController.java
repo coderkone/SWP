@@ -97,6 +97,7 @@ public class UserManagementController extends HttpServlet {
         request.setAttribute("filterRole", filterRole);
         request.setAttribute("filterStatus", filterStatus);
 
+        
         request.getRequestDispatcher("/View/Admin/user-list.jsp").forward(request, response);
     }
 
