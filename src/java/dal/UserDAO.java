@@ -7,7 +7,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import util.PasswordUtil;
 import model.GithubUser;
 import model.GoogleUser;
@@ -472,5 +474,53 @@ public class UserDAO {
             e.printStackTrace();
         }
         return 0;
+    }
+
+    // Lấy xu hướng đăng ký user theo ngày (cho dashboard chart)
+    public List<Map<String, Object>> getUserRegistrationTrend(int days) {
+        List<Map<String, Object>> trend = new ArrayList<>();
+        String sql = "SELECT CAST(created_at AS DATE) as reg_date, COUNT(*) as count " +
+                     "FROM Users WHERE created_at >= DATEADD(DAY, -?, GETDATE()) " +
+                     "GROUP BY CAST(created_at AS DATE) ORDER BY reg_date";
+
+        try (Connection con = db.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, days);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Map<String, Object> item = new HashMap<>();
+                    item.put("date", rs.getDate("reg_date"));
+                    item.put("count", rs.getInt("count"));
+                    trend.add(item);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return trend;
+    }
+
+    // Lấy xu hướng câu hỏi mới theo ngày (cho dashboard chart)
+    public List<Map<String, Object>> getQuestionTrend(int days) {
+        List<Map<String, Object>> trend = new ArrayList<>();
+        String sql = "SELECT CAST(created_at AS DATE) as q_date, COUNT(*) as count " +
+                     "FROM Questions WHERE created_at >= DATEADD(DAY, -?, GETDATE()) " +
+                     "GROUP BY CAST(created_at AS DATE) ORDER BY q_date";
+
+        try (Connection con = db.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, days);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Map<String, Object> item = new HashMap<>();
+                    item.put("date", rs.getDate("q_date"));
+                    item.put("count", rs.getInt("count"));
+                    trend.add(item);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return trend;
     }
 }
