@@ -336,6 +336,7 @@ public class UserDAO {
             e.printStackTrace();
         }
         return false;
+        
     }
 
     // Đếm users với filter role và status
@@ -524,4 +525,3 @@ public class UserDAO {
         return trend;
     }
 }
-

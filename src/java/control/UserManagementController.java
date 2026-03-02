@@ -260,8 +260,7 @@ public class UserManagementController extends HttpServlet {
             response.sendRedirect(request.getContextPath() + "/admin/users");
         }
     }
-
-    // Search users
+   // Search users
     private void handleSearch(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
@@ -289,5 +288,7 @@ public class UserManagementController extends HttpServlet {
 
     private boolean isValidStatus(String status) {
         return "active".equals(status) || "inactive".equals(status);
+        
     }
+ 
 }
