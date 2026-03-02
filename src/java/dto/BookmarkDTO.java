@@ -14,6 +14,9 @@ public class BookmarkDTO {
     private Timestamp createdAt;
     private Integer collectionId;
 
+    public BookmarkDTO() {
+    }
+    
     public BookmarkDTO(long questionId, String questionTitle, Timestamp createdAt, Integer collectionId) {
         this.questionId = questionId;
         this.questionTitle = questionTitle;

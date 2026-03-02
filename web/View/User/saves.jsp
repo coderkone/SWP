@@ -20,12 +20,11 @@
                 height: 128px;
                 border-radius: 5px;
                 object-fit: cover;
-                border: 4px solid white;
-                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+                box-shadow: 0 1px 3px rgba(0,0,0,0.1);
             }
             .user-name {
                 font-size: 34px;
-                font-weight: bold;
+                font-weight: normal;
                 margin-bottom: 4px;
             }
             .user-meta {
@@ -34,15 +33,21 @@
             }
 
             /* Tabs */
+            .profile-tabs {
+                border-bottom: none;
+                margin-bottom: 20px;
+            }
             .profile-tabs .nav-link {
                 color: #525960;
                 border-radius: 20px;
                 padding: 6px 12px;
                 margin-right: 5px;
                 border: none;
+                font-size: 13px;
             }
             .profile-tabs .nav-link:hover {
                 background-color: #e3e6e8;
+                color: #0c0d0e;
             }
             .profile-tabs .nav-link.active {
                 background-color: #f48024;
@@ -52,29 +57,30 @@
             /* Sidebar Saves */
             .saves-sidebar-item {
                 display: block;
-                padding: 8px 12px;
+                padding: 6px 12px;
                 color: #525960;
                 text-decoration: none;
-                font-size: 14px;
+                font-size: 13px;
                 border-radius: 100px;
                 margin-bottom: 2px;
             }
             .saves-sidebar-item:hover {
                 background-color: #f8f9f9;
-                color: #000;
+                color: #0c0d0e;
             }
+            /* Đổi màu active thành xám nhạt thay vì cam */
             .saves-sidebar-item.active {
                 font-weight: bold;
-                color: #ffffff;
-                background-color: #f48024 !important;
+                background-color: #f1f2f3;
+                color: #0c0d0e;
             }
             .saves-sidebar-header {
                 font-size: 11px;
                 font-weight: bold;
-                color: #000;
+                color: #6a737c;
                 text-transform: uppercase;
                 margin-top: 20px;
-                margin-bottom: 10px;
+                margin-bottom: 5px;
             }
 
             /* Item List */
@@ -145,41 +151,31 @@
 
         <jsp:include page="../Common/header.jsp" />
 
-        <div class="container-fluid">
+        <div class="container-fluid" style="max-width: 1264px; margin: 0 auto;">
             <div class="row">
-                <nav class="col-md-2 d-none d-md-block bg-light sidebar p-0">
-                    <jsp:include page="../Common/sidebar.jsp">
-                        <jsp:param name="page" value="bookmarks"/>
-                    </jsp:include>
+                <nav class="col-md-2 d-none d-md-block bg-light sidebar p-0 pt-4" style="border-right: 1px solid #d6d9dc; min-height: 100vh;">
+                    <jsp:include page="../Common/sidebar.jsp" />
                 </nav>
 
                 <main class="col-md-10 ms-sm-auto px-md-4 pt-4">
 
                     <div class="d-flex align-items-start mb-4">
                         <div class="me-4">
-                            <img src="${sessionScope.user.avatarUrl != null ? sessionScope.user.avatarUrl : 'assets/img/default-avatar.png'}" 
-                                 class="user-avatar-lg" alt="User Avatar">
+                            <img src="${sessionScope.user.avatarUrl != null ? sessionScope.user.avatarUrl : 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png'}" 
+                                 class="user-avatar-lg" alt="Avatar">
                         </div>
                         <div class="flex-grow-1">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div>
-                                    <h1 class="user-name">${sessionScope.user.username != null ? sessionScope.user.username : 'User Name'}</h1>
-                                    <div class="user-meta">
-                                        <i class="fa-solid fa-cake-candles"></i> Member for 29 days 
-                                        <span class="mx-2">|</span> 
-                                        <i class="fa-regular fa-clock"></i> Last seen this week 
-                                    </div>
-                                </div>
-                                <div>
-                                    <button class="btn btn-outline-secondary btn-sm me-2">Edit profile</button>
-                                    <button class="btn btn-outline-secondary btn-sm">Network profile</button>
-                                </div>
+                            <h1 class="user-name">${userProfile.username != null ? userProfile.username : 'Developer'}</h1>
+                            <div class="user-meta mb-3">
+                                <i class="fa-solid fa-cake-candles"></i> Member since ${userProfile.createdAt}
+                                <span class="mx-2">|</span> 
+                                <i class="fa-solid fa-star text-warning"></i> ${userProfile.reputation} reputation
                             </div>
 
-                            <ul class="nav profile-tabs mt-4">
-                                <li class="nav-item"><a class="nav-link" href="#">Profile</a></li>
-                                <li class="nav-item"><a class="nav-link" href="#">Activity</a></li>
-                                <li class="nav-item"><a class="nav-link active" href="#">Saves</a></li>
+                            <ul class="nav profile-tabs">
+                                <li class="nav-item"><a class="nav-link" href="${pageContext.request.contextPath}/profile">Profile</a></li>
+                                <li class="nav-item"><a class="nav-link" href="${pageContext.request.contextPath}/activity">Activity</a></li>
+                                <li class="nav-item"><a class="nav-link active" href="${pageContext.request.contextPath}/saves">Saves</a></li>
                                 <li class="nav-item"><a class="nav-link" href="#">Settings</a></li>
                             </ul>
                         </div>
@@ -242,16 +238,30 @@
                                     <div class="list-group list-group-flush border-top">
                                         <c:forEach items="${savedList}" var="item">
                                             <div class="saved-item-card">
-                                                <a href="${pageContext.request.contextPath}/questions?id=${item.questionId}" class="saved-item-title">
-                                                    ${item.questionTitle}
-                                                </a>
-                                                <div class="saved-meta">
-                                                    <span class="text-success fw-bold">Saved</span> 
-                                                    <c:if test="${item.createdAt != null}">
-                                                        <fmt:formatDate value="${item.createdAt}" pattern="MMM dd, yyyy" />
-                                                    </c:if>
-                                                    <span class="mx-1">•</span>
-                                                    <span class="badge bg-light text-dark border">question</span>
+                                                <div class="d-flex justify-content-between align-items-start">
+
+                                                    <div>
+                                                        <a href="${pageContext.request.contextPath}/questions?id=${item.questionId}" class="saved-item-title">
+                                                            ${item.questionTitle}
+                                                        </a>
+                                                        <div class="saved-meta">
+                                                            <span class="text-success fw-bold">Saved</span> 
+                                                            <c:if test="${item.createdAt != null}">
+                                                                <fmt:formatDate value="${item.createdAt}" pattern="MMM dd, yyyy" />
+                                                            </c:if>
+                                                            <span class="mx-1">•</span>
+                                                            <span class="badge bg-light text-dark border">question</span>
+                                                        </div>
+                                                    </div>
+
+                                                    <a href="${pageContext.request.contextPath}/saves/remove?qId=${item.questionId}" 
+                                                       class="text-danger small mt-1 ms-3" 
+                                                       style="text-decoration: none;"
+                                                       onclick="return confirm('Remove this item from your saves?');"
+                                                       title="Unsave">
+                                                        <i class="fa-solid fa-bookmark-slash"></i> Unsave
+                                                    </a>
+
                                                 </div>
                                             </div>
                                         </c:forEach>
