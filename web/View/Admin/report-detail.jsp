@@ -50,7 +50,6 @@
             font-size: 18px;
             letter-spacing: 1px;
         }
-
         .nav-menu { list-style: none; margin-top: 20px; }
 
         .nav-item {

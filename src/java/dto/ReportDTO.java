@@ -3,28 +3,28 @@ package dto;
 import java.sql.Timestamp;
 
 public class ReportDTO {
-    // // Report fields
-    // private long reportId;
-    // private long reporterId;
-    // private String targetType;
-    // private long targetId;
-    // private String reason;
-    // private String status;
-    // private Timestamp createdAt;
+     // Report fields
+    private long reportId;
+    private long reporterId;
+    private String targetType;
+    private long targetId;
+    private String reason;
+    private String status;
+    private Timestamp createdAt;
 
-    // // Reporter info
-    // private String reporterName;
-    // private String reporterEmail;
+    // Reporter info
+    private String reporterName;
+    private String reporterEmail;
 
-    // // Target content info
-    // private String targetTitle;
-    // private String targetBody;
-    // private String targetAuthorName;
-    // private long targetAuthorId;
-    // private long questionId;
+    // Target content info
+    private String targetTitle;
+    private String targetBody;
+    private String targetAuthorName;
+    private long targetAuthorId;
+    private long questionId;
 
-    // public ReportDTO() {
-    // }
+    public ReportDTO() {
+    }
 
     // Getters and Setters
     public long getReportId() {

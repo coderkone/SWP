@@ -187,36 +187,36 @@ public class ReportManagementController extends HttpServlet {
                 return;
             }
 
-    //         // Soft delete content based on type
-    //         boolean contentDeleted = false;
-    //         String targetType = report.getTargetType();
-    //         long targetId = report.getTargetId();
+            // Soft delete content based on type
+            boolean contentDeleted = false;
+            String targetType = report.getTargetType();
+            long targetId = report.getTargetId();
 
-    //         if ("question".equals(targetType)) {
-    //             contentDeleted = reportDAO.closeQuestion(targetId, "Vi pham quy dinh cong dong");
-    //         } else if ("answer".equals(targetType)) {
-    //             contentDeleted = reportDAO.hideAnswer(targetId);
-    //         } else if ("comment".equals(targetType)) {
-    //             contentDeleted = reportDAO.hideComment(targetId);
-    //         }
+            if ("question".equals(targetType)) {
+                contentDeleted = reportDAO.closeQuestion(targetId, "Vi pham quy dinh cong dong");
+            } else if ("answer".equals(targetType)) {
+                contentDeleted = reportDAO.hideAnswer(targetId);
+            } else if ("comment".equals(targetType)) {
+                contentDeleted = reportDAO.hideComment(targetId);
+            }
 
-    //         // Update report status
-    //         boolean statusUpdated = reportDAO.updateReportStatus(reportId, "resolved");
+            // Update report status
+            boolean statusUpdated = reportDAO.updateReportStatus(reportId, "resolved");
 
-    //         // Log moderator action
-    //         String description = "Xac nhan vi pham" + (note != null && !note.trim().isEmpty() ? ": " + note.trim() : "");
-    //         actionDAO.createAction(currentUser.getUserId(), "approve_violation", targetType, targetId, description);
+            // Log moderator action
+            String description = "Xac nhan vi pham" + (note != null && !note.trim().isEmpty() ? ": " + note.trim() : "");
+            actionDAO.createAction(currentUser.getUserId(), "approve_violation", targetType, targetId, description);
 
-    //         if (contentDeleted && statusUpdated) {
-    //             response.sendRedirect(request.getContextPath() + "/admin/reports?success=approved");
-    //         } else {
-    //             response.sendRedirect(request.getContextPath() + "/admin/reports?error=approve-failed");
-    //         }
+            if (contentDeleted && statusUpdated) {
+                response.sendRedirect(request.getContextPath() + "/admin/reports?success=approved");
+            } else {
+                response.sendRedirect(request.getContextPath() + "/admin/reports?error=approve-failed");
+            }
 
-    //     } catch (NumberFormatException e) {
-    //         response.sendRedirect(request.getContextPath() + "/admin/reports");
-    //     }
-    // }
+        } catch (NumberFormatException e) {
+            response.sendRedirect(request.getContextPath() + "/admin/reports");
+        }
+    }
 
     // // Khong vi pham -> chi resolve report
     // private void handleReject(HttpServletRequest request, HttpServletResponse response)

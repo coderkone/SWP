@@ -82,6 +82,7 @@ public class ReportDAO {
         return 0;
     }
 
+    
     // Lay danh sach reports voi pagination
     public List<ReportDTO> getAllReports(int page, int pageSize) {
         List<ReportDTO> reports = new ArrayList<>();
@@ -109,7 +110,7 @@ public class ReportDAO {
         return reports;
     }
 
-    
+
     // Lay reports theo status voi pagination
     public List<ReportDTO> getReportsByStatus(String status, int page, int pageSize) {
         List<ReportDTO> reports = new ArrayList<>();
