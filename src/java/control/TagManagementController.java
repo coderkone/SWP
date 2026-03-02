@@ -163,33 +163,33 @@ public class TagManagementController extends HttpServlet {
         }
     }
 
-    // // Form edit tag
-    // private void handleEditForm(HttpServletRequest request, HttpServletResponse response)
-    //         throws ServletException, IOException {
+    // Form edit tag
+    private void handleEditForm(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
 
-    //     String idParam = request.getParameter("id");
-    //     if (idParam == null || idParam.isEmpty()) {
-    //         response.sendRedirect(request.getContextPath() + "/admin/tags");
-    //         return;
-    //     }
+        String idParam = request.getParameter("id");
+        if (idParam == null || idParam.isEmpty()) {
+            response.sendRedirect(request.getContextPath() + "/admin/tags");
+            return;
+        }
 
-    //     try {
-    //         long tagId = Long.parseLong(idParam);
-    //         TagDTO tag = dao.getTagById(tagId);
+        try {
+            long tagId = Long.parseLong(idParam);
+            TagDTO tag = dao.getTagById(tagId);
 
-    //         if (tag == null) {
-    //             response.sendRedirect(request.getContextPath() + "/admin/tags?error=notfound");
-    //             return;
-    //         }
+            if (tag == null) {
+                response.sendRedirect(request.getContextPath() + "/admin/tags?error=notfound");
+                return;
+            }
 
-    //         request.setAttribute("editTag", tag);
-    //         request.setAttribute("editMode", true);
-    //         request.getRequestDispatcher("/View/Admin/tag-form.jsp").forward(request, response);
+            request.setAttribute("editTag", tag);
+            request.setAttribute("editMode", true);
+            request.getRequestDispatcher("/View/Admin/tag-form.jsp").forward(request, response);
 
-    //     } catch (NumberFormatException e) {
-    //         response.sendRedirect(request.getContextPath() + "/admin/tags");
-    //     }
-    // }
+        } catch (NumberFormatException e) {
+            response.sendRedirect(request.getContextPath() + "/admin/tags");
+        }
+    }
 
     // // Xử lý edit tag
     // private void handleEditSubmit(HttpServletRequest request, HttpServletResponse response)

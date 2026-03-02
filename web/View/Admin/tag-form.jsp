@@ -19,7 +19,6 @@
             --font-stack: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
         }
 
-
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
