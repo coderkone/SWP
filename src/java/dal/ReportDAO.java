@@ -109,6 +109,7 @@ public class ReportDAO {
         return reports;
     }
 
+    
     // Lay reports theo status voi pagination
     public List<ReportDTO> getReportsByStatus(String status, int page, int pageSize) {
         List<ReportDTO> reports = new ArrayList<>();

@@ -178,14 +178,14 @@ public class ReportManagementController extends HttpServlet {
             return;
         }
 
-    //     try {
-    //         long reportId = Long.parseLong(idParam);
-    //         ReportDTO report = reportDAO.getReportById(reportId);
+        try {
+            long reportId = Long.parseLong(idParam);
+            ReportDTO report = reportDAO.getReportById(reportId);
 
-    //         if (report == null) {
-    //             response.sendRedirect(request.getContextPath() + "/admin/reports?error=notfound");
-    //             return;
-    //         }
+            if (report == null) {
+                response.sendRedirect(request.getContextPath() + "/admin/reports?error=notfound");
+                return;
+            }
 
     //         // Soft delete content based on type
     //         boolean contentDeleted = false;
