@@ -213,35 +213,35 @@ public class SystemRuleController extends HttpServlet {
             return;
         }
 
-    //     title = title.trim();
-    //     content = content.trim();
+        title = title.trim();
+        content = content.trim();
 
-    //     if (title.length() > 255) {
-    //         SystemRuleDTO rule = dao.getRuleById(ruleId);
-    //         request.setAttribute("rule", rule);
-    //         request.setAttribute("error", "Tiêu đề không được vượt quá 255 ký tự");
-    //         request.setAttribute("editMode", true);
-    //         request.getRequestDispatcher("/View/Admin/rule-form.jsp").forward(request, response);
-    //         return;
-    //     }
+        if (title.length() > 255) {
+            SystemRuleDTO rule = dao.getRuleById(ruleId);
+            request.setAttribute("rule", rule);
+            request.setAttribute("error", "Tiêu đề không được vượt quá 255 ký tự");
+            request.setAttribute("editMode", true);
+            request.getRequestDispatcher("/View/Admin/rule-form.jsp").forward(request, response);
+            return;
+        }
 
-    //     // Get current user
-    //     HttpSession session = request.getSession();
-    //     UserDTO currentUser = (UserDTO) session.getAttribute("USER");
-    //     long updatedBy = currentUser.getUserId();
+        // Get current user
+        HttpSession session = request.getSession();
+        UserDTO currentUser = (UserDTO) session.getAttribute("USER");
+        long updatedBy = currentUser.getUserId();
 
-    //     boolean success = dao.updateRule(ruleId, title, content, updatedBy);
+        boolean success = dao.updateRule(ruleId, title, content, updatedBy);
 
-    //     if (success) {
-    //         response.sendRedirect(request.getContextPath() + "/admin/rules?success=updated");
-    //     } else {
-    //         request.setAttribute("error", "Không thể cập nhật nội quy. Vui lòng thử lại.");
-    //         SystemRuleDTO rule = dao.getRuleById(ruleId);
-    //         request.setAttribute("rule", rule);
-    //         request.setAttribute("editMode", true);
-    //         request.getRequestDispatcher("/View/Admin/rule-form.jsp").forward(request, response);
-    //     }
-    // }
+        if (success) {
+            response.sendRedirect(request.getContextPath() + "/admin/rules?success=updated");
+        } else {
+            request.setAttribute("error", "Không thể cập nhật nội quy. Vui lòng thử lại.");
+            SystemRuleDTO rule = dao.getRuleById(ruleId);
+            request.setAttribute("rule", rule);
+            request.setAttribute("editMode", true);
+            request.getRequestDispatcher("/View/Admin/rule-form.jsp").forward(request, response);
+        }
+    }
 
     // private void handleDelete(HttpServletRequest request, HttpServletResponse response)
     //         throws ServletException, IOException {

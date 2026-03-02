@@ -28,7 +28,6 @@
             min-height: 100vh;
         }
 
-
         .sidebar {
             width: 250px;
             background-color: var(--sidebar-bg);
