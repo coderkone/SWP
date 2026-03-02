@@ -43,7 +43,6 @@ public class SystemRuleDTO {
     public void setContent(String content) {
         this.content = content;
     }
-
     public Timestamp getCreatedAt() {
         return createdAt;
     }

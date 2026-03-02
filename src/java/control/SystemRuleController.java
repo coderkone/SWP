@@ -266,25 +266,25 @@ public class SystemRuleController extends HttpServlet {
         }
     }
 
-    // private void handleSearch(HttpServletRequest request, HttpServletResponse response)
-    //         throws ServletException, IOException {
-    //     String keyword = request.getParameter("q");
+    private void handleSearch(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        String keyword = request.getParameter("q");
 
-    //     if (keyword == null || keyword.trim().isEmpty()) {
-    //         response.sendRedirect(request.getContextPath() + "/admin/rules");
-    //         return;
-    //     }
+        if (keyword == null || keyword.trim().isEmpty()) {
+            response.sendRedirect(request.getContextPath() + "/admin/rules");
+            return;
+        }
 
-    //     keyword = keyword.trim();
-    //     List<SystemRuleDTO> rules = dao.searchRules(keyword, 50);
-    //     int totalRules = rules.size();
+        keyword = keyword.trim();
+        List<SystemRuleDTO> rules = dao.searchRules(keyword, 50);
+        int totalRules = rules.size();
 
-    //     request.setAttribute("rules", rules);
-    //     request.setAttribute("searchKeyword", keyword);
-    //     request.setAttribute("currentPage", 1);
-    //     request.setAttribute("totalPages", 1);
-    //     request.setAttribute("totalRules", totalRules);
+        request.setAttribute("rules", rules);
+        request.setAttribute("searchKeyword", keyword);
+        request.setAttribute("currentPage", 1);
+        request.setAttribute("totalPages", 1);
+        request.setAttribute("totalRules", totalRules);
 
-    //     request.getRequestDispatcher("/View/Admin/rule-list.jsp").forward(request, response);
-    // }
+        request.getRequestDispatcher("/View/Admin/rule-list.jsp").forward(request, response);
+    }
 }

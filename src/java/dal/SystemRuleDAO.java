@@ -115,30 +115,30 @@ public class SystemRuleDAO {
         return false;
     }
 
-    // public List<SystemRuleDTO> searchRules(String keyword, int limit) {
-    //     List<SystemRuleDTO> rules = new ArrayList<>();
-    //     String sql = "SELECT TOP (?) r.rule_id, r.title, r.content, r.created_at, r.updated_at, " +
-    //                  "r.created_by, r.updated_by, u.username as createdByUsername " +
-    //                  "FROM System_Rules r " +
-    //                  "INNER JOIN Users u ON r.created_by = u.user_id " +
-    //                  "WHERE r.title LIKE ? " +
-    //                  "ORDER BY r.created_at DESC";
+    public List<SystemRuleDTO> searchRules(String keyword, int limit) {
+        List<SystemRuleDTO> rules = new ArrayList<>();
+        String sql = "SELECT TOP (?) r.rule_id, r.title, r.content, r.created_at, r.updated_at, " +
+                     "r.created_by, r.updated_by, u.username as createdByUsername " +
+                     "FROM System_Rules r " +
+                     "INNER JOIN Users u ON r.created_by = u.user_id " +
+                     "WHERE r.title LIKE ? " +
+                     "ORDER BY r.created_at DESC";
 
-    //     try (Connection con = db.getConnection();
-    //          PreparedStatement ps = con.prepareStatement(sql)) {
-    //         ps.setInt(1, limit);
-    //         ps.setString(2, "%" + keyword + "%");
+        try (Connection con = db.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, limit);
+            ps.setString(2, "%" + keyword + "%");
 
-    //         try (ResultSet rs = ps.executeQuery()) {
-    //             while (rs.next()) {
-    //                 rules.add(mapResultSetToDTO(rs));
-    //             }
-    //         }
-    //     } catch (Exception e) {
-    //         e.printStackTrace();
-    //     }
-    //     return rules;
-    // }
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    rules.add(mapResultSetToDTO(rs));
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return rules;
+    }
 
     // private SystemRuleDTO mapResultSetToDTO(ResultSet rs) throws SQLException {
     //     SystemRuleDTO rule = new SystemRuleDTO();

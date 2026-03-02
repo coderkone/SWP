@@ -21,6 +21,7 @@
             --font-stack: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
         }
 
+
         * {
             margin: 0;
             padding: 0;
@@ -334,10 +335,10 @@
             <a href="${pageContext.request.contextPath}/admin/tags" class="nav-item">
                 <span class="nav-icon">🏷️</span> Tag Management
             </a>
-            <a href="#" class="nav-item">
+            <a href="${pageContext.request.contextPath}/admin/reports" class="nav-item">
                 <span class="nav-icon">📋</span> Content Reports
             </a>
-            <a href="#" class="nav-item">
+            <a href="${pageContext.request.contextPath}/admin/rules" class="nav-item">
                 <span class="nav-icon">⚙️</span> System Rules
             </a>
         </nav>
@@ -392,8 +393,12 @@
 
                 <div class="card">
                     <div class="card-title">Pending Reports</div>
-                    <div class="card-value red">0</div>
-                    <div class="card-trend">No pending reports</div>
+                    <div class="card-value ${pendingReports > 0 ? 'red' : ''}">${pendingReports}</div>
+                    <div class="card-trend ${pendingReports > 0 ? 'red' : ''}">
+                        <a href="${pageContext.request.contextPath}/admin/reports?status=open" style="color: inherit; text-decoration: none;">
+                            ${pendingReports > 0 ? 'View pending reports →' : 'No pending reports'}
+                        </a>
+                    </div>
                     <div class="card-icon-bg" style="background-color: #FDEDED;">⚠️</div>
                 </div>
             </div>
@@ -402,23 +407,17 @@
                 <div class="section-box">
                     <div class="section-header">
                         <div class="section-title">Platform Growth (Last 7 Days)</div>
-                        <div style="font-size: 12px; color: #525960;">? New Users</div>
+                        <div style="font-size: 12px; color: #525960;">Users & Questions</div>
                     </div>
-                    <div class="chart-placeholder">
-                        <svg class="chart-svg" viewBox="0 0 600 200" preserveAspectRatio="none">
-                            <line x1="0" y1="50" x2="600" y2="50" stroke="#f0f0f0" />
-                            <line x1="0" y1="100" x2="600" y2="100" stroke="#f0f0f0" />
-                            <line x1="0" y1="150" x2="600" y2="150" stroke="#f0f0f0" />
-                            
-                            <path class="chart-path" d="M0,150 C100,140 200,80 300,60 S500,70 600,20" />
-                        </svg>
+                    <div class="chart-placeholder" style="border: none;">
+                        <canvas id="growthChart" style="width: 100%; height: 200px;"></canvas>
                     </div>
                 </div>
 
                 <div class="section-box">
                     <div class="section-header">
                         <div class="section-title">Recent Reports</div>
-                        <a href="#" class="btn-link">View All</a>
+                        <a href="${pageContext.request.contextPath}/admin/reports" class="btn-link">View All</a>
                     </div>
                     <table>
                         <thead>
@@ -429,21 +428,45 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr>
-                                <td>Question #102</td>
-                                <td>Spam content</td>
-                                <td><span class="status-badge status-pending">Pending</span></td>
-                            </tr>
-                            <tr>
-                                <td>Answer #55</td>
-                                <td>Harassment</td>
-                                <td><span class="status-badge status-pending">Pending</span></td>
-                            </tr>
-                            <tr>
-                                <td>User @Spammer</td>
-                                <td>Fake Account</td>
-                                <td><span class="status-badge status-resolved">Resolved</span></td>
-                            </tr>
+                            <c:choose>
+                                <c:when test="${empty recentReports}">
+                                    <tr>
+                                        <td colspan="3" style="text-align: center; color: #838C95;">
+                                            No reports found.
+                                        </td>
+                                    </tr>
+                                </c:when>
+                                <c:otherwise>
+                                    <c:forEach var="report" items="${recentReports}">
+                                        <tr>
+                                            <td>
+                                                <c:choose>
+                                                    <c:when test="${report.targetType == 'question'}">Question</c:when>
+                                                    <c:when test="${report.targetType == 'answer'}">Answer</c:when>
+                                                    <c:when test="${report.targetType == 'comment'}">Comment</c:when>
+                                                    <c:when test="${report.targetType == 'user'}">User</c:when>
+                                                    <c:otherwise>${report.targetType}</c:otherwise>
+                                                </c:choose>
+                                                #${report.targetId}
+                                            </td>
+                                            <td title="${report.reason}">${report.getReasonTruncated(25)}</td>
+                                            <td>
+                                                <c:choose>
+                                                    <c:when test="${report.status == 'open'}">
+                                                        <span class="status-badge status-pending">Pending</span>
+                                                    </c:when>
+                                                    <c:when test="${report.status == 'resolved'}">
+                                                        <span class="status-badge status-resolved">Resolved</span>
+                                                    </c:when>
+                                                    <c:otherwise>
+                                                        <span class="status-badge status-resolved">Dismissed</span>
+                                                    </c:otherwise>
+                                                </c:choose>
+                                            </td>
+                                        </tr>
+                                    </c:forEach>
+                                </c:otherwise>
+                            </c:choose>
                         </tbody>
                     </table>
                 </div>
@@ -504,6 +527,89 @@
 
         </div>
     </main>
+
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Prepare data from server
+        const userTrendData = [
+            <c:forEach var="item" items="${userTrend}" varStatus="status">
+                {date: '<fmt:formatDate value="${item.date}" pattern="dd/MM"/>', count: ${item.count}}${!status.last ? ',' : ''}
+            </c:forEach>
+        ];
+
+        const questionTrendData = [
+            <c:forEach var="item" items="${questionTrend}" varStatus="status">
+                {date: '<fmt:formatDate value="${item.date}" pattern="dd/MM"/>', count: ${item.count}}${!status.last ? ',' : ''}
+            </c:forEach>
+        ];
+
+        // Generate last 7 days labels if no data
+        function getLast7Days() {
+            const labels = [];
+            for (let i = 6; i >= 0; i--) {
+                const d = new Date();
+                d.setDate(d.getDate() - i);
+                labels.push((d.getDate()).toString().padStart(2, '0') + '/' + (d.getMonth() + 1).toString().padStart(2, '0'));
+            }
+            return labels;
+        }
+
+        // Map data to labels
+        const labels = getLast7Days();
+        const userCounts = labels.map(label => {
+            const found = userTrendData.find(d => d.date === label);
+            return found ? found.count : 0;
+        });
+        const questionCounts = labels.map(label => {
+            const found = questionTrendData.find(d => d.date === label);
+            return found ? found.count : 0;
+        });
+
+        // Create chart
+        const ctx = document.getElementById('growthChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: 'New Users',
+                        data: userCounts,
+                        borderColor: '#0A95FF',
+                        backgroundColor: 'rgba(10, 149, 255, 0.1)',
+                        tension: 0.3,
+                        fill: true
+                    },
+                    {
+                        label: 'New Questions',
+                        data: questionCounts,
+                        borderColor: '#F48024',
+                        backgroundColor: 'rgba(244, 128, 36, 0.1)',
+                        tension: 0.3,
+                        fill: true
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 1
+                        }
+                    }
+                }
+            }
+        });
+    </script>
 
 </body>
 </html>
