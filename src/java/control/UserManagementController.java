@@ -80,7 +80,6 @@ public class UserManagementController extends HttpServlet {
                 page = 1;
             }
         }
-        
         // Filter parameters
         String filterRole = request.getParameter("role");
         String filterStatus = request.getParameter("status");
