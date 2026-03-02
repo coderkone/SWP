@@ -99,7 +99,6 @@ public class UserManagementController extends HttpServlet {
 
         request.getRequestDispatcher("/View/Admin/user-list.jsp").forward(request, response);
     }
-
     // Form tạo user mới
     private void handleCreateForm(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
