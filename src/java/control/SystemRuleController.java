@@ -130,50 +130,50 @@ public class SystemRuleController extends HttpServlet {
         String title = request.getParameter("title");
         String content = request.getParameter("content");
 
-    //     // Validation
-    //     if (title == null || title.trim().isEmpty()) {
-    //         request.setAttribute("error", "Tiêu đề không được để trống");
-    //         request.setAttribute("editMode", false);
-    //         request.getRequestDispatcher("/View/Admin/rule-form.jsp").forward(request, response);
-    //         return;
-    //     }
+        // Validation
+        if (title == null || title.trim().isEmpty()) {
+            request.setAttribute("error", "Tiêu đề không được để trống");
+            request.setAttribute("editMode", false);
+            request.getRequestDispatcher("/View/Admin/rule-form.jsp").forward(request, response);
+            return;
+        }
 
-    //     if (content == null || content.trim().isEmpty()) {
-    //         request.setAttribute("error", "Nội dung không được để trống");
-    //         request.setAttribute("title", title);
-    //         request.setAttribute("editMode", false);
-    //         request.getRequestDispatcher("/View/Admin/rule-form.jsp").forward(request, response);
-    //         return;
-    //     }
+        if (content == null || content.trim().isEmpty()) {
+            request.setAttribute("error", "Nội dung không được để trống");
+            request.setAttribute("title", title);
+            request.setAttribute("editMode", false);
+            request.getRequestDispatcher("/View/Admin/rule-form.jsp").forward(request, response);
+            return;
+        }
 
-    //     title = title.trim();
-    //     content = content.trim();
+        title = title.trim();
+        content = content.trim();
 
-    //     if (title.length() > 255) {
-    //         request.setAttribute("error", "Tiêu đề không được vượt quá 255 ký tự");
-    //         request.setAttribute("content", content);
-    //         request.setAttribute("editMode", false);
-    //         request.getRequestDispatcher("/View/Admin/rule-form.jsp").forward(request, response);
-    //         return;
-    //     }
+        if (title.length() > 255) {
+            request.setAttribute("error", "Tiêu đề không được vượt quá 255 ký tự");
+            request.setAttribute("content", content);
+            request.setAttribute("editMode", false);
+            request.getRequestDispatcher("/View/Admin/rule-form.jsp").forward(request, response);
+            return;
+        }
 
-    //     // Get current user
-    //     HttpSession session = request.getSession();
-    //     UserDTO currentUser = (UserDTO) session.getAttribute("USER");
-    //     long createdBy = currentUser.getUserId();
+        // Get current user
+        HttpSession session = request.getSession();
+        UserDTO currentUser = (UserDTO) session.getAttribute("USER");
+        long createdBy = currentUser.getUserId();
 
-    //     boolean success = dao.createRule(title, content, createdBy);
+        boolean success = dao.createRule(title, content, createdBy);
 
-    //     if (success) {
-    //         response.sendRedirect(request.getContextPath() + "/admin/rules?success=created");
-    //     } else {
-    //         request.setAttribute("error", "Không thể tạo nội quy. Vui lòng thử lại.");
-    //         request.setAttribute("title", title);
-    //         request.setAttribute("content", content);
-    //         request.setAttribute("editMode", false);
-    //         request.getRequestDispatcher("/View/Admin/rule-form.jsp").forward(request, response);
-    //     }
-    // }
+        if (success) {
+            response.sendRedirect(request.getContextPath() + "/admin/rules?success=created");
+        } else {
+            request.setAttribute("error", "Không thể tạo nội quy. Vui lòng thử lại.");
+            request.setAttribute("title", title);
+            request.setAttribute("content", content);
+            request.setAttribute("editMode", false);
+            request.getRequestDispatcher("/View/Admin/rule-form.jsp").forward(request, response);
+        }
+    }
 
     // private void handleEditSubmit(HttpServletRequest request, HttpServletResponse response)
     //         throws ServletException, IOException {
