@@ -139,7 +139,6 @@ public class SystemRuleDAO {
         }
         return rules;
     }
-
     private SystemRuleDTO mapResultSetToDTO(ResultSet rs) throws SQLException {
         SystemRuleDTO rule = new SystemRuleDTO();
         rule.setRuleId(rs.getLong("rule_id"));
