@@ -9,7 +9,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class TagDAO {
-
     private final DBContext db = new DBContext();
 
     // Lấy tổng số tags
