@@ -175,16 +175,16 @@ public class SystemRuleController extends HttpServlet {
         }
     }
 
-    // private void handleEditSubmit(HttpServletRequest request, HttpServletResponse response)
-    //         throws ServletException, IOException {
-    //     String idParam = request.getParameter("id");
-    //     String title = request.getParameter("title");
-    //     String content = request.getParameter("content");
+    private void handleEditSubmit(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        String idParam = request.getParameter("id");
+        String title = request.getParameter("title");
+        String content = request.getParameter("content");
 
-    //     if (idParam == null || idParam.isEmpty()) {
-    //         response.sendRedirect(request.getContextPath() + "/admin/rules?error=invalid");
-    //         return;
-    //     }
+        if (idParam == null || idParam.isEmpty()) {
+            response.sendRedirect(request.getContextPath() + "/admin/rules?error=invalid");
+            return;
+        }
 
     //     long ruleId;
     //     try {
