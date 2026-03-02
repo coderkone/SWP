@@ -91,50 +91,50 @@ public class ReportManagementController extends HttpServlet {
             }
         }
 
-    //     // Filter parameters
-    //     String filterStatus = request.getParameter("status");
-    //     String fromDateStr = request.getParameter("fromDate");
-    //     String toDateStr = request.getParameter("toDate");
+        // Filter parameters
+        String filterStatus = request.getParameter("status");
+        String fromDateStr = request.getParameter("fromDate");
+        String toDateStr = request.getParameter("toDate");
 
-    //     // Parse dates
-    //     Date fromDate = null;
-    //     Date toDate = null;
-    //     try {
-    //         if (fromDateStr != null && !fromDateStr.isEmpty()) {
-    //             fromDate = Date.valueOf(fromDateStr);
-    //         }
-    //         if (toDateStr != null && !toDateStr.isEmpty()) {
-    //             toDate = Date.valueOf(toDateStr);
-    //         }
-    //     } catch (IllegalArgumentException e) {
-    //         // Invalid date format, ignore
-    //     }
+        // Parse dates
+        Date fromDate = null;
+        Date toDate = null;
+        try {
+            if (fromDateStr != null && !fromDateStr.isEmpty()) {
+                fromDate = Date.valueOf(fromDateStr);
+            }
+            if (toDateStr != null && !toDateStr.isEmpty()) {
+                toDate = Date.valueOf(toDateStr);
+            }
+        } catch (IllegalArgumentException e) {
+            // Invalid date format, ignore
+        }
 
-    //     // Get reports with filters
-    //     List<ReportDTO> reports;
-    //     int totalReports;
+        // Get reports with filters
+        List<ReportDTO> reports;
+        int totalReports;
 
-    //     boolean hasDateFilter = fromDate != null || toDate != null;
+        boolean hasDateFilter = fromDate != null || toDate != null;
 
-    //     if (hasDateFilter || (filterStatus != null && !filterStatus.isEmpty())) {
-    //         reports = reportDAO.getReportsFiltered(filterStatus, fromDate, toDate, page, PAGE_SIZE);
-    //         totalReports = reportDAO.getReportCountFiltered(filterStatus, fromDate, toDate);
-    //     } else {
-    //         reports = reportDAO.getAllReports(page, PAGE_SIZE);
-    //         totalReports = reportDAO.getReportCount();
-    //     }
-    //     int totalPages = (int) Math.ceil((double) totalReports / PAGE_SIZE);
+        if (hasDateFilter || (filterStatus != null && !filterStatus.isEmpty())) {
+            reports = reportDAO.getReportsFiltered(filterStatus, fromDate, toDate, page, PAGE_SIZE);
+            totalReports = reportDAO.getReportCountFiltered(filterStatus, fromDate, toDate);
+        } else {
+            reports = reportDAO.getAllReports(page, PAGE_SIZE);
+            totalReports = reportDAO.getReportCount();
+        }
+        int totalPages = (int) Math.ceil((double) totalReports / PAGE_SIZE);
 
-    //     request.setAttribute("reports", reports);
-    //     request.setAttribute("currentPage", page);
-    //     request.setAttribute("totalPages", totalPages);
-    //     request.setAttribute("totalReports", totalReports);
-    //     request.setAttribute("filterStatus", filterStatus);
-    //     request.setAttribute("fromDate", fromDateStr);
-    //     request.setAttribute("toDate", toDateStr);
+        request.setAttribute("reports", reports);
+        request.setAttribute("currentPage", page);
+        request.setAttribute("totalPages", totalPages);
+        request.setAttribute("totalReports", totalReports);
+        request.setAttribute("filterStatus", filterStatus);
+        request.setAttribute("fromDate", fromDateStr);
+        request.setAttribute("toDate", toDateStr);
 
-    //     request.getRequestDispatcher("/View/Admin/report-list.jsp").forward(request, response);
-    // }
+        request.getRequestDispatcher("/View/Admin/report-list.jsp").forward(request, response);
+    }
 
     // // Hien thi chi tiet report
     // private void handleDetail(HttpServletRequest request, HttpServletResponse response)
