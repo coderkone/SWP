@@ -218,45 +218,45 @@ public class ReportManagementController extends HttpServlet {
         }
     }
 
-    // // Khong vi pham -> chi resolve report
-    // private void handleReject(HttpServletRequest request, HttpServletResponse response)
-    //         throws ServletException, IOException {
+    // Khong vi pham -> chi resolve report
+    private void handleReject(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
 
-    //     HttpSession session = request.getSession();
-    //     UserDTO currentUser = (UserDTO) session.getAttribute("USER");
+        HttpSession session = request.getSession();
+        UserDTO currentUser = (UserDTO) session.getAttribute("USER");
 
-    //     String idParam = request.getParameter("id");
-    //     String note = request.getParameter("note");
+        String idParam = request.getParameter("id");
+        String note = request.getParameter("note");
 
-    //     if (idParam == null || idParam.isEmpty()) {
-    //         response.sendRedirect(request.getContextPath() + "/admin/reports");
-    //         return;
-    //     }
+        if (idParam == null || idParam.isEmpty()) {
+            response.sendRedirect(request.getContextPath() + "/admin/reports");
+            return;
+        }
 
-    //     try {
-    //         long reportId = Long.parseLong(idParam);
-    //         ReportDTO report = reportDAO.getReportById(reportId);
+        try {
+            long reportId = Long.parseLong(idParam);
+            ReportDTO report = reportDAO.getReportById(reportId);
 
-    //         if (report == null) {
-    //             response.sendRedirect(request.getContextPath() + "/admin/reports?error=notfound");
-    //             return;
-    //         }
+            if (report == null) {
+                response.sendRedirect(request.getContextPath() + "/admin/reports?error=notfound");
+                return;
+            }
 
-    //         // Update report status
-    //         boolean statusUpdated = reportDAO.updateReportStatus(reportId, "resolved");
+            // Update report status
+            boolean statusUpdated = reportDAO.updateReportStatus(reportId, "resolved");
 
-    //         // Log moderator action
-    //         String description = "Khong vi pham" + (note != null && !note.trim().isEmpty() ? ": " + note.trim() : "");
-    //         actionDAO.createAction(currentUser.getUserId(), "reject_violation", report.getTargetType(), report.getTargetId(), description);
+            // Log moderator action
+            String description = "Khong vi pham" + (note != null && !note.trim().isEmpty() ? ": " + note.trim() : "");
+            actionDAO.createAction(currentUser.getUserId(), "reject_violation", report.getTargetType(), report.getTargetId(), description);
 
-    //         if (statusUpdated) {
-    //             response.sendRedirect(request.getContextPath() + "/admin/reports?success=rejected");
-    //         } else {
-    //             response.sendRedirect(request.getContextPath() + "/admin/reports?error=reject-failed");
-    //         }
+            if (statusUpdated) {
+                response.sendRedirect(request.getContextPath() + "/admin/reports?success=rejected");
+            } else {
+                response.sendRedirect(request.getContextPath() + "/admin/reports?error=reject-failed");
+            }
 
-    //     } catch (NumberFormatException e) {
-    //         response.sendRedirect(request.getContextPath() + "/admin/reports");
-    //     }
+        } catch (NumberFormatException e) {
+            response.sendRedirect(request.getContextPath() + "/admin/reports");
+        }
     }
 }

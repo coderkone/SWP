@@ -68,6 +68,7 @@
             color: white;
         }
 
+
         .nav-item.active {
             background-color: var(--active-orange);
             color: white;
