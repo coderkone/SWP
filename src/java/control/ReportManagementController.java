@@ -146,22 +146,22 @@ public class ReportManagementController extends HttpServlet {
             return;
         }
 
-    //     try {
-    //         long reportId = Long.parseLong(idParam);
-    //         ReportDTO report = reportDAO.getReportById(reportId);
+        try {
+            long reportId = Long.parseLong(idParam);
+            ReportDTO report = reportDAO.getReportById(reportId);
 
-    //         if (report == null) {
-    //             response.sendRedirect(request.getContextPath() + "/admin/reports?error=notfound");
-    //             return;
-    //         }
+            if (report == null) {
+                response.sendRedirect(request.getContextPath() + "/admin/reports?error=notfound");
+                return;
+            }
 
-    //         request.setAttribute("report", report);
-    //         request.getRequestDispatcher("/View/Admin/report-detail.jsp").forward(request, response);
+            request.setAttribute("report", report);
+            request.getRequestDispatcher("/View/Admin/report-detail.jsp").forward(request, response);
 
-    //     } catch (NumberFormatException e) {
-    //         response.sendRedirect(request.getContextPath() + "/admin/reports");
-    //     }
-    // }
+        } catch (NumberFormatException e) {
+            response.sendRedirect(request.getContextPath() + "/admin/reports");
+        }
+    }
 
     // // Xac nhan vi pham -> soft delete content + resolve report
     // private void handleApprove(HttpServletRequest request, HttpServletResponse response)
