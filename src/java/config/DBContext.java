@@ -14,16 +14,16 @@ public class DBContext {
 
     static {
         String user = "sa";
-        String pass = "123456";
-        
+        String pass = "123";
+
         try {
             // Cố gắng đọc từ DBconfig.properties
             String configPath = System.getProperty("user.dir") + File.separator + "DBconfig.properties";
             File configFile = new File(configPath);
-            
+
             System.out.println("DEBUG: Looking for config at: " + configPath);
             System.out.println("DEBUG: File exists: " + configFile.exists());
-            
+
             // Nếu không tìm thấy, thử cách khác
             if (!configFile.exists()) {
                 // Thử đường dẫn tuyệt đối Windows
@@ -32,7 +32,7 @@ public class DBContext {
                 System.out.println("DEBUG: Trying absolute path: " + configPath);
                 System.out.println("DEBUG: File exists: " + configFile.exists());
             }
-            
+
             if (configFile.exists()) {
                 Properties props = new Properties();
                 try (FileInputStream fis = new FileInputStream(configFile)) {
@@ -48,11 +48,11 @@ public class DBContext {
             System.err.println("Warning: Could not load DBconfig.properties, using defaults. Error: " + e.getMessage());
             e.printStackTrace();
         }
-        
+
         USER = user;
         PASS = pass;
         URL = "jdbc:sqlserver://localhost:1433;databaseName=devquery;encrypt=true;trustServerCertificate=true;";
-        
+
         System.out.println("DEBUG: DBContext initialized - URL: " + URL + ", USER: " + USER);
     }
 
@@ -61,5 +61,18 @@ public class DBContext {
         System.out.println("DEBUG: Attempting connection with user: " + USER);
         return DriverManager.getConnection(URL, USER, PASS);
     }
-}
 
+    public static void main(String[] args) {
+        DBContext db = new DBContext();
+        try (Connection conn = db.getConnection()) {
+            if (conn != null && !conn.isClosed()) {
+                System.out.println("✅ Connected to database successfully!");
+            } else {
+                System.out.println("❌ Connection failed!");
+            }
+        } catch (Exception e) {
+            System.out.println("❌ Error while connecting to database:");
+            e.printStackTrace();
+        }
+    }
+}
