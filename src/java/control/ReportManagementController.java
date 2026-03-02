@@ -136,15 +136,15 @@ public class ReportManagementController extends HttpServlet {
         request.getRequestDispatcher("/View/Admin/report-list.jsp").forward(request, response);
     }
 
-    // // Hien thi chi tiet report
-    // private void handleDetail(HttpServletRequest request, HttpServletResponse response)
-    //         throws ServletException, IOException {
+    // Hien thi chi tiet report
+    private void handleDetail(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
 
-    //     String idParam = request.getParameter("id");
-    //     if (idParam == null || idParam.isEmpty()) {
-    //         response.sendRedirect(request.getContextPath() + "/admin/reports");
-    //         return;
-    //     }
+        String idParam = request.getParameter("id");
+        if (idParam == null || idParam.isEmpty()) {
+            response.sendRedirect(request.getContextPath() + "/admin/reports");
+            return;
+        }
 
     //     try {
     //         long reportId = Long.parseLong(idParam);

@@ -27,14 +27,14 @@ public class ReportDAO {
         }
         return 0;
     }
-    // // Dem reports theo status
-    // public int getReportCountByStatus(String status) {
-    //     StringBuilder sql = new StringBuilder("SELECT COUNT(*) FROM Reports");
-    //     if ("open".equals(status)) {
-    //         sql.append(" WHERE status = 'open'");
-    //     } else if ("resolved".equals(status)) {
-    //         sql.append(" WHERE status = 'resolved'");
-    //     }
+    // Dem reports theo status
+    public int getReportCountByStatus(String status) {
+        StringBuilder sql = new StringBuilder("SELECT COUNT(*) FROM Reports");
+        if ("open".equals(status)) {
+            sql.append(" WHERE status = 'open'");
+        } else if ("resolved".equals(status)) {
+            sql.append(" WHERE status = 'resolved'");
+        }
 
     //     try (Connection con = db.getConnection();
     //          PreparedStatement ps = con.prepareStatement(sql.toString());
