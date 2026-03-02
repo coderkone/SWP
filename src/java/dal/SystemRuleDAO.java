@@ -85,35 +85,35 @@ public class SystemRuleDAO {
         return false;
     }
 
-    // public boolean updateRule(long ruleId, String title, String content, long updatedBy) {
-    //     String sql = "UPDATE System_Rules SET title = ?, content = ?, " +
-    //                  "updated_at = GETDATE(), updated_by = ? WHERE rule_id = ?";
+    public boolean updateRule(long ruleId, String title, String content, long updatedBy) {
+        String sql = "UPDATE System_Rules SET title = ?, content = ?, " +
+                     "updated_at = GETDATE(), updated_by = ? WHERE rule_id = ?";
 
-    //     try (Connection con = db.getConnection();
-    //          PreparedStatement ps = con.prepareStatement(sql)) {
-    //         ps.setString(1, title);
-    //         ps.setString(2, content);
-    //         ps.setLong(3, updatedBy);
-    //         ps.setLong(4, ruleId);
-    //         return ps.executeUpdate() > 0;
-    //     } catch (Exception e) {
-    //         e.printStackTrace();
-    //     }
-    //     return false;
-    // }
+        try (Connection con = db.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setString(1, title);
+            ps.setString(2, content);
+            ps.setLong(3, updatedBy);
+            ps.setLong(4, ruleId);
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
 
-    // public boolean deleteRule(long ruleId) {
-    //     String sql = "DELETE FROM System_Rules WHERE rule_id = ?";
+    public boolean deleteRule(long ruleId) {
+        String sql = "DELETE FROM System_Rules WHERE rule_id = ?";
 
-    //     try (Connection con = db.getConnection();
-    //          PreparedStatement ps = con.prepareStatement(sql)) {
-    //         ps.setLong(1, ruleId);
-    //         return ps.executeUpdate() > 0;
-    //     } catch (Exception e) {
-    //         e.printStackTrace();
-    //     }
-    //     return false;
-    // }
+        try (Connection con = db.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setLong(1, ruleId);
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
 
     // public List<SystemRuleDTO> searchRules(String keyword, int limit) {
     //     List<SystemRuleDTO> rules = new ArrayList<>();

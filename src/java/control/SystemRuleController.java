@@ -243,28 +243,28 @@ public class SystemRuleController extends HttpServlet {
         }
     }
 
-    // private void handleDelete(HttpServletRequest request, HttpServletResponse response)
-    //         throws ServletException, IOException {
-    //     String idParam = request.getParameter("id");
+    private void handleDelete(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        String idParam = request.getParameter("id");
 
-    //     if (idParam == null || idParam.isEmpty()) {
-    //         response.sendRedirect(request.getContextPath() + "/admin/rules?error=invalid");
-    //         return;
-    //     }
+        if (idParam == null || idParam.isEmpty()) {
+            response.sendRedirect(request.getContextPath() + "/admin/rules?error=invalid");
+            return;
+        }
 
-    //     try {
-    //         long ruleId = Long.parseLong(idParam);
-    //         boolean success = dao.deleteRule(ruleId);
+        try {
+            long ruleId = Long.parseLong(idParam);
+            boolean success = dao.deleteRule(ruleId);
 
-    //         if (success) {
-    //             response.sendRedirect(request.getContextPath() + "/admin/rules?success=deleted");
-    //         } else {
-    //             response.sendRedirect(request.getContextPath() + "/admin/rules?error=deletefailed");
-    //         }
-    //     } catch (NumberFormatException e) {
-    //         response.sendRedirect(request.getContextPath() + "/admin/rules?error=invalid");
-    //     }
-    // }
+            if (success) {
+                response.sendRedirect(request.getContextPath() + "/admin/rules?success=deleted");
+            } else {
+                response.sendRedirect(request.getContextPath() + "/admin/rules?error=deletefailed");
+            }
+        } catch (NumberFormatException e) {
+            response.sendRedirect(request.getContextPath() + "/admin/rules?error=invalid");
+        }
+    }
 
     // private void handleSearch(HttpServletRequest request, HttpServletResponse response)
     //         throws ServletException, IOException {
