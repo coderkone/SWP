@@ -140,19 +140,19 @@ public class SystemRuleDAO {
         return rules;
     }
 
-    // private SystemRuleDTO mapResultSetToDTO(ResultSet rs) throws SQLException {
-    //     SystemRuleDTO rule = new SystemRuleDTO();
-    //     rule.setRuleId(rs.getLong("rule_id"));
-    //     rule.setTitle(rs.getString("title"));
-    //     rule.setContent(rs.getString("content"));
-    //     rule.setCreatedAt(rs.getTimestamp("created_at"));
-    //     rule.setUpdatedAt(rs.getTimestamp("updated_at"));
-    //     rule.setCreatedBy(rs.getLong("created_by"));
+    private SystemRuleDTO mapResultSetToDTO(ResultSet rs) throws SQLException {
+        SystemRuleDTO rule = new SystemRuleDTO();
+        rule.setRuleId(rs.getLong("rule_id"));
+        rule.setTitle(rs.getString("title"));
+        rule.setContent(rs.getString("content"));
+        rule.setCreatedAt(rs.getTimestamp("created_at"));
+        rule.setUpdatedAt(rs.getTimestamp("updated_at"));
+        rule.setCreatedBy(rs.getLong("created_by"));
 
-    //     long updatedBy = rs.getLong("updated_by");
-    //     rule.setUpdatedBy(rs.wasNull() ? null : updatedBy);
+        long updatedBy = rs.getLong("updated_by");
+        rule.setUpdatedBy(rs.wasNull() ? null : updatedBy);
 
-    //     rule.setCreatedByUsername(rs.getString("createdByUsername"));
-    //     return rule;
+        rule.setCreatedByUsername(rs.getString("createdByUsername"));
+        return rule;
     }
 }

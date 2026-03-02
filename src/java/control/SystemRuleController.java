@@ -287,4 +287,5 @@ public class SystemRuleController extends HttpServlet {
 
         request.getRequestDispatcher("/View/Admin/rule-list.jsp").forward(request, response);
     }
+    
 }
