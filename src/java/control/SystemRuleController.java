@@ -186,32 +186,32 @@ public class SystemRuleController extends HttpServlet {
             return;
         }
 
-    //     long ruleId;
-    //     try {
-    //         ruleId = Long.parseLong(idParam);
-    //     } catch (NumberFormatException e) {
-    //         response.sendRedirect(request.getContextPath() + "/admin/rules?error=invalid");
-    //         return;
-    //     }
+        long ruleId;
+        try {
+            ruleId = Long.parseLong(idParam);
+        } catch (NumberFormatException e) {
+            response.sendRedirect(request.getContextPath() + "/admin/rules?error=invalid");
+            return;
+        }
 
-    //     // Validation
-    //     if (title == null || title.trim().isEmpty()) {
-    //         SystemRuleDTO rule = dao.getRuleById(ruleId);
-    //         request.setAttribute("rule", rule);
-    //         request.setAttribute("error", "Tiêu đề không được để trống");
-    //         request.setAttribute("editMode", true);
-    //         request.getRequestDispatcher("/View/Admin/rule-form.jsp").forward(request, response);
-    //         return;
-    //     }
+        // Validation
+        if (title == null || title.trim().isEmpty()) {
+            SystemRuleDTO rule = dao.getRuleById(ruleId);
+            request.setAttribute("rule", rule);
+            request.setAttribute("error", "Tiêu đề không được để trống");
+            request.setAttribute("editMode", true);
+            request.getRequestDispatcher("/View/Admin/rule-form.jsp").forward(request, response);
+            return;
+        }
 
-    //     if (content == null || content.trim().isEmpty()) {
-    //         SystemRuleDTO rule = dao.getRuleById(ruleId);
-    //         request.setAttribute("rule", rule);
-    //         request.setAttribute("error", "Nội dung không được để trống");
-    //         request.setAttribute("editMode", true);
-    //         request.getRequestDispatcher("/View/Admin/rule-form.jsp").forward(request, response);
-    //         return;
-    //     }
+        if (content == null || content.trim().isEmpty()) {
+            SystemRuleDTO rule = dao.getRuleById(ruleId);
+            request.setAttribute("rule", rule);
+            request.setAttribute("error", "Nội dung không được để trống");
+            request.setAttribute("editMode", true);
+            request.getRequestDispatcher("/View/Admin/rule-form.jsp").forward(request, response);
+            return;
+        }
 
     //     title = title.trim();
     //     content = content.trim();
