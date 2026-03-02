@@ -142,6 +142,7 @@ public class TagDAO {
         return false;
     }
 
+    
     // Đếm tags với filter status
     public int getTagCountByStatus(String status) {
         StringBuilder sql = new StringBuilder("SELECT COUNT(*) FROM Tags");

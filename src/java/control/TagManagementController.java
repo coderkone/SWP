@@ -250,30 +250,30 @@ public class TagManagementController extends HttpServlet {
         }
     }
 
-    // // Toggle status (Active <-> Inactive)
-    // private void handleToggleStatus(HttpServletRequest request, HttpServletResponse response)
-    //         throws ServletException, IOException {
+    // Toggle status (Active <-> Inactive)
+    private void handleToggleStatus(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
 
-    //     String idParam = request.getParameter("id");
-    //     if (idParam == null || idParam.isEmpty()) {
-    //         response.sendRedirect(request.getContextPath() + "/admin/tags");
-    //         return;
-    //     }
+        String idParam = request.getParameter("id");
+        if (idParam == null || idParam.isEmpty()) {
+            response.sendRedirect(request.getContextPath() + "/admin/tags");
+            return;
+        }
 
-    //     try {
-    //         long tagId = Long.parseLong(idParam);
-    //         boolean success = dao.toggleTagStatus(tagId);
+        try {
+            long tagId = Long.parseLong(idParam);
+            boolean success = dao.toggleTagStatus(tagId);
 
-    //         if (success) {
-    //             response.sendRedirect(request.getContextPath() + "/admin/tags?success=toggled");
-    //         } else {
-    //             response.sendRedirect(request.getContextPath() + "/admin/tags?error=toggle-failed");
-    //         }
+            if (success) {
+                response.sendRedirect(request.getContextPath() + "/admin/tags?success=toggled");
+            } else {
+                response.sendRedirect(request.getContextPath() + "/admin/tags?error=toggle-failed");
+            }
 
-    //     } catch (NumberFormatException e) {
-    //         response.sendRedirect(request.getContextPath() + "/admin/tags");
-    //     }
-    // }
+        } catch (NumberFormatException e) {
+            response.sendRedirect(request.getContextPath() + "/admin/tags");
+        }
+    }
 
     // // Merge tags
     // private void handleMerge(HttpServletRequest request, HttpServletResponse response)
