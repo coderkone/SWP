@@ -421,10 +421,10 @@
         <a href="${pageContext.request.contextPath}/admin/tags" class="nav-item active">
             <span class="nav-icon">🏷️</span> Tag Management
         </a>
-        <a href="#" class="nav-item">
+        <a href="${pageContext.request.contextPath}/admin/reports" class="nav-item">
             <span class="nav-icon">📋</span> Content Reports
         </a>
-        <a href="#" class="nav-item">
+        <a href="${pageContext.request.contextPath}/admin/rules" class="nav-item">
             <span class="nav-icon">⚙️</span> System Rules
         </a>
     </nav>
