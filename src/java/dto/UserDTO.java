@@ -69,3 +69,4 @@ public class UserDTO {
         return "assets/img/default-avatar.png"; 
     }
 }
+

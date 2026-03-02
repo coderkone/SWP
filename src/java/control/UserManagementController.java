@@ -8,7 +8,6 @@ import jakarta.servlet.http.*;
 import java.io.IOException;
 import java.util.List;
 
-
 @WebServlet(name = "UserManagementController", urlPatterns = {
     "/admin/users",
     "/admin/users/create",

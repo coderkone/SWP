@@ -10,11 +10,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import util.PasswordUtil;
+import java.util.UUID;
 import model.GithubUser;
 import model.GoogleUser;
 import model.User;
-import java.util.UUID;
+import util.PasswordUtil;
 public class UserDAO {
 
     private final DBContext db = new DBContext();
@@ -524,3 +524,4 @@ public class UserDAO {
         return trend;
     }
 }
+
