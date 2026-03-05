@@ -16,30 +16,37 @@ public class HomeController extends HttpServlet {
         try {
             QuestionDAO questionDAO = new QuestionDAO();
             
-            System.out.println("DEBUG: HomeController - Loading questions...");
+            // Get pagination parameters
+            String pageParam = request.getParameter("page");
+            int page = (pageParam != null) ? Integer.parseInt(pageParam) : 1;
             
-            // Lấy danh sách câu hỏi mới nhất (page 1, 10 items, sort by newest)
-            List<QuestionDTO> newestQuestions = questionDAO.getQuestions(1, 10, "newest", null, null);
+            String tab = request.getParameter("tab");
+            if (tab == null) tab = "newest";
             
-            System.out.println("DEBUG: Loaded questions count: " + (newestQuestions != null ? newestQuestions.size() : "null"));
-            if (newestQuestions != null && !newestQuestions.isEmpty()) {
-                for (QuestionDTO q : newestQuestions) {
-                    System.out.println("  - Q" + q.getQuestionId() + ": " + q.getTitle());
-                }
-            }
+            String keyword = request.getParameter("q");
+            if (keyword == null) keyword = "";
             
-            // Lấy tổng số câu hỏi
-            int totalQuestions = questionDAO.getTotalQuestions(null, null);
-            System.out.println("DEBUG: Total questions in DB: " + totalQuestions);
+            // Load questions (10 per page)
+            List<QuestionDTO> questions = questionDAO.getQuestions(page, 10, tab, keyword, "all");
             
-            // Đưa dữ liệu vào request attribute
-            request.setAttribute("newestQuestions", newestQuestions);
-            request.setAttribute("totalQuestions", totalQuestions);
+            // Get total count for pagination
+            int totalQuestions = questionDAO.getTotalQuestions(keyword, "all");
+            int totalPages = (totalQuestions + 9) / 10; // Ceiling division
+            
+            // Set attributes for JSP
+            request.setAttribute("questions", questions);
+            request.setAttribute("currentSort", tab);
+            request.setAttribute("currentKeyword", keyword);
+            request.setAttribute("currentFilter", "all");
+            request.setAttribute("currentPage", page);
+            request.setAttribute("totalPage", totalPages);
             
         } catch (Exception e) {
             System.err.println("ERROR in HomeController: " + e.getMessage());
             e.printStackTrace();
-            request.setAttribute("error", "Error loading questions: " + e.getMessage());
+            request.setAttribute("questions", new java.util.ArrayList<>());
+            request.setAttribute("totalPage", 1);
+            request.setAttribute("currentPage", 1);
         }
         
         request.getRequestDispatcher("/View/User/home.jsp").forward(request, response);

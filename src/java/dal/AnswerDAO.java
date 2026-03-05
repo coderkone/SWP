@@ -9,9 +9,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
-public class AnswerDAO {
-
-    private final DBContext db = new DBContext();
+public class AnswerDAO extends DBContext {
 
     public long createAnswer(long questionId, long userId, String body, String codeSnippet) throws Exception {
         String sql = "INSERT INTO Answers (question_id, user_id, body, code_snippet, is_edited, is_accepted, created_at, updated_at, Score) " +
@@ -19,7 +17,7 @@ public class AnswerDAO {
 
         long answerId = -1;
 
-        try (Connection con = db.getConnection();
+        try (Connection con = getConnection();
              PreparedStatement ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
             ps.setLong(1, questionId);
@@ -44,7 +42,7 @@ public class AnswerDAO {
 
         List<AnswerDTO> answers = new ArrayList<>();
 
-        try (Connection con = db.getConnection();
+        try (Connection con = getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
 
             ps.setLong(1, questionId);
@@ -65,7 +63,7 @@ public class AnswerDAO {
         String sql = "SELECT a.*, u.username FROM Answers a " +
                 "JOIN Users u ON a.user_id = u.user_id WHERE a.answer_id = ?";
 
-        try (Connection con = db.getConnection();
+        try (Connection con = getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
 
             ps.setLong(1, answerId);
@@ -83,7 +81,7 @@ public class AnswerDAO {
     public boolean updateAnswer(long answerId, String body, String codeSnippet) throws Exception {
         String sql = "UPDATE Answers SET body = ?, code_snippet = ?, is_edited = 1, updated_at = CURRENT_TIMESTAMP WHERE answer_id = ?";
 
-        try (Connection con = db.getConnection();
+        try (Connection con = getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
 
             ps.setString(1, body);
@@ -97,7 +95,7 @@ public class AnswerDAO {
     public boolean deleteAnswer(long answerId) throws Exception {
         String sql = "DELETE FROM Answers WHERE answer_id = ?";
 
-        try (Connection con = db.getConnection();
+        try (Connection con = getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
 
             ps.setLong(1, answerId);

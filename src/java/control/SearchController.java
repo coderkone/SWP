@@ -36,7 +36,9 @@ public class SearchController extends HttpServlet {
 
         String keyword = request.getParameter("q");
         String tab = request.getParameter("tab");       
-        String filter = request.getParameter("filter"); 
+        String filter = request.getParameter("filter");
+        String pageParam = request.getParameter("page");
+        int page = (pageParam != null) ? Integer.parseInt(pageParam) : 1;
                 
         // Nếu người dùng bấm "Unanswered" -> Reset tab về newest
         if ("unanswered".equals(filter)) {
@@ -52,18 +54,23 @@ public class SearchController extends HttpServlet {
         if (filter == null) filter = "all";
 
         QuestionDAO dao = new QuestionDAO();
-        int page = 1;
         List<QuestionDTO> list;
         
         try {
             list = dao.getQuestions(page, 10, tab, keyword, filter);
+            int totalQuestions = dao.getTotalQuestions(keyword, filter);
+            int totalPages = (totalQuestions + 9) / 10; // Ceiling division
+            
+            request.setAttribute("questions", list);
+            request.setAttribute("currentPage", page);
+            request.setAttribute("totalPage", totalPages);
         } catch (Exception e) {
             System.err.println("Error searching questions: " + e.getMessage());
-            response.sendRedirect(request.getContextPath() + "/View/User/home.jsp?error=SearchFailed");
-            return;
+            request.setAttribute("questions", new java.util.ArrayList<>());
+            request.setAttribute("currentPage", 1);
+            request.setAttribute("totalPage", 1);
         }
 
-        request.setAttribute("questions", list);
         request.setAttribute("currentKeyword", keyword);
         request.setAttribute("currentSort", tab);
         request.setAttribute("currentFilter", filter);
