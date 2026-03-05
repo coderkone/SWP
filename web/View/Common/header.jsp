@@ -36,93 +36,6 @@
     .avatar-img {
         object-fit: cover;
     }
-    .noti-badge {
-    position: absolute; 
-    top: 2px; 
-    right: 2px; 
-    background: #d0393e; 
-    color: white; 
-    border-radius: 50%; 
-    padding: 2px 5px; 
-    font-size: 10px; 
-    font-weight: bold;
-}
-
-.noti-dropdown {
-    width: 350px; 
-    padding: 0;
-}
-
-.noti-header {
-    padding: 10px 15px; 
-    background: #f8f9f9; 
-    font-weight: bold; 
-    border-bottom: 1px solid #d6d9dc; 
-    display: flex; 
-    justify-content: space-between;
-}
-
-.noti-mark-all {
-    font-weight: normal; 
-    color: #0074cc; 
-    text-decoration: none; 
-    font-size: 13px;
-}
-
-.noti-mark-all:hover {
-    text-decoration: underline;
-}
-
-.noti-body {
-    max-height: 350px; 
-    overflow-y: auto;
-}
-
-.noti-empty {
-    padding: 15px; 
-    text-align: center; 
-    color: #666;
-}
-
-.noti-item {
-    padding: 12px 15px; 
-    border-bottom: 1px solid #e3e6e8;
-    transition: background-color 0.2s ease;
-}
-
-.noti-item:hover {
-    background-color: #f1f2f3; /* Hiệu ứng di chuột */
-}
-
-.noti-unread {
-    background-color: #f0f8ff; /* Nền xanh nhạt cho tin chưa đọc */
-}
-
-.noti-read {
-    background-color: #ffffff; /* Nền trắng cho tin đã đọc */
-}
-
-.noti-content-text {
-    font-size: 13px; 
-    color: #3b4045; 
-    margin-bottom: 5px;
-}
-
-.noti-meta {
-    font-size: 11px; 
-    color: #838c95; 
-    display: flex; 
-    justify-content: space-between;
-}
-
-.noti-action {
-    color: #0074cc; 
-    text-decoration: none;
-}
-
-.noti-action:hover {
-    text-decoration: underline;
-}
 </style>
 
 <nav class="navbar navbar-expand-lg navbar-light fixed-top navbar-devquery">
@@ -169,46 +82,8 @@
                         </a>
                     </li>
 
-<!--                    <li class="nav-item">
+                    <li class="nav-item">
                         <a class="nav-link text-secondary" href="#"><i class="fa-solid fa-inbox fa-lg"></i></a>
-                    </li>-->
-                    <li class="nav-item position-relative notification-wrapper">
-                        <a class="nav-link text-secondary" href="#" id="notiDropdownBtn" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="fa-solid fa-inbox fa-lg"></i>
-                            
-                            <c:if test="${requestScope.unreadNotification != null && requestScope.unreadNotification > 0}">
-                                <span class="noti-badge">
-                                    ${requestScope.unreadNotification > 99 ? '99+' : requestScope.unreadNotification}
-                                </span>
-                            </c:if>
-                        </a>
-
-                        <div class="dropdown-menu dropdown-menu-end shadow noti-dropdown" aria-labelledby="notiDropdownBtn">
-                            
-                            <div class="noti-header">
-                                <span>Thông báo</span>
-                                <a href="${pageContext.request.contextPath}/notification?action=allRead" class="noti-mark-all">Đánh dấu đã đọc tất cả</a>
-                            </div>
-                            
-                            <div class="noti-body">
-                                <c:if test="${empty requestScope.Notification}">
-                                    <div class="noti-empty">Bạn không có thông báo nào.</div>
-                                </c:if>
-
-                                <c:forEach items="${requestScope.Notification}" var="noti">
-                                    <div class="noti-item ${noti.isRead ? 'noti-read' : 'noti-unread'}">
-                                        <div class="noti-content-text">${noti.content}</div>
-                                        <div class="noti-meta">
-                                            <span>${noti.createdAt}</span>
-                                            <c:if test="${!noti.isRead}">
-                                                <a href="${pageContext.request.contextPath}/notification?id=${noti.notificationId}" class="noti-action">Đánh dấu đã đọc</a>
-                                            </c:if>
-                                        </div>
-                                    </div>
-                                </c:forEach>
-                            </div>
-                            
-                        </div>
                     </li>
                     
                     <li class="nav-item me-4">
