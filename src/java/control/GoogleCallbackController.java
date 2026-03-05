@@ -4,7 +4,6 @@ import util.GoogleUtils;
 import model.GoogleUser;
 import dal.UserDAO;
 import model.User;
-import dto.UserDTO;
 import java.io.IOException;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -33,14 +32,7 @@ public class GoogleCallbackController extends HttpServlet {
             User user = dao.loginWithGoogle(gUser);
 
             if (user != null) {
-                // Convert User to UserDTO and store with key "USER" (consistent with AuthController)
-                UserDTO userDTO = new UserDTO(
-                    user.getUserId(),
-                    user.getUsername(),
-                    user.getEmail(),
-                    user.getRole()
-                );
-                request.getSession().setAttribute("USER", userDTO);
+                request.getSession().setAttribute("user", user);
                 response.sendRedirect(request.getContextPath() + "/View/User/home.jsp");
             } else {
                 response.sendRedirect(request.getContextPath() + "/View/User/login.jsp?error=GoogleLoginFailed");

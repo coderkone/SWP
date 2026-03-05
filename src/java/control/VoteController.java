@@ -1,7 +1,7 @@
 package control;
 
 import dal.VoteDAO;
-import dto.UserDTO;
+import model.User;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
@@ -23,24 +23,14 @@ public class VoteController extends HttpServlet {
         try {
             // Get user from session
             HttpSession session = request.getSession(false);
-            if (session == null || session.getAttribute("USER") == null) {
+            if (session == null || session.getAttribute("user") == null) {
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 out.println("{\"error\": \"Not authenticated\"}");
                 return;
             }
 
-            Object userObj = session.getAttribute("USER");
-            long userId = 0;
-            
-            // Extract userId from user object
-            if (userObj instanceof dto.UserDTO) {
-                dto.UserDTO user = (dto.UserDTO) userObj;
-                userId = user.getUserId();
-            } else {
-                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                out.println("{\"error\": \"Invalid user object\"}");
-                return;
-            }
+            User user = (User) session.getAttribute("user");
+            long userId = user.getUserId();
 
             // Get parameters
             String questionIdParam = request.getParameter("questionId");

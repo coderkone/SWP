@@ -1,8 +1,9 @@
-<!DOCTYPE html>
-<html lang="en">
+<%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
-<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
+
+<!DOCTYPE html>
+<html lang="en">
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -37,117 +38,12 @@
                 font-size: 13px;
             }
 
-            /* Header */
-            header {
-                width: 100%;
-                height: 56px;
-                background-color: #f8f9f9;
-                border-top: 3px solid var(--orange);
-                box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-                display: flex;
-                align-items: center;
-                padding: 0 20px;
-                position: fixed;
-                top: 0;
-                z-index: 100;
-                border-bottom: 1px solid var(--border-color);
-            }
-
-            .header-container {
-                width: 100%;
-                max-width: 1264px;
-                margin: 0 auto;
-                display: flex;
-                align-items: center;
-                justify-content: space-between;
-            }
-
-            .logo {
-                font-size: 18px;
-                display: flex;
-                align-items: center;
-                gap: 5px;
-                margin-right: 20px;
-                cursor: pointer;
-            }
-
-            .logo img {
-                width: 28px;
-                height: 28px;
-            }
-
-            .search-bar {
-                flex-grow: 1;
-                max-width: 700px;
-                position: relative;
-                margin: 0 10px;
-            }
-
-            .search-bar input {
-                width: 100%;
-                padding: 8px 10px 8px 32px;
-                border: 1px solid #babfc4;
-                border-radius: 3px;
-                font-size: 13px;
-                outline: none;
-            }
-
-            .search-bar input:focus {
-                border-color: #6bbbf7;
-                box-shadow: 0 0 0 4px rgba(0, 149, 255, 0.15);
-            }
-
-            .search-icon {
-                position: absolute;
-                left: 10px;
-                top: 50%;
-                transform: translateY(-50%);
-                color: #838C95;
-                font-size: 14px;
-            }
-
-            .user-nav {
-                display: flex;
-                align-items: center;
-                gap: 15px;
-                margin-left: 20px;
-            }
-
-            .user-profile {
-                display: flex;
-                align-items: center;
-                gap: 8px;
-                font-weight: bold;
-                color: #2D3E50;
-                cursor: pointer;
-            }
-
-            .user-profile img {
-                width: 24px;
-                height: 24px;
-                border-radius: 4px;
-            }
-
-            .btn-logout {
-                background-color: var(--blue-tag-bg);
-                color: var(--blue-tag-text);
-                border: 1px solid #7aa7c7;
-                padding: 8px 12px;
-                border-radius: 3px;
-                cursor: pointer;
-                font-weight: normal;
-            }
-
-            .btn-logout:hover {
-                background-color: #b3d3ea;
-            }
-
             /* Main Layout */
             .container {
                 max-width: 1264px;
-                margin: 56px auto 0; /* Offset header */
+                margin: 56px auto 0;
                 display: flex;
-                min-height: 100vh;
+                align-items: flex-start;
             }
 
             /* Left Sidebar */
@@ -155,31 +51,7 @@
                 width: 164px;
                 flex-shrink: 0;
                 padding-top: 25px;
-                border-right: 1px solid var(--border-color); /* Optional visual separator */
-            }
-
-            .nav-link {
-                display: block;
-                padding: 8px 8px 8px 8px; /* Indent for sub-items */
-                color: var(--gray-text);
-                text-decoration: none;
-                position: relative;
-            }
-
-            .nav-link.main {
-                padding-left: 8px;
-                margin-bottom: 5px;
-            }
-
-            .nav-link:hover {
-                color: var(--black-text);
-            }
-
-            .nav-link.active {
-                background-color: #F1F2F3;
-                color: var(--black-text);
-                font-weight: bold;
-                border-right: 3px solid var(--orange);
+                border-right: 1px solid var(--border-color);
             }
 
             /* Main Content */
@@ -187,6 +59,7 @@
                 flex-grow: 1;
                 padding: 24px;
                 border-left: 1px solid var(--border-color);
+                width: 100%;
             }
 
             .content-header {
@@ -211,6 +84,7 @@
                 font-size: 13px;
                 cursor: pointer;
                 box-shadow: inset 0 1px 0 0 rgba(255,255,255,0.4);
+                text-decoration: none;
             }
 
             .btn-primary:hover {
@@ -241,6 +115,8 @@
                 border-right: 1px solid #9fa6ad;
                 color: #6a737c;
                 cursor: pointer;
+                text-decoration: none;
+                font-size: 13px;
             }
 
             .filter-item:last-child {
@@ -255,6 +131,7 @@
 
             .filter-item:hover:not(.active) {
                 background-color: #f8f9f9;
+                color: #525960;
             }
 
             .btn-filter-toggle {
@@ -304,21 +181,8 @@
                 border-radius: 3px;
             }
 
-            .stat-box.has-accepted {
-                background-color: #2e7d32;
-                color: white;
-                border: none;
-                padding: 4px 8px;
-                border-radius: 3px;
-                font-weight: 500;
-                display: flex;
-                align-items: center;
-                gap: 4px;
-            }
-
-            .stat-box.has-accepted i {
-                color: white;
-                font-size: 12px;
+            .stat-box.status-none {
+                color: #6a737c;
             }
 
             .question-summary {
@@ -450,65 +314,50 @@
                 color: var(--black-text);
             }
 
-            /* Utility */
-            .u-blue {
-                color: var(--blue-link);
+            /* CSS Phân trang */
+            .pagination {
+                display: flex;
+                list-style: none;
+                margin-top: 30px;
+                gap: 5px;
+            }
+            .pagination a {
+                padding: 5px 10px;
+                border: 1px solid #d6d9dc;
+                border-radius: 3px;
+                text-decoration: none;
+                color: var(--black-text);
+            }
+            .pagination a.active {
+                background-color: var(--orange);
+                color: white;
+                border-color: var(--orange);
             }
         </style>
     </head>
     <body>
-
-        <header>
-            <div class="header-container">
-                <div class="logo">
-                    <div style="background-color: #F48024; padding: 5px; border-radius: 3px;">
-                        <img src="https://cdn-icons-png.flaticon.com/512/2111/2111628.png" alt="icon" style="filter: brightness(0) invert(1); width: 16px; height: 16px;">
-                    </div>
-                    <span><b>Dev</b>Query</span>
-                </div>
-
-                <div class="search-bar">
-                    <span class="search-icon">?</span>
-                    <input type="text" placeholder="Search...">
-                </div>
-
-                <div class="user-nav">
-                    <div class="user-profile">
-                        <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" alt="avatar">
-                        <span>User</span>
-                    </div>
-<a class="btn-logout" href="<%=request.getContextPath()%>/logout">Log out</a>
-                </div>
-            </div>
-        </header>
+        <jsp:include page="../Common/header.jsp" />
 
         <div class="container">
-            <aside class="left-sidebar">
-                <a href="${pageContext.request.contextPath}/home" class="nav-link main active">Home</a>
-                <a href="#" class="nav-link">Questions</a>
-                <a href="#" class="nav-link">Tags</a>
-                <a href="#" class="nav-link">Users</a>
-            </aside>
+
+            <div class="left-sidebar">
+                <jsp:include page="../Common/sidebar.jsp">
+                    <jsp:param name="page" value="bookmarks"/>
+                </jsp:include>
+            </div>
 
             <main class="main-content">
                 <div class="content-header">
-                    <h1 class="page-title">Newest Questions</h1>
-                     <a href="<%=request.getContextPath()%>/ask" style="text-decoration: none;">
-                        <button class="btn-primary">Ask Question</button>
-                    </a>
-                 </div>
+                    <h1 class="page-title">
+                        <c:if test="${currentKeyword != null}">Results for "${currentKeyword}"</c:if>
+                        <c:if test="${currentKeyword == null}">Top Questions</c:if>
+                        </h1>
+                        <a href="${pageContext.request.contextPath}/create" class="btn-primary">Ask Question</a>
+                </div>
 
                 <div class="filters-container">
-                    <div class="total-questions">
-                        <c:choose>
-                            <c:when test="${totalQuestions > 0}">
-                                <fmt:formatNumber value="${totalQuestions}" type="number"/> questions
-                            </c:when>
-                            <c:otherwise>
-                                0 questions
-                            </c:otherwise>
-                        </c:choose>
-                    </div>
+                    <div class="total-questions">${questions.size()} results</div>
+
                     <div style="display: flex; align-items: center;">
                         <div class="filter-btn-group">
                             <%-- Giữ lại từ khóa tìm kiếm nếu có --%>
@@ -540,61 +389,66 @@
                     </div>
                 </div>
 
-                <c:choose>
-                    <c:when test="${not empty questions}">
-                        <c:forEach var="question" items="${questions}">
-                            <div class="question-item">
-                                <div class="stats-container">
-                                    <div class="stat-box votes">${question.score} votes</div>
-                                    <div class="stat-box ${question.hasAcceptedAnswer ? 'has-accepted' : (question.answerCount > 0 ? 'status-answered' : '')}">
-                                        <c:if test="${question.hasAcceptedAnswer}">
-                                            <i class="fa-solid fa-check"></i>
-                                        </c:if>
-                                        ${question.answerCount} ${question.answerCount == 1 ? 'answer' : 'answers'}
-                                    </div>
-                                    <div class="stat-box">${question.viewCount} views</div>
+                <c:forEach items="${questions}" var="q">
+                    <div class="question-item">
+                        <div class="stats-container">
+                            <div class="stat-box votes">${q.score} votes</div>
+                            <div class="stat-box ${q.answerCount > 0 ? 'status-answered' : 'status-none'}">
+                                ${q.answerCount} answers
+                            </div>
+                            <div class="stat-box">${q.viewCount} views</div>
+                        </div>
+
+                        <div class="question-summary">
+                            <a href="${pageContext.request.contextPath}/question?id=${q.questionId}" class="question-title">${q.title}</a>
+                            <p class="question-excerpt">
+                                <c:choose>
+                                    <c:when test="${q.body != null && q.body.length() > 200}">
+                                        ${q.body.substring(0, 200)}...
+                                    </c:when>
+                                    <c:otherwise>${q.body}</c:otherwise>
+                                </c:choose>
+                            </p>
+                            <div class="meta-container">
+                                <div class="tags">
+                                    <c:if test="${not empty q.tags}">
+                                        <c:forEach items="${q.tags}" var="t">
+                                            <a href="${pageContext.request.contextPath}/home?q=[${t}]" class="tag">${t}</a>
+                                        </c:forEach>
+                                    </c:if>
+                                    <c:if test="${empty q.tags}">
+                                        <a href="#" class="tag">java</a>
+                                        <a href="#" class="tag">web</a>
+                                    </c:if>
                                 </div>
-                                <div class="question-summary">
-                                    <a href="${pageContext.request.contextPath}/question/detail?id=${question.questionId}" class="question-title">
-                                        ${question.title}
+                                <div class="user-card">
+                                    <a href="${pageContext.request.contextPath}/profile?id=${q.userId}">
+                                        <img src="${(q.authorAvatar != null && not empty q.authorAvatar) ? q.authorAvatar : 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png'}" 
+                                             width="16" height="16" style="border-radius: 3px; vertical-align: middle;">
+                                        ${q.authorName}
                                     </a>
-                                    <p class="question-excerpt">
-                                        ${fn:substring(question.body, 0, 150)}${fn:length(question.body) > 150 ? '...' : ''}
-                                    </p>
-                                    <div class="meta-container">
-                                        <div class="tags">
-                                            <c:forEach var="tag" items="${question.tags}" varStatus="status">
-                                                <c:if test="${status.index < 3}">
-                                                    <a href="${pageContext.request.contextPath}/tag/${tag}" class="tag">${tag}</a>
-                                                </c:if>
-                                            </c:forEach>
-                                        </div>
-                                        <div class="user-card">
-                                            asked <fmt:formatDate value="${question.createdAt}" pattern="MMM d 'at' HH:mm"/> by 
-                                            <a href="${pageContext.request.contextPath}/user/${question.authorName}">${question.authorName}</a>
-                                        </div>
-                                    </div>
+                                    <span style="margin-left: 5px;">asked <fmt:formatDate value="${q.createdAt}" pattern="MMM dd, yyyy"/></span>
                                 </div>
                             </div>
-                        </c:forEach>
-                    </c:when>
-                    <c:otherwise>
-                        <div class="empty-state-container text-center pb-5">
-                            <div style="border-top: 1px solid #d6d9dc; width: 100%; margin-bottom: 40px;"></div>
-                            <img src="${pageContext.request.contextPath}/assets/img/KinhLup.png" 
-                                 alt="No results" 
-                                 style="width: 120px; margin-bottom: 20px; opacity: 0.6;">
-                            <h5 class="fw-bold mb-2" style="color: #232629;">We couldn't find anything matching your search</h5>
-                            <p class="text-secondary mb-3" style="font-size: 15px; max-width: 400px; margin: 0 auto;">
-                                Try different keywords or less specific search terms.
-                            </p>
-                            <a href="${pageContext.request.contextPath}/home" class="btn btn-outline-primary btn-sm mt-2">
-                                Clear search & Return home
-                            </a>
                         </div>
-                    </c:otherwise>
-                </c:choose>
+                    </div>
+                </c:forEach>
 
+                <c:if test="${empty questions}">
+                    <div class="empty-state-container text-center pb-5">
+                        <div style="border-top: 1px solid #d6d9dc; width: 100%; margin-bottom: 40px;"></div>
+                        <img src="${pageContext.request.contextPath}/assets/img/KinhLup.png" 
+                             alt="No results" 
+                             style="width: 120px; margin-bottom: 20px; opacity: 0.6;">
+                        <h5 class="fw-bold mb-2" style="color: #232629;">We couldn't find anything matching your search</h5>
+                        <p class="text-secondary mb-3" style="font-size: 15px; max-width: 400px; margin: 0 auto;">
+                            Try different keywords or less specific search terms.
+                        </p>
+                        <a href="${pageContext.request.contextPath}/home" class="btn btn-outline-primary btn-sm mt-2">
+                            Clear search & Return home
+                        </a>
+                    </div>
+                </c:if>
                 <c:if test="${totalPage > 1}">
                     <div class="pagination">
                         <c:forEach begin="1" end="${totalPage}" var="i">
@@ -603,13 +457,6 @@
                         </c:forEach>
                     </div>
                 </c:if>
-                <c:if test="${totalPage <= 1}">
-                    <div style="padding: 40px; text-align: center; color: #6a737c;">
-                        <p style="font-size: 16px;">No questions found.</p>
-                        <a href="${pageContext.request.contextPath}/ask" style="color: #0a95ff; text-decoration: none;">Ask the first question</a>
-                    </div>
-                </c:if>
-
             </main>
 
             <aside class="right-sidebar">
@@ -617,44 +464,20 @@
                     <div class="widget-header">The Dev Blog</div>
                     <div class="widget-content">
                         <ul class="widget-list">
-                            <li>
-                                <span class="widget-icon">??</span>
-                                <span>How Stack Overflow is taking on spam and bad actors</span>
-                            </li>
-                            <li>
-                                <span class="widget-icon">??</span>
-                                <span>How AWS re-invented the cloud</span>
-                            </li>
+                            <li><span class="widget-icon">📝</span><span>How Stack Overflow is taking on spam</span></li>
+                            <li><span class="widget-icon">🎧</span><span>How AWS re-invented the cloud</span></li>
                         </ul>
                     </div>
                 </div>
-
-                <div class="widget widget-gray">
-                    <div class="widget-header">Community Activity</div>
-                    <div class="widget-content">
-                        <ul class="widget-list" style="color: #6a737c; text-align: center; padding: 20px;">
-                            <li>(Placeholder for community stats)</li>
-                        </ul>
-                    </div>
-                </div>
-
                 <div class="popular-tags">
                     <h3>Popular tags</h3>
                     <div class="tags" style="flex-wrap: wrap;">
                         <a href="#" class="tag">javascript</a>
                         <a href="#" class="tag">python</a>
                         <a href="#" class="tag">java</a>
-                        <a href="#" class="tag">c#</a>
-                        <a href="#" class="tag">php</a>
-                        <a href="#" class="tag">android</a>
                     </div>
                 </div>
             </aside>
-
         </div>
-
-        <!-- Footer -->
-        <%@ include file="../Common/footer.jsp" %>
-
     </body>
 </html>

@@ -1,6 +1,6 @@
 package filter;
 
-import dto.UserDTO;
+import model.User;
 import jakarta.servlet.*;
 import jakarta.servlet.annotation.WebFilter;
 import jakarta.servlet.http.*;
@@ -17,7 +17,7 @@ public class AuthFilter implements Filter {
         HttpServletResponse response = (HttpServletResponse) res;
 
         HttpSession session = request.getSession(false);
-        UserDTO user = (session == null) ? null : (UserDTO) session.getAttribute("USER");
+        User user = (session == null) ? null : (User) session.getAttribute("user");
 
         if (user == null) {
             response.sendRedirect(request.getContextPath() + "/auth/login");

@@ -2,7 +2,7 @@ package control;
 
 import dal.CommentDAO;
 import dal.AnswerDAO;
-import dto.UserDTO;
+import model.User;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
@@ -21,7 +21,7 @@ public class CommentController extends HttpServlet {
         try {
             // 1. Check authentication
             HttpSession session = request.getSession(false);
-            UserDTO user = (session == null) ? null : (UserDTO) session.getAttribute("USER");
+            User user = (session == null) ? null : (User) session.getAttribute("user");
 
             if (user == null) {
                 response.sendRedirect(request.getContextPath() + "/auth/login");

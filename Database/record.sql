@@ -23,6 +23,9 @@ INSERT INTO [dbo].[Users] ([username], [email], [password_hash], [role], [Reputa
 ('bot_auto', 'bot@devquery.system', '15e2b0d3c33891ebb0f1ef609ec419420c20e320ce94c65fbc8c979c0fde7dae', 'member', 0);
 GO
 select * from Users
+delete from Users where user_id=18;
+GO
+
 -- =============================================
 -- 2. TẠO USER PROFILE (15 profiles)
 -- =============================================
@@ -224,137 +227,11 @@ INSERT INTO [dbo].[Notifications] ([user_id], [type], [content], [is_read]) VALU
 (13, 'answer', N'Thuy_java đã trả lời câu hỏi của bạn.', 0),
 (2, 'comment', N'Có bình luận mới trong bài viết SQL của bạn.', 1),
 (12, 'badge', N'Chúc mừng! Bạn nhận được huy hiệu Good Answer.', 0),
-(14, 'system', N'Bảo trì hệ thống vào 12h đêm nay.', 0);
-
-
+(14, 'system', N'Bảo trì hệ thống vào 12h đêm nay.', 0),
+(17, 'system', N'Chào mừng bạn chính thức gia nhập cộng đồng DevQuery!', 0),
+(17, 'comment', N'Ai đó vừa để lại bình luận trong bài viết của bạn.', 0),
+(17, 'badge', N'Bạn vừa nhận được huy hiệu: Thành viên mới.', 0),
+(17, 'comment', N'Ai đó vừa để lại bình luận trong bài viết lúc nãy của bạn.', 0),
+(17, 'badge', N'Bạn vừa nhận được huy hiệu: Thành viên cũ.', 0),
+(17, 'badge', N'Bạn vừa nhận được huy hiệu: Thành viên đẹp trai.', 0);
 GO
-
-
-
--- Tạo bài đăng mới cho user có ID = 7
--- Thực thi script này trên cơ sở dữ liệu [devquery]
-
-INSERT INTO Questions (user_id, title, body, code_snippet, view_count, is_closed, created_at, updated_at, Score)
-VALUES (
-    7,
-    'Làm thế nào để tối ưu hóa hiệu suất ứng dụng Java web?',
-    'Tôi đang xây dựng một ứng dụng web với Java và Servlet. Hiện tại ứng dụng chạy chậm, đặc biệt là khi có nhiều user truy cập cùng lúc. Tôi đã thử một số cách nhưng vẫn chưa hiệu quả. Ai có thể giúp tôi tối ưu hóa hiệu suất?',
-    'public class PerformanceOptimization {
-    // Caching example
-    private static Map<String, Object> cache = new ConcurrentHashMap<>();
-    
-    public Object getCachedData(String key) {
-        return cache.computeIfAbsent(key, k -> {
-            // Load from database if not in cache
-            return loadFromDatabase(k);
-        });
-    }
-}',
-    0,
-    0,
-    GETDATE(),
-    GETDATE(),
-    0
-);
-
--- Xem thông tin bài đăng vừa tạo
-SELECT * FROM Questions WHERE user_id = 7 ORDER BY created_at DESC;
-
-
-
--- Tạo 3 câu trả lời cho bài đăng vừa tạo (question_id = 10005)
--- Thực thi script này trên cơ sở dữ liệu [devquery]
-
--- Câu trả lời thứ nhất
-INSERT INTO Answers (question_id, user_id, body, code_snippet, is_edited, is_accepted, created_at, updated_at, Score)
-VALUES (
-    10005,
-    2,
-    'Một cách tuyệt vời để tối ưu hóa hiệu suất là sử dụng caching. Bạn có thể cache kết quả của các truy vấn cơ sở dữ liệu phổ biến để giảm thiểu số lượng truy vấn. Ngoài ra, hãy đảm bảo rằng bạn đang sử dụng connection pooling để quản lý các kết nối cơ sở dữ liệu một cách hiệu quả.',
-    'public class CacheManager {
-    private static final Map<String, CacheEntry> cache = new ConcurrentHashMap<>();
-    private static final long CACHE_TTL = 5 * 60 * 1000; // 5 minutes
-    
-    public static <T> T getOrCompute(String key, Callable<T> loader) throws Exception {
-        CacheEntry entry = cache.get(key);
-        if (entry != null && !entry.isExpired()) {
-            return (T) entry.getValue();
-        }
-        T value = loader.call();
-        cache.put(key, new CacheEntry(value));
-        return value;
-    }
-}',
-    0,
-    0,
-    GETDATE(),
-    GETDATE(),
-    0
-);
-
--- Câu trả lời thứ hai
-INSERT INTO Answers (question_id, user_id, body, code_snippet, is_edited, is_accepted, created_at, updated_at, Score)
-VALUES (
-    10005,
-    3,
-    'Bạn cũng nên xem xét sử dụng async programming. Triển khai các servlet kế thừa HttpServlet với xử lý bất đồng bộ có thể giúp xử lý nhiều yêu cầu đồng thời mà không chặn luồng. Điều này có thể cải thiện đáng kể thông lượng của ứng dụng.',
-    'public class AsyncServletExample extends HttpServlet {
-    @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) 
-            throws ServletException, IOException {
-        AsyncContext asyncContext = request.startAsync();
-        asyncContext.setTimeout(10000);
-        
-        new Thread(() -> {
-            try {
-                // Thực hiện công việc nặng ở đây
-                Thread.sleep(2000);
-                asyncContext.getResponse().getWriter().println("Response");
-                asyncContext.complete();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }).start();
-    }
-}',
-    0,
-    0,
-    DATEADD(SECOND, 2, GETDATE()),
-    DATEADD(SECOND, 2, GETDATE()),
-    0
-);
-
--- Câu trả lời thứ ba
-INSERT INTO Answers (question_id, user_id, body, code_snippet, is_edited, is_accepted, created_at, updated_at, Score)
-VALUES (
-    10005,
-    4,
-    'Hãy sử dụng một tool profiler như JProfiler hoặc YourKit để xác định các bottleneck trong mã của bạn. Thường các vấn đề hiệu suất nằm ở các truy vấn cơ sở dữ liệu không được tối ưu hóa hoặc logic lặp không hiệu quả. Tối ưu hóa những khu vực này trước sẽ mang lại lợi ích lớn nhất.',
-    '// Sử dụng explain plan để tối ưu hóa query
-SELECT * FROM Answers 
-WHERE question_id = 10005 
-ORDER BY Score DESC;
-
--- Thêm index để tăng tốc độ
-CREATE INDEX idx_question_score ON Answers(question_id, Score DESC);',
-    0,
-    0,
-    DATEADD(SECOND, 4, GETDATE()),
-    DATEADD(SECOND, 4, GETDATE()),
-    0
-);
-
--- Xem tất cả câu trả lời vừa tạo
-SELECT 
-    answer_id,
-    question_id,
-    user_id,
-    body,
-    Score,
-    created_at
-FROM Answers 
-WHERE question_id = 10005 
-ORDER BY created_at ASC;
-
-
-
