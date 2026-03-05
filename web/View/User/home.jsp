@@ -349,10 +349,16 @@
             <main class="main-content">
                 <div class="content-header">
                     <h1 class="page-title">
-                        <c:if test="${currentKeyword != null}">Results for "${currentKeyword}"</c:if>
-                        <c:if test="${currentKeyword == null}">Top Questions</c:if>
-                        </h1>
-                        <a href="${pageContext.request.contextPath}/create" class="btn-primary">Ask Question</a>
+                        <c:choose>
+                            <c:when test="${not empty currentKeyword}">
+                                Results for "${currentKeyword}"
+                            </c:when>
+                            <c:otherwise>
+                                Top Questions
+                            </c:otherwise>
+                        </c:choose>
+                    </h1>
+                    <a href="${pageContext.request.contextPath}/create" class="btn-primary">Ask Question</a>
                 </div>
 
                 <div class="filters-container">
