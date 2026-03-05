@@ -106,9 +106,7 @@ public class ActivityDAO extends DBContext {
     // 4. Lấy danh sách Quyền hạn (Privileges) từ bảng System_Rules
     public List<SystemRuleDTO> getSystemPrivileges() {
         List<SystemRuleDTO> list = new ArrayList<>();
-        // Giả sử các luật về Quyền hạn được phân biệt bằng một tiền tố hoặc lấy toàn bộ.
-        // Ở đây mình ví dụ bạn lưu cột 'type' là mốc điểm (chuỗi số), 'content' là tên quyền hạn.
-        // Dùng ISNUMERIC để đảm bảo chỉ lấy các dòng mà type là số, tránh lỗi ép kiểu.
+
         String sql = "SELECT type, content FROM System_Rules WHERE ISNUMERIC(type) = 1 ORDER BY CAST(type AS INT) ASC";
         
         try {

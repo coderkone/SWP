@@ -12,7 +12,6 @@ public class CollectionDAO extends DBContext {
 
     // 1. Tạo Collection mới
     public void createCollection(long userId, String name) {
-        // Dựa trên diagram: bảng Collections có cột user_id, Name, CreatedAt
         String sql = "INSERT INTO Collections (user_id, Name, CreatedAt) VALUES (?, ?, GETDATE())";
         try {
             Connection conn = getConnection();
@@ -65,14 +64,31 @@ public class CollectionDAO extends DBContext {
             st1.executeUpdate();
             st1.close();
 
-            // 2. Sau đó mới xóa chính cái List đó
+            // 2. Xóa list
             String sqlDeleteCollection = "DELETE FROM Collections WHERE collection_id = ? AND user_id = ?";
             PreparedStatement st2 = conn.prepareStatement(sqlDeleteCollection);
             st2.setInt(1, collectionId);
-            st2.setLong(2, userId); // Thêm userId để chắc chắn không xóa nhầm của người khác
+            st2.setLong(2, userId); // Thêm userId để chắc chắn xóa đúng collection
             st2.executeUpdate();
             st2.close();
 
+            conn.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    // Rename 
+    public void renameCollection(int collectionId, long userId, String newName) {
+        String sql = "UPDATE Collections SET Name = ? WHERE collection_id = ? AND user_id = ?";
+        try {
+            Connection conn = getConnection();
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setString(1, newName);
+            ps.setInt(2, collectionId);
+            ps.setLong(3, userId);
+            ps.executeUpdate();
+            ps.close();
             conn.close();
         } catch (Exception e) {
             e.printStackTrace();
