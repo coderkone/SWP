@@ -131,12 +131,7 @@ public class QuestionDAO extends DBContext {
         return 0;
     }
     
-    // 4. Hàm Search (Optional)
-    public List<QuestionDTO> searchQuestions(String keyword) {
-        return getQuestions(1, 20, "newest", keyword, "all");
-    }
-    
-    // 5. Hàm lấy danh sách Tags của 1 câu hỏi
+    // 4. Hàm lấy danh sách Tags của 1 câu hỏi
     public List<String> getTagsByQuestionId(long questionId) {
         List<String> tags = new ArrayList<>();
         String sql = "SELECT t.tag_name FROM Tags t " +
@@ -159,7 +154,7 @@ public class QuestionDAO extends DBContext {
         return tags;
     }
     
-    // 6. Hàm thêm Câu hỏi mới kèm Tags (Sử dụng Transaction)
+    // 5. Hàm thêm Câu hỏi mới kèm Tags (Sử dụng Transaction)
     // Hàm quản lý transaction
     public boolean insertQuestionWithTags(long userId, String title, String body, String tagsInput, int userReputation) throws Exception {
         Connection conn = null;
@@ -218,21 +213,16 @@ public class QuestionDAO extends DBContext {
         if (tagsInput == null || tagsInput.trim().isEmpty()) return newTags;
 
         String[] tagsArray = tagsInput.split(",");
-        String sqlCheck = "SELECT tag_id FROM Tags WHERE tag_name = ?";
 
-        try (Connection conn = getConnection();
-             PreparedStatement psCheck = conn.prepareStatement(sqlCheck)) {
-
+        try (Connection conn = getConnection()) {
             for (String tag : tagsArray) {
                 String tagName = tag.trim().toLowerCase();
                 if (tagName.isEmpty()) continue;
 
-                psCheck.setString(1, tagName);
-                try (ResultSet rs = psCheck.executeQuery()) {
-                    // Nếu rs.next() là false nghĩa là tag này chưa có trong Database
-                    if (!rs.next()) {
-                        newTags.add(tagName);
-                    }
+                // Reuse helper method
+                long tagId = getTagIdIfExists(conn, tagName);
+                if (tagId == -1) {
+                    newTags.add(tagName);
                 }
             }
         } catch (Exception e) {
@@ -240,34 +230,39 @@ public class QuestionDAO extends DBContext {
         }
         return newTags;
     }
+    
+    // Helper method: Check if tag exists and return tagId, or -1 if not exists
+    private long getTagIdIfExists(Connection conn, String tagName) throws SQLException {
+        String sql = "SELECT tag_id FROM Tags WHERE tag_name = ?";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, tagName);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getLong("tag_id");
+                }
+            }
+        }
+        return -1;
+    }
     // Xử lý tag và check Reputation
     private void processTagsForQuestion(Connection conn, long questionId, String tagsInput, int userReputation) throws Exception {
         String[] tagsArray = tagsInput.split(",");
-        String sqlCheck = "SELECT tag_id FROM Tags WHERE tag_name = ?";
         String sqlInsertTag = "INSERT INTO Tags (tag_name) VALUES (?)";
         String sqlInsertQT = "INSERT INTO Question_Tags (question_id, tag_id) VALUES (?, ?)";
 
-        try (PreparedStatement psCheck = conn.prepareStatement(sqlCheck);
-             PreparedStatement psInsertTag = conn.prepareStatement(sqlInsertTag, Statement.RETURN_GENERATED_KEYS);
+        try (PreparedStatement psInsertTag = conn.prepareStatement(sqlInsertTag, Statement.RETURN_GENERATED_KEYS);
              PreparedStatement psInsertQT = conn.prepareStatement(sqlInsertQT)) {
 
             for (String tag : tagsArray) {
                 String tagName = tag.trim().toLowerCase();
                 if (tagName.isEmpty()) continue;
 
-                long tagId = -1;
-                
-                // A. Check xem tag này đã tồn tại trong DB chưa
-                psCheck.setString(1, tagName);
-                try (ResultSet rsCheck = psCheck.executeQuery()) {
-                    if (rsCheck.next()) {
-                        tagId = rsCheck.getLong("tag_id"); // Tag cũ, ai cũng dùng được
-                    }
-                }
+                // Reuse helper method to check if tag exists
+                long tagId = getTagIdIfExists(conn, tagName);
 
                 // B. Nếu là TAG MỚI HOÀN TOÀN -> Bắt đầu check uy tín
                 if (tagId == -1) {
-                    // Giả sử mốc uy tín cần thiết là 50 điểm (bạn có thể thay đổi số này)
+                    // Giả sử mốc uy tín cần thiết là 50 điểm
                     if (userReputation < 50) {
                         // Ném ra Exception để Rollback toàn bộ và báo lỗi
                         throw new Exception("NOT_ENOUGH_REP:" + tagName);
@@ -290,6 +285,113 @@ public class QuestionDAO extends DBContext {
                     psInsertQT.executeUpdate();
                 }
             }
+        }
+    }
+    
+    // 6. Lấy câu hỏi theo ID
+    public QuestionDTO getQuestionById(long questionId) throws Exception {      
+        String sql = "SELECT q.*, u.username FROM Questions q " +
+                "JOIN Users u ON q.user_id = u.user_id WHERE q.question_id = ?";
+
+        try (Connection con = getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setLong(1, questionId);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    QuestionDTO q = mapQuestion(rs);
+                    q.setTags(getTagsByQuestionId(questionId));
+                    return q;
+                }
+            }
+        }
+        return null;
+    }
+    
+    // 7. Tăng lượt xem câu hỏi
+    public void incrementViewCount(long questionId) throws Exception {
+        try (Connection con = getConnection();
+             PreparedStatement ps = con.prepareStatement(
+                     "UPDATE Questions SET view_count = view_count + 1 WHERE question_id = ?")) {
+            ps.setLong(1, questionId);
+            ps.executeUpdate();
+        }
+    }
+    
+    // 8. Toggle accept answer (chuyển đổi câu trả lời được chấp nhận)
+    public boolean toggleAcceptAnswer(long questionId, long answerId, long questionOwnerId) throws Exception {
+        QuestionDTO q = getQuestionById(questionId);
+        if (q == null || q.getUserId() != questionOwnerId) return false;        
+        Long current = q.getAcceptedAnswerId();
+        Long newValue = (current != null && current == answerId) ? null : answerId;
+        return setAcceptedAnswer(questionId, newValue);
+    }
+    
+    // 9. Lấy các câu hỏi liên quan (cùng tags)
+    public List<QuestionDTO> getRelatedQuestions(long questionId, int limit) throws Exception {
+        List<QuestionDTO> relatedQuestions = new ArrayList<>();
+        String sql = "SELECT TOP (?) q.*, u.username FROM Questions q " +       
+                "JOIN Users u ON q.user_id = u.user_id " +
+                "WHERE q.question_id IN (" +
+                "  SELECT DISTINCT q2.question_id FROM Questions q2 " +
+                "  JOIN Question_Tags qt2 ON q2.question_id = qt2.question_id " +
+                "  WHERE qt2.tag_id IN (" +
+                "    SELECT qt.tag_id FROM Question_Tags qt WHERE qt.question_id = ?" +
+                "  ) AND q2.question_id != ?" +
+                ") ORDER BY q.created_at DESC";
+
+        try (Connection con = getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setInt(1, limit);
+            ps.setLong(2, questionId);
+            ps.setLong(3, questionId);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    QuestionDTO q = mapQuestion(rs);
+                    q.setTags(getTagsByQuestionId(q.getQuestionId()));
+                    relatedQuestions.add(q);
+                }
+            }
+        }
+        return relatedQuestions;
+    }
+    
+    // Helper: Map ResultSet sang QuestionDTO (cho getQuestionById)
+    private QuestionDTO mapQuestion(ResultSet rs) throws SQLException {
+        QuestionDTO q = new QuestionDTO();
+        q.setQuestionId(rs.getLong("question_id"));
+        q.setUserId(rs.getLong("user_id"));
+        q.setTitle(rs.getString("title"));
+        q.setBody(rs.getString("body"));
+        q.setViewCount(rs.getInt("view_count"));
+        q.setScore(rs.getInt("Score"));
+        q.setCreatedAt(rs.getTimestamp("created_at"));
+        q.setAuthorName(rs.getString("username"));
+        
+        // Lấy accepted_answer_id nếu tồn tại
+        long acceptedId = rs.getLong("accepted_answer_id");
+        if (!rs.wasNull()) {
+            q.setAcceptedAnswerId(acceptedId);
+        }
+        
+        return q;
+    }
+    
+    // Helper: Set accepted answer (helper cho toggleAcceptAnswer)
+    private boolean setAcceptedAnswer(long questionId, Long answerId) throws Exception {
+        String sql = "UPDATE Questions SET accepted_answer_id = ? WHERE question_id = ?";
+        try (Connection con = getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            if (answerId == null) {
+                ps.setNull(1, java.sql.Types.BIGINT);
+            } else {
+                ps.setLong(1, answerId);
+            }
+            ps.setLong(2, questionId);
+            return ps.executeUpdate() > 0;
         }
     }
 }

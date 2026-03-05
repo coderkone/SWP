@@ -13,6 +13,7 @@ import jakarta.servlet.http.*;
 import java.io.IOException;
 import java.util.List;
 import java.util.ArrayList;
+import model.User;
 
 // Controller này sẽ hứng URL dạng: /question?id=123
 @WebServlet(name = "QuestionDetailController", urlPatterns = {"/question/detail"})

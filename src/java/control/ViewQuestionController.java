@@ -10,6 +10,7 @@ import jakarta.servlet.http.*;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import model.User;
 
 @WebServlet(name = "ViewQuestionController", urlPatterns = {"/question"})
 public class ViewQuestionController extends HttpServlet {

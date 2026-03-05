@@ -2,7 +2,7 @@ package control;
 
 import dal.AnswerDAO;
 import dal.QuestionDAO;
-import dto.UserDTO;
+import model.User;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
@@ -24,13 +24,13 @@ public class AcceptAnswerController extends HttpServlet {
 
         try {
             HttpSession session = request.getSession(false);
-            if (session == null || session.getAttribute("USER") == null) {
+            if (session == null || session.getAttribute("user") == null) {
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 out.print("{\"success\": false, \"error\": \"Not authenticated\"}");
                 return;
             }
 
-            UserDTO user = (UserDTO) session.getAttribute("USER");
+            User user = (User) session.getAttribute("user");
             if (user == null) {
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 out.print("{\"success\": false, \"error\": \"Invalid user\"}");
@@ -63,7 +63,7 @@ public class AcceptAnswerController extends HttpServlet {
                 return;
             }
 
-            dto.AnswerDTO answer = answerDao.getAnswerById(answerId);
+            dto.AnswerDTO answer = (dto.AnswerDTO) answerDao.getAnswerById(answerId);
             if (answer == null || answer.getQuestionId() != questionId) {
                 response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                 out.print("{\"success\": false, \"error\": \"Invalid answer for this question\"}");
