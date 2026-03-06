@@ -52,10 +52,27 @@ public class SearchController extends HttpServlet {
         if (filter == null) filter = "all";
 
         QuestionDAO dao = new QuestionDAO();
-        int page = 1; 
-        List<QuestionDTO> list = dao.getQuestions(page, 10, tab, keyword, filter);
+        // Bắt tham số page từ URL
+        int pageIndex = 1;
+        int pageSize = 10;
+        String pageStr = request.getParameter("page");
+        try {
+            if (pageStr != null) pageIndex = Integer.parseInt(pageStr);
+        } catch (NumberFormatException e) {
+            pageIndex = 1;
+        }
 
+        // Lấy danh sách và tính toán phân trang
+        List<QuestionDTO> list = dao.getQuestions(pageIndex, pageSize, tab, keyword, filter);
+        int totalRecords = dao.getTotalQuestions(keyword, filter);
+        int totalPage = (totalRecords % pageSize == 0) ? (totalRecords / pageSize) : (totalRecords / pageSize + 1);
+
+        // Truyền dữ liệu sang JSP
         request.setAttribute("questions", list);
+        request.setAttribute("totalPage", totalPage);
+        request.setAttribute("currentPage", pageIndex);
+        request.setAttribute("totalQuestions", totalRecords); // Gửi tổng số bài thực tế
+        
         request.setAttribute("currentKeyword", keyword);
         request.setAttribute("currentSort", tab);
         request.setAttribute("currentFilter", filter);
