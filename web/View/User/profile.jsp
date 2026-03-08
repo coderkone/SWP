@@ -218,7 +218,7 @@
                                         </c:otherwise>
                                     </c:choose>
                                     <span class="mx-2">|</span>      
-                                    <i class="fa-solid fa-cake-candles"></i> Member since ${userProfile.createdAt}
+                                    <i class="fa-solid fa-cake-candles"></i> Member since <fmt:formatDate value="${userProfile.createdAt}" pattern="dd/MM/yyyy" />
                                     <span class="mx-2">|</span> 
                                     <i class="fa-solid fa-star text-warning"></i> ${userProfile.reputation} reputation
                                 </div>

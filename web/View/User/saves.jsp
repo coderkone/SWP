@@ -167,7 +167,7 @@
                         <div class="flex-grow-1">
                             <h1 class="user-name">${userProfile.username != null ? userProfile.username : 'Developer'}</h1>
                             <div class="user-meta mb-3">
-                                <i class="fa-solid fa-cake-candles"></i> Member since ${userProfile.createdAt}
+                                <i class="fa-solid fa-cake-candles"></i> Member since <fmt:formatDate value="${userProfile.createdAt}" pattern="dd/MM/yyyy" />
                                 <span class="mx-2">|</span> 
                                 <i class="fa-solid fa-star text-warning"></i> ${userProfile.reputation} reputation
                             </div>
