@@ -47,17 +47,10 @@
         <c:set var="uri" value="${pageContext.request.requestURI}" />
 
         <ul class="nav flex-column">
+            <li class="sidebar-heading">Public</li>
             <li class="nav-item">
                 <a class="nav-link ${uri.contains('/home') ? 'active' : ''}" href="${pageContext.request.contextPath}/home">
                     <i class="fa-solid fa-house me-2"></i> Home
-                </a>
-            </li>
-
-            <li class="sidebar-heading">Public</li>
-
-            <li class="nav-item">
-                <a class="nav-link ${uri.contains('/questions') ? 'active' : ''}" href="${pageContext.request.contextPath}/questions">
-                    <i class="fa-solid fa-earth-americas me-2"></i> Questions
                 </a>
             </li>
 

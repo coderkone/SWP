@@ -210,6 +210,8 @@
                 -webkit-line-clamp: 2;
                 -webkit-box-orient: vertical;
                 overflow: hidden;
+                word-wrap: break-word; 
+                word-break: break-all;
             }
 
             .meta-container {
@@ -362,8 +364,7 @@
                 </div>
 
                 <div class="filters-container">
-                    <div class="total-questions">${questions.size()} results</div>
-
+                    <div class="total-questions">${totalQuestions != null ? totalQuestions : questions.size()} results</div>
                     <div style="display: flex; align-items: center;">
                         <div class="filter-btn-group">
                             <%-- Giữ lại từ khóa tìm kiếm nếu có --%>
