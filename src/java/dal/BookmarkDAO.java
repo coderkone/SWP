@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import model.Question;
 
-public class BookmarkDAO {
+public class BookmarkDAO extends DBContext {
 
     public List<BookmarkDTO> getBookmarksByUserId(long userId) {
         List<BookmarkDTO> list = new ArrayList<>();
@@ -19,8 +19,7 @@ public class BookmarkDAO {
                 + "WHERE b.user_id = ? ORDER BY b.created_at DESC";
 
         try {
-            DBContext db = new DBContext();
-            Connection conn = db.getConnection();
+            Connection conn = getConnection();
             PreparedStatement ps = conn.prepareStatement(sql);
             ps.setLong(1, userId);
             ResultSet rs = ps.executeQuery();
@@ -44,8 +43,7 @@ public class BookmarkDAO {
     public void removeBookmark(long userId, int questionId) {
         String sql = "DELETE FROM Bookmarks WHERE user_id = ? AND question_id = ?";
         try {
-            DBContext db = new DBContext();
-            Connection conn = db.getConnection();
+            Connection conn = getConnection();
             PreparedStatement ps = conn.prepareStatement(sql);
             ps.setLong(1, userId);
             ps.setInt(2, questionId);
@@ -64,8 +62,7 @@ public class BookmarkDAO {
                 + "WHERE b.user_id = ? AND b.collection_id = ? "
                 + "ORDER BY b.created_at DESC";
         try {
-            DBContext db = new DBContext();
-            Connection conn = db.getConnection();
+            Connection conn = getConnection();
             PreparedStatement ps = conn.prepareStatement(sql);
             ps.setLong(1, userId);
             ps.setInt(2, collectionId);
@@ -98,8 +95,7 @@ public class BookmarkDAO {
                 + "WHERE b.user_id = ? "
                 + "ORDER BY b.created_at DESC";
         try {
-            DBContext db = new DBContext();
-            Connection conn = db.getConnection();
+            Connection conn = getConnection();
             PreparedStatement ps = conn.prepareStatement(sql);
             ps.setLong(1, userId);
             ResultSet rs = ps.executeQuery();
@@ -117,8 +113,7 @@ public class BookmarkDAO {
     public boolean isBookmarked(long userId, int questionId) {
         String sql = "SELECT 1 FROM Bookmarks WHERE user_id = ? AND question_id = ?";
         try {
-            DBContext db = new DBContext();
-            Connection conn = db.getConnection();
+            Connection conn = getConnection();
             PreparedStatement ps = conn.prepareStatement(sql);
             ps.setLong(1, userId);
             ps.setInt(2, questionId);
@@ -139,8 +134,7 @@ public class BookmarkDAO {
     public void moveBookmark(long userId, int questionId, String collectionIdStr) {
         String sql = "UPDATE Bookmarks SET collection_id = ? WHERE user_id = ? AND question_id = ?";
         try {
-            DBContext db = new DBContext();
-            Connection conn = db.getConnection();
+            Connection conn = getConnection();
             PreparedStatement ps = conn.prepareStatement(sql);
 
             // Nếu chuyển ra "All saves" (thư mục gốc), collection_id sẽ là NULL
@@ -159,5 +153,20 @@ public class BookmarkDAO {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+    public boolean removeFromCollection(long userId, long questionId) {
+        String sql = "UPDATE Bookmarks SET collection_id = NULL WHERE user_id = ? AND question_id = ?";
+        try {
+            Connection conn = getConnection();
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setLong(1, userId);
+            ps.setLong(2, questionId);
+            int row = ps.executeUpdate();
+            conn.close();
+            return row > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 }

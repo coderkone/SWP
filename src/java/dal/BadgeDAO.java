@@ -3,9 +3,10 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
 package dal;
+
 import config.DBContext;
 import dto.BadgeDTO;
-import dto.SystemRuleDTO;
+import dto.PrivilegeDTO;
 import dto.ReputationDTO;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -14,19 +15,20 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 /**
  *
  * @author nguye
  */
-public class ActivityDAO extends DBContext {
+public class BadgeDAO extends DBContext {
 
     // 1. Lấy lịch sử thay đổi điểm uy tín (Tab Reputation)
     public List<ReputationDTO> getReputationHistory(long userId) {
         List<ReputationDTO> list = new ArrayList<>();
         String sql = "SELECT action_type, value, created_at "
-                   + "FROM Reputation_History "
-                   + "WHERE user_id = ? "
-                   + "ORDER BY created_at DESC";
+                + "FROM Reputation_History "
+                + "WHERE user_id = ? "
+                + "ORDER BY created_at DESC";
         try {
             Connection conn = getConnection();
             PreparedStatement ps = conn.prepareStatement(sql);
@@ -50,10 +52,10 @@ public class ActivityDAO extends DBContext {
     public List<BadgeDTO> getUserBadges(long userId) {
         List<BadgeDTO> list = new ArrayList<>();
         String sql = "SELECT b.name, b.type, b.description, ub.created_at "
-                   + "FROM User_Badges ub "
-                   + "JOIN Badges b ON ub.badge_id = b.badge_id "
-                   + "WHERE ub.user_id = ? "
-                   + "ORDER BY ub.created_at DESC";
+                + "FROM User_Badges ub "
+                + "JOIN Badges b ON ub.badge_id = b.badge_id "
+                + "WHERE ub.user_id = ? "
+                + "ORDER BY ub.created_at DESC";
         try {
             Connection conn = getConnection();
             PreparedStatement ps = conn.prepareStatement(sql);
@@ -84,10 +86,10 @@ public class ActivityDAO extends DBContext {
         counts.put("bronze", 0);
 
         String sql = "SELECT b.type, COUNT(*) as count "
-                   + "FROM User_Badges ub "
-                   + "JOIN Badges b ON ub.badge_id = b.badge_id "
-                   + "WHERE ub.user_id = ? "
-                   + "GROUP BY b.type";
+                + "FROM User_Badges ub "
+                + "JOIN Badges b ON ub.badge_id = b.badge_id "
+                + "WHERE ub.user_id = ? "
+                + "GROUP BY b.type";
         try {
             Connection conn = getConnection();
             PreparedStatement ps = conn.prepareStatement(sql);
@@ -103,20 +105,23 @@ public class ActivityDAO extends DBContext {
         }
         return counts;
     }
-    // 4. Lấy danh sách Quyền hạn (Privileges) từ bảng System_Rules
-    public List<SystemRuleDTO> getSystemPrivileges() {
-        List<SystemRuleDTO> list = new ArrayList<>();
 
-        String sql = "SELECT type, content FROM System_Rules WHERE ISNUMERIC(type) = 1 ORDER BY CAST(type AS INT) ASC";
-        
+    // 4. Lấy danh sách Quyền hạn (Privileges) từ bảng System_Rules
+    public List<PrivilegeDTO> getAllPrivileges() {
+        List<PrivilegeDTO> list = new ArrayList<>();
+        String sql = "SELECT * FROM Privileges ORDER BY required_reputation ASC";
+
         try {
             Connection conn = getConnection();
             PreparedStatement ps = conn.prepareStatement(sql);
             ResultSet rs = ps.executeQuery();
+
             while (rs.next()) {
-                list.add(new SystemRuleDTO(
-                        rs.getInt("type"), // Ép mốc điểm sang dạng số
-                        rs.getString("content") // Mô tả quyền hạn
+                list.add(new PrivilegeDTO(
+                        rs.getInt("privilege_id"),
+                        rs.getString("name"),
+                        rs.getString("description"),
+                        rs.getInt("required_reputation")
                 ));
             }
             conn.close();

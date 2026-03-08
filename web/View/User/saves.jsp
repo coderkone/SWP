@@ -174,7 +174,7 @@
 
                             <ul class="nav profile-tabs">
                                 <li class="nav-item"><a class="nav-link" href="${pageContext.request.contextPath}/profile">Profile</a></li>
-                                <li class="nav-item"><a class="nav-link" href="${pageContext.request.contextPath}/activity">Activity</a></li>
+                                <li class="nav-item"><a class="nav-link" href="${pageContext.request.contextPath}/badge">Badge</a></li>
                                 <li class="nav-item"><a class="nav-link active" href="${pageContext.request.contextPath}/saves">Saves</a></li>
                                 <li class="nav-item"><a class="nav-link" href="#">Settings</a></li>
                             </ul>
@@ -271,10 +271,10 @@
                                                         <i class="fa-solid fa-folder-tree"></i> Move
                                                     </a>
 
-                                                    <a href="${pageContext.request.contextPath}/saves?action=removeBookmark&questionId=${item.questionId}" 
+                                                    <a href="${pageContext.request.contextPath}/saves/remove?questionId=${item.questionId}&fromCollectionId=${activeListId}" 
                                                        class="text-danger small mt-1 ms-3" 
                                                        style="text-decoration: none;"
-                                                       onclick="return confirm('Remove this item from your saves?');"
+                                                       onclick="return confirm('Bạn có chắc chắn muốn bỏ lưu bài viết này?');"
                                                        title="Unsave">
                                                         <i class="fa-solid fa-bookmark-slash"></i> Unsave
                                                     </a>
@@ -327,37 +327,6 @@
                 </form>
             </div>
         </div>
-
-        <script>
-            // Script để mở Modal Đổi tên và tự động điền thông tin cũ vào
-            function openRenameModal(id, currentName) {
-                document.getElementById('renameCollectionId').value = id;
-                document.getElementById('renameInput').value = currentName;
-                document.getElementById('renameListModal').style.display = 'block';
-            }
-
-            // Đóng Modal khi click ra vùng tối bên ngoài (bổ sung thêm renameListModal)
-            var modalCreate = document.getElementById('createListModal');
-            var modalRename = document.getElementById('renameListModal');
-
-            window.onclick = function (event) {
-                if (event.target == modalCreate) {
-                    modalCreate.style.display = "none";
-                }
-                if (event.target == modalRename) {
-                    modalRename.style.display = "none";
-                }
-            }
-        </script>
-        <script>
-            // Đóng modal khi click ra vùng tối bên ngoài
-            var modal = document.getElementById('createListModal');
-            window.onclick = function (event) {
-                if (event.target == modal) {
-                    modal.style.display = "none";
-                }
-            }
-        </script>
         <div id="moveBookmarkModal" class="modal-custom">
             <div class="modal-content-custom">
                 <span onclick="document.getElementById('moveBookmarkModal').style.display = 'none'" class="close-custom">&times;</span>
@@ -386,15 +355,31 @@
         </div>
 
         <script>
-            // Hàm mở modal và gắn questionId vào form
+            // 1. Hàm mở Modal Rename
+            function openRenameModal(id, currentName) {
+                document.getElementById('renameCollectionId').value = id;
+                document.getElementById('renameInput').value = currentName;
+                document.getElementById('renameListModal').style.display = 'block';
+            }
+
+            // 2. Modal Move
             function openMoveModal(questionId) {
                 document.getElementById('moveQuestionId').value = questionId;
                 document.getElementById('moveBookmarkModal').style.display = 'block';
             }
 
-            // Đóng Modal khi click ra ngoài
-            var moveModal = document.getElementById('moveBookmarkModal');
+            // 3. Close event
             window.addEventListener('click', function (event) {
+                var createModal = document.getElementById('createListModal');
+                var renameModal = document.getElementById('renameListModal');
+                var moveModal = document.getElementById('moveBookmarkModal');
+
+                if (event.target == createModal) {
+                    createModal.style.display = "none";
+                }
+                if (event.target == renameModal) {
+                    renameModal.style.display = "none";
+                }
                 if (event.target == moveModal) {
                     moveModal.style.display = "none";
                 }
