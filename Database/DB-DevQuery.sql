@@ -253,3 +253,16 @@ CREATE TABLE [dbo].[UserFollow](
     FOREIGN KEY (following_id) REFERENCES Users(user_id)
 )
 GO
+
+ALTER TABLE [dbo].[Badges] 
+ADD [required_reputation] [int] DEFAULT 0;
+GO
+
+CREATE TABLE [dbo].[Privileges](
+	[privilege_id] [int] IDENTITY(1,1) PRIMARY KEY,
+	[name] [nvarchar](100) NOT NULL,
+	[description] [nvarchar](max) NOT NULL,
+	[required_reputation] [int] NOT NULL
+)
+GO
+

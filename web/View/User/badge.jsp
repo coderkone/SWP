@@ -160,7 +160,7 @@
 
                             <ul class="nav profile-tabs">
                                 <li class="nav-item"><a class="nav-link" href="${pageContext.request.contextPath}/profile">Profile</a></li>
-                                <li class="nav-item"><a class="nav-link active" href="${pageContext.request.contextPath}/activity">Activity</a></li>
+                                <li class="nav-item"><a class="nav-link active" href="${pageContext.request.contextPath}/badge">Badge</a></li>
                                 <li class="nav-item"><a class="nav-link" href="${pageContext.request.contextPath}/saves">Saves</a></li>
                                 <li class="nav-item"><a class="nav-link" href="#">Settings</a></li>
                             </ul>
@@ -260,10 +260,39 @@
                                     </div>
                                 </c:when>
 
-                                <%-- 4. TAB PRIVILEGES (Dữ liệu lấy từ System_Rules) --%>
+                                <%-- 4. TAB PRIVILEGES (Dữ liệu lấy từ bảng Privileges) --%>
                                 <c:when test="${currentTab == 'privileges'}">
                                     <h3 style="font-size: 21px; margin-bottom: 10px;">Privileges</h3>
                                     <p class="text-muted mb-4">You unlock new privileges as you gain reputation.</p>
+
+                                    <div class="card mb-4 border-0" style="background-color: #f8f9f9; border-radius: 5px;">
+                                        <div class="card-body">
+                                            <h5 class="card-title text-primary" style="font-size: 15px;">
+                                                <i class="fa-solid fa-trophy text-warning"></i> Next Privilege
+                                            </h5>
+
+                                            <c:choose>
+                                                <c:when test="${not empty isMaxLevel}">
+                                                    <p class="text-success fw-bold mb-0 mt-2">🎉 Congratulations! You have unlocked all privileges on DevQuery!</p>
+                                                </c:when>
+                                                <c:otherwise>
+                                                    <p class="mb-2 mt-2">
+                                                        You need <strong>${pointsNeeded} more reputation</strong> to unlock: 
+                                                        <span class="badge bg-warning text-dark">${nextPriv.name}</span>
+                                                    </p>
+                                                    <div class="progress" style="height: 20px; background-color: #e3e6e8;">
+                                                        <div class="progress-bar progress-bar-striped progress-bar-animated bg-success" 
+                                                             role="progressbar" 
+                                                             style="width: ${progressPercent}%;" 
+                                                             aria-valuenow="${progressPercent}" 
+                                                             aria-valuemin="0" aria-valuemax="100">
+                                                            ${userProfile.reputation} / ${nextPriv.requiredReputation} XP
+                                                        </div>
+                                                    </div>
+                                                </c:otherwise>
+                                            </c:choose>
+                                        </div>
+                                    </div>
 
                                     <table class="table activity-table table-borderless">
                                         <thead>
@@ -274,21 +303,22 @@
                                         </thead>
                                         <tbody>
                                             <c:forEach items="${privilegesList}" var="rule">
-                                                <c:set var="isUnlocked" value="${sessionScope.user.reputation >= rule.requiredReputation}" />
+                                                <c:set var="isUnlocked" value="${userProfile.reputation >= rule.requiredReputation}" />
 
                                                 <tr>
                                                     <td class="${isUnlocked ? 'fw-bold' : 'fw-bold text-muted'}">
                                                         ${rule.requiredReputation}
                                                     </td>
-
                                                     <td class="${isUnlocked ? '' : 'text-muted'}">
                                                         <c:choose>
                                                             <c:when test="${isUnlocked}">
-                                                                <a href="#" style="text-decoration: none;">${rule.privilegeDescription}</a>
+                                                                <a href="#" style="text-decoration: none;">${rule.name}</a> 
+                                                                <span class="text-muted d-block" style="font-size: 13px;">${rule.description}</span>
                                                             </c:when>
                                                             <c:otherwise>
                                                                 <i class="fa-solid fa-lock me-2"></i> 
-                                                                ${rule.privilegeDescription} <span style="font-size: 12px;">(You need ${rule.requiredReputation} rep)</span>
+                                                                ${rule.name} 
+                                                                <span class="text-muted d-block" style="font-size: 13px;">${rule.description}</span>
                                                             </c:otherwise>
                                                         </c:choose>
                                                     </td>

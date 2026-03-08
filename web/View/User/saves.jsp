@@ -174,7 +174,7 @@
 
                             <ul class="nav profile-tabs">
                                 <li class="nav-item"><a class="nav-link" href="${pageContext.request.contextPath}/profile">Profile</a></li>
-                                <li class="nav-item"><a class="nav-link" href="${pageContext.request.contextPath}/activity">Activity</a></li>
+                                <li class="nav-item"><a class="nav-link" href="${pageContext.request.contextPath}/badge">Badge</a></li>
                                 <li class="nav-item"><a class="nav-link active" href="${pageContext.request.contextPath}/saves">Saves</a></li>
                                 <li class="nav-item"><a class="nav-link" href="#">Settings</a></li>
                             </ul>
@@ -184,7 +184,11 @@
                     <div class="row">
                         <div class="col-md-2">
                             <nav class="nav flex-column">
-                                <a class="saves-sidebar-item active" href="#">All saves</a>
+                                <a href="${pageContext.request.contextPath}/saves" 
+                                   class="saves-sidebar-item ${activeListId == '' ? 'active fw-bold' : ''}" 
+                                   style="display: block; text-decoration: none; color: #232629; padding: 6px 12px; border-radius: 100px;">
+                                    All saves
+                                </a>
 
                                 <div class="d-flex justify-content-between align-items-center px-2 mt-3">
                                     <span class="saves-sidebar-header">MY LISTS</span>
@@ -194,18 +198,28 @@
                                 </div>
 
                                 <c:forEach items="${myCollections}" var="col">
-                                    <div class="saves-sidebar-item d-flex justify-content-between align-items-center">
+                                    <div class="saves-sidebar-item d-flex justify-content-between align-items-center ${activeListId == col.collectionId ? 'active' : ''}" style="padding-right: 8px;">
 
-                                        <a href="#" class="text-decoration-none text-dark text-truncate" style="max-width: 120px;">
+                                        <a href="${pageContext.request.contextPath}/saves?listId=${col.collectionId}" 
+                                           class="text-decoration-none text-dark text-truncate flex-grow-1" style="max-width: 90px;">
                                             ${col.name}
                                         </a>
 
-                                        <a href="${pageContext.request.contextPath}/saves/delete?id=${col.collectionId}" 
-                                           class="text-danger small" 
-                                           title="Delete list"
-                                           onclick="return confirm('Are you sure you want to delete list: ${col.name}? All items inside will be unsaved form this list.');">
-                                            <i class="fa-regular fa-trash-can"></i>
-                                        </a>
+                                        <div class="d-flex">
+                                            <a href="javascript:void(0)" 
+                                               class="text-secondary small ms-2 opacity-75 hover-opacity-100" 
+                                               title="Rename list"
+                                               onclick="openRenameModal(${col.collectionId}, '${col.name}')">
+                                                <i class="fa-solid fa-pen"></i>
+                                            </a>
+
+                                            <a href="${pageContext.request.contextPath}/saves/delete?id=${col.collectionId}" 
+                                               class="text-danger small ms-2 opacity-75 hover-opacity-100" 
+                                               title="Delete list"
+                                               onclick="return confirm('Are you sure you want to delete list: ${col.name}?');">
+                                                <i class="fa-regular fa-trash-can"></i>
+                                            </a>
+                                        </div>
                                     </div>
                                 </c:forEach>
                             </nav>
@@ -237,32 +251,35 @@
                                 <c:otherwise>
                                     <div class="list-group list-group-flush border-top">
                                         <c:forEach items="${savedList}" var="item">
-                                            <div class="saved-item-card">
-                                                <div class="d-flex justify-content-between align-items-start">
+                                            <div class="saved-item-card d-flex justify-content-between align-items-center">
 
-                                                    <div>
-                                                        <a href="${pageContext.request.contextPath}/questions?id=${item.questionId}" class="saved-item-title">
-                                                            ${item.questionTitle}
-                                                        </a>
-                                                        <div class="saved-meta">
-                                                            <span class="text-success fw-bold">Saved</span> 
-                                                            <c:if test="${item.createdAt != null}">
-                                                                <fmt:formatDate value="${item.createdAt}" pattern="MMM dd, yyyy" />
-                                                            </c:if>
-                                                            <span class="mx-1">•</span>
-                                                            <span class="badge bg-light text-dark border">question</span>
-                                                        </div>
+                                                <div>
+                                                    <a href="${pageContext.request.contextPath}/question?id=${item.questionId}" class="saved-item-title fw-bold">
+                                                        ${item.title} 
+                                                    </a>
+                                                    <div class="saved-meta mt-1">
+                                                        Saved on <fmt:formatDate value="${item.createdAt}" pattern="MMM dd, yyyy" />
                                                     </div>
+                                                </div>
 
-                                                    <a href="${pageContext.request.contextPath}/saves/remove?qId=${item.questionId}" 
+                                                <div class="d-flex align-items-center">
+                                                    <a href="javascript:void(0)" 
+                                                       class="text-secondary small mt-1 ms-3 hover-opacity-100" 
+                                                       style="text-decoration: none;"
+                                                       onclick="openMoveModal(${item.questionId})"
+                                                       title="Move to another list">
+                                                        <i class="fa-solid fa-folder-tree"></i> Move
+                                                    </a>
+
+                                                    <a href="${pageContext.request.contextPath}/saves/remove?questionId=${item.questionId}&fromCollectionId=${activeListId}" 
                                                        class="text-danger small mt-1 ms-3" 
                                                        style="text-decoration: none;"
-                                                       onclick="return confirm('Remove this item from your saves?');"
+                                                       onclick="return confirm('Bạn có chắc chắn muốn bỏ lưu bài viết này?');"
                                                        title="Unsave">
                                                         <i class="fa-solid fa-bookmark-slash"></i> Unsave
                                                     </a>
-
                                                 </div>
+
                                             </div>
                                         </c:forEach>
                                     </div>
@@ -291,16 +308,83 @@
                 </form>
             </div>
         </div>
+        <div id="renameListModal" class="modal-custom">
+            <div class="modal-content-custom">
+                <span onclick="document.getElementById('renameListModal').style.display = 'none'" class="close-custom">&times;</span>
+                <h4 style="margin-top: 0;">Rename list</h4>
+
+                <form action="${pageContext.request.contextPath}/saves/rename" method="post">
+                    <input type="hidden" id="renameCollectionId" name="collectionId" value="">
+
+                    <div class="mb-3 mt-3">
+                        <label class="form-label fw-bold">New List Name</label>
+                        <input type="text" id="renameInput" name="newName" class="form-control" required>
+                    </div>
+                    <div class="text-end">
+                        <button type="button" onclick="document.getElementById('renameListModal').style.display = 'none'" class="btn btn-light border me-2">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Save</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <div id="moveBookmarkModal" class="modal-custom">
+            <div class="modal-content-custom">
+                <span onclick="document.getElementById('moveBookmarkModal').style.display = 'none'" class="close-custom">&times;</span>
+                <h4 style="margin-top: 0;">Move saved item</h4>
+
+                <form action="${pageContext.request.contextPath}/saves/move" method="post">
+                    <input type="hidden" id="moveQuestionId" name="questionId" value="">
+
+                    <div class="mb-4 mt-3">
+                        <label class="form-label fw-bold">Select destination list</label>
+                        <select name="collectionId" class="form-select">
+                            <option value="">-- All saves (No specific list) --</option>
+
+                            <c:forEach items="${myCollections}" var="col">
+                                <option value="${col.collectionId}">${col.name}</option>
+                            </c:forEach>
+                        </select>
+                    </div>
+
+                    <div class="text-end">
+                        <button type="button" onclick="document.getElementById('moveBookmarkModal').style.display = 'none'" class="btn btn-light border me-2">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Move Item</button>
+                    </div>
+                </form>
+            </div>
+        </div>
 
         <script>
-            // Đóng modal khi click ra vùng tối bên ngoài
-            var modal = document.getElementById('createListModal');
-            window.onclick = function (event) {
-                if (event.target == modal) {
-                    modal.style.display = "none";
-                }
+            // 1. Hàm mở Modal Rename
+            function openRenameModal(id, currentName) {
+                document.getElementById('renameCollectionId').value = id;
+                document.getElementById('renameInput').value = currentName;
+                document.getElementById('renameListModal').style.display = 'block';
             }
-        </script>                        
+
+            // 2. Modal Move
+            function openMoveModal(questionId) {
+                document.getElementById('moveQuestionId').value = questionId;
+                document.getElementById('moveBookmarkModal').style.display = 'block';
+            }
+
+            // 3. Close event
+            window.addEventListener('click', function (event) {
+                var createModal = document.getElementById('createListModal');
+                var renameModal = document.getElementById('renameListModal');
+                var moveModal = document.getElementById('moveBookmarkModal');
+
+                if (event.target == createModal) {
+                    createModal.style.display = "none";
+                }
+                if (event.target == renameModal) {
+                    renameModal.style.display = "none";
+                }
+                if (event.target == moveModal) {
+                    moveModal.style.display = "none";
+                }
+            });
+        </script>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     </body>
 </html>

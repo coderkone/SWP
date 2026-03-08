@@ -1,10 +1,10 @@
 package control;
 
-import dal.ActivityDAO; // Import DAO vừa tạo
+import dal.BadgeDAO; // Import DAO vừa tạo
 import dal.UserDAO;
 import dto.BadgeDTO;
 import dto.ReputationDTO;
-import dto.SystemRuleDTO;
+import dto.PrivilegeDTO;
 import dto.UserDTO;
 import model.User;
 import java.io.IOException;
@@ -17,8 +17,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 
-@WebServlet(name = "ActivityController", urlPatterns = {"/activity"})
-public class ActivityController extends HttpServlet {
+@WebServlet(name = "BadgeController", urlPatterns = {"/badge"})
+public class BadgeController extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -34,14 +34,14 @@ public class ActivityController extends HttpServlet {
         UserDAO userDao = new UserDAO();
         UserDTO userProfile = userDao.getUserProfileById(user.getUserId());
         request.setAttribute("userProfile", userProfile);
-        
+
         String tab = request.getParameter("tab");
         if (tab == null || tab.isEmpty()) {
             tab = "summary";
         }
         request.setAttribute("currentTab", tab);
 
-        ActivityDAO dao = new ActivityDAO();
+        BadgeDAO dao = new BadgeDAO();
 
         if (tab.equals("summary")) {
             Map<String, Integer> badgeCounts = dao.getBadgeCounts(user.getUserId());
@@ -55,9 +55,32 @@ public class ActivityController extends HttpServlet {
             List<BadgeDTO> myBadges = dao.getUserBadges(user.getUserId());
             request.setAttribute("myBadges", myBadges);
         } else if (tab.equals("privileges")) {
-            List<SystemRuleDTO> privilegesList = dao.getSystemPrivileges();
+            List<PrivilegeDTO> privilegesList = dao.getAllPrivileges();
             request.setAttribute("privilegesList", privilegesList);
+
+            int currentRep = userProfile.getReputation();
+            PrivilegeDTO nextPrivilege = null;
+            
+            // Tìm mốc quyền lợi tiếp theo chưa đạt được
+            for (PrivilegeDTO priv : privilegesList) {
+                if (priv.getRequiredReputation() > currentRep) {
+                    nextPrivilege = priv;
+                    break;
+                }
+            }
+
+            if (nextPrivilege != null) {
+                int targetRep = nextPrivilege.getRequiredReputation();
+                int pointsNeeded = targetRep - currentRep;
+                int progressPercent = (int) Math.round((currentRep * 100.0) / targetRep);
+
+                request.setAttribute("nextPriv", nextPrivilege);
+                request.setAttribute("pointsNeeded", pointsNeeded);
+                request.setAttribute("progressPercent", progressPercent);
+            } else {
+                request.setAttribute("isMaxLevel", true);
+            }
         }
-        request.getRequestDispatcher("/View/User/activity.jsp").forward(request, response);
+        request.getRequestDispatcher("/View/User/badge.jsp").forward(request, response);
     }
 }

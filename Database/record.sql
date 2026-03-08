@@ -23,7 +23,7 @@ INSERT INTO [dbo].[Users] ([username], [email], [password_hash], [role], [Reputa
 ('bot_auto', 'bot@devquery.system', '$2a$10$bothash', 'member', 0);
 GO
 select * from Users
-delete from Users where user_id=18
+delete from Users where user_id=16
 -- =============================================
 -- 2. TẠO USER PROFILE (15 profiles)
 -- =============================================
@@ -227,3 +227,30 @@ INSERT INTO [dbo].[Notifications] ([user_id], [type], [content], [is_read]) VALU
 (12, 'badge', N'Chúc mừng! Bạn nhận được huy hiệu Good Answer.', 0),
 (14, 'system', N'Bảo trì hệ thống vào 12h đêm nay.', 0);
 GO
+
+-- Cập nhật mốc điểm cho Huy hiệu Đồng
+UPDATE [dbo].[Badges] SET [required_reputation] = 15 WHERE [badge_id] = 1;
+UPDATE [dbo].[Badges] SET [required_reputation] = 30 WHERE [badge_id] = 6;
+UPDATE [dbo].[Badges] SET [required_reputation] = 100 WHERE [badge_id] = 5;
+
+-- Cập nhật mốc điểm cho Huy hiệu Bạc
+UPDATE [dbo].[Badges] SET [required_reputation] = 250 WHERE [badge_id] = 7;
+UPDATE [dbo].[Badges] SET [required_reputation] = 500 WHERE [badge_id] = 2;
+UPDATE [dbo].[Badges] SET [required_reputation] = 1000 WHERE [badge_id] = 4;
+
+-- Cập nhật mốc điểm cho Huy hiệu Vàng
+UPDATE [dbo].[Badges] SET [required_reputation] = 2500 WHERE [badge_id] = 3;
+GO
+
+select * from Badges
+
+INSERT INTO [dbo].[Privileges] ([name], [description], [required_reputation]) VALUES
+('Create posts', 'Ask a question or contribute an answer.', 1),
+('Vote up', 'Indicate when questions and answers are useful.', 15),
+('Comment', 'Leave comments on other people''s posts.', 50),
+('Vote down', 'Indicate when questions and answers are not useful.', 125),
+('Create tags', 'Add new tags to the system.', 250),
+('Edit posts', 'Edit other people''s questions and answers.', 500),
+('Moderator', 'Access moderation tools and delete posts.', 2000);
+GO
+select * from Privileges
