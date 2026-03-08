@@ -18,7 +18,7 @@
             }
             header, .navbar {
                 z-index: 99999 !important;
-                position: fixed;
+                position: fixed; 
                 top: 0;
                 width: 100%;
             }
@@ -31,7 +31,7 @@
             .editor-preview-side {
                 top: 106px !important;
                 z-index: 9999 !important;
-                height: calc(100vh - 106px) !important;
+                height: calc(100vh - 106px) !important; 
             }
         </style>
     </head>
@@ -42,20 +42,20 @@
                 <div class="row justify-content-center">
                     <div class="col-md-9">
                         <h2 class="mb-4">Ask Question</h2>
-
+                        
                     <% if (request.getAttribute("errorMessage") != null) { %>
-                    <div class="alert alert-danger" role="alert">
-                        <%= request.getAttribute("errorMessage") %>
-                    </div>
+                        <div class="alert alert-danger" role="alert">
+                            <%= request.getAttribute("errorMessage") %>
+                        </div>
                     <% } %>
-
+                    
                     <form action="${pageContext.request.contextPath}/create" method="POST">
 
                         <div class="mb-3">
                             <label for="title" class="form-label fw-bold">Title</label>
                             <input type="text" class="form-control" id="title" name="title" 
-                                   value="<%= request.getAttribute("oldTitle") != null ? request.getAttribute("oldTitle") : "" %>" 
-                                   minlength = "15" required>
+                                value="<%= request.getAttribute("oldTitle") != null ? request.getAttribute("oldTitle") : "" %>" 
+                                minlength = "15" required>
                             <div class="form-text">Keep your title concise and to the point.</div>
                         </div>
 
@@ -68,8 +68,8 @@
                         <div class="mb-4">
                             <label for="tags" class="form-label fw-bold">Tags</label>
                             <input type="text" class="form-control" id="tags" name="tags" 
-                                   placeholder="java, servlet, sql-server" 
-                                   value="<%= request.getAttribute("oldTags") != null ? request.getAttribute("oldTags") : "" %>" required>
+                                placeholder="java, servlet, sql-server" 
+                                value="<%= request.getAttribute("oldTags") != null ? request.getAttribute("oldTags") : "" %>" required>
                             <div class="form-text">Add up to 5 tags to categorize your question</div>
                         </div>
 
