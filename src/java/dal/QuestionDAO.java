@@ -1,5 +1,7 @@
 package dal;
 
+import config.DBContext;
+import dto.QuestionDTO;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -7,8 +9,6 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
-import dto.QuestionDTO;
-import config.DBContext;
 
 public class QuestionDAO extends DBContext {
 
