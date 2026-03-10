@@ -23,13 +23,13 @@ public class VoteController extends HttpServlet {
         try {
             // Get user from session
             HttpSession session = request.getSession(false);
-            if (session == null || session.getAttribute("user") == null) {
+            if (session == null || session.getAttribute("USER") == null) {
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 out.println("{\"error\": \"Not authenticated\"}");
                 return;
             }
 
-            User user = (User) session.getAttribute("user");
+            User user = (User) session.getAttribute("USER");
             long userId = user.getUserId();
 
             // Get parameters

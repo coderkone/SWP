@@ -1,6 +1,7 @@
 <%@ page contentType="text/html; charset=UTF-8" %>
 <%@ page import="dto.QuestionDTO" %>
 <%@ page import="dto.AnswerDTO" %>
+<%@ page import="model.User" %>
 <%@ page import="java.util.List" %>
 <!DOCTYPE html>
 <html lang="vi">
@@ -9,6 +10,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Câu hỏi - DevQuery</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Quill Rich Text Editor -->
+    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
     <style>
         * {
             box-sizing: border-box;
@@ -411,6 +414,73 @@
             margin-bottom: 16px;
         }
 
+        /* Rendered HTML Content Styling */
+        .answer-body h1,
+        .answer-body h2,
+        .answer-body h3,
+        .answer-body h4,
+        .answer-body h5,
+        .answer-body h6 {
+            margin-top: 12px;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .answer-body h1 { font-size: 20px; }
+        .answer-body h2 { font-size: 18px; }
+        .answer-body h3 { font-size: 16px; }
+
+        .answer-body code {
+            background-color: #f5f5f5;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 13px;
+        }
+
+        .answer-body pre {
+            background-color: #f5f5f5;
+            border: 1px solid #d6d9dc;
+            border-radius: 4px;
+            padding: 12px;
+            overflow-x: auto;
+            margin: 8px 0;
+        }
+
+        .answer-body pre code {
+            background: none;
+            padding: 0;
+            border-radius: 0;
+        }
+
+        .answer-body ul,
+        .answer-body ol {
+            margin-left: 20px;
+            margin-bottom: 8px;
+        }
+
+        .answer-body li {
+            margin-bottom: 4px;
+        }
+
+        .answer-body a {
+            color: #0a95ff;
+            text-decoration: none;
+        }
+
+        .answer-body a:hover {
+            text-decoration: underline;
+        }
+
+        .answer-body blockquote {
+            border-left: 4px solid #d6d9dc;
+            padding-left: 12px;
+            margin-left: 0;
+            margin-right: 0;
+            color: #6a737c;
+            font-style: italic;
+        }
+
         /* Add Answer Form */
         .add-answer-section {
             background: white;
@@ -450,6 +520,68 @@
             resize: vertical;
             min-height: 120px;
             font-family: Consolas, monospace;
+        }
+
+        /* Quill Editor Styling */
+        #answer-editor {
+            background: white;
+            min-height: 300px;
+        }
+
+        .ql-container {
+            font-size: 13px;
+            border: 1px solid #c8ccd0;
+            border-radius: 4px;
+        }
+
+        .ql-editor {
+            min-height: 300px;
+            padding: 12px;
+            font-family: inherit;
+        }
+
+        .ql-toolbar {
+            border: 1px solid #c8ccd0 !important;
+            border-bottom: none !important;
+            border-radius: 4px 4px 0 0 !important;
+            background-color: #f8f9fa !important;
+        }
+
+        .ql-toolbar.ql-snow .ql-picker-label,
+        .ql-toolbar.ql-snow .ql-stroke,
+        .ql-toolbar.ql-snow .ql-fill {
+            color: #525960;
+        }
+
+        .ql-toolbar.ql-snow .ql-stroke { stroke: #525960; }
+        .ql-toolbar.ql-snow .ql-fill { fill: #525960; }
+        .ql-toolbar.ql-snow .ql-picker-label { color: #525960; }
+
+        .ql-toolbar.ql-snow button:hover,
+        .ql-toolbar.ql-snow button:focus,
+        .ql-toolbar.ql-snow button.ql-active,
+        .ql-toolbar.ql-snow .ql-picker-label:hover,
+        .ql-toolbar.ql-snow .ql-picker-item:hover,
+        .ql-toolbar.ql-snow .ql-picker-item.ql-selected {
+            color: #0a95ff;
+        }
+
+        .ql-toolbar.ql-snow button:hover .ql-stroke,
+        .ql-toolbar.ql-snow button:focus .ql-stroke,
+        .ql-toolbar.ql-snow button.ql-active .ql-stroke,
+        .ql-toolbar.ql-snow .ql-picker-label:hover .ql-stroke,
+        .ql-toolbar.ql-snow .ql-picker-item:hover .ql-stroke,
+        .ql-toolbar.ql-snow .ql-picker-item.ql-selected .ql-stroke {
+            stroke: #0a95ff;
+        }
+
+        .ql-toolbar.ql-snow button:hover .ql-fill,
+        .ql-toolbar.ql-snow button:focus .ql-fill,
+        .ql-toolbar.ql-snow button.ql-active .ql-fill,
+        .ql-toolbar.ql-snow .ql-picker-label:hover .ql-fill,
+        .ql-toolbar.ql-snow .ql-picker-item:hover .ql-fill,
+        .ql-toolbar.ql-snow .ql-picker-item.ql-selected .ql-fill {
+            fill: #0a95ff;
         }
 
         .btn {
@@ -659,7 +791,7 @@
                 <!-- Add Comment Section -->
                 <div style="margin-top: 15px; padding-top: 10px; border-top: 1px solid #e3e6e8;">
                     <%
-                        dto.UserDTO currentUser = (dto.UserDTO) session.getAttribute("USER");
+                        model.User currentUser = (model.User) session.getAttribute("USER");
                         boolean isLoggedIn = currentUser != null;
                     %>
                     <% if (isLoggedIn) { %>
@@ -864,12 +996,13 @@
         <div class="add-answer-section">
             <div class="section-header">Your Answer</div>
 
-            <form method="post" action="${pageContext.request.contextPath}/answer/create">
+            <form method="post" action="${pageContext.request.contextPath}/answer/create" onsubmit="return handleAnswerFormSubmit(event)">
                 <input type="hidden" name="questionId" value="<%= question.getQuestionId() %>">
+                <input type="hidden" name="answerBody" id="answer-body-hidden">
 
                 <div class="form-group">
                     <label class="form-label">Answer</label>
-                    <textarea name="answerBody" class="form-input" placeholder="Viết câu trả lời của bạn..." required></textarea>
+                    <div id="answer-editor"></div>
                 </div>
 
                 <button type="submit" class="btn">Post Answer</button>
@@ -1184,6 +1317,101 @@
             textSpan.textContent = 'Show comments (' + commentCount + ')';
         }
     }
+
+    // ===== QUILL RICH TEXT EDITOR INITIALIZATION =====
+    let quillEditor;
+
+    // Define allowed HTML tags and attributes
+    const purifyConfig = {
+        ALLOWED_TAGS: ['p', 'br', 'strong', 'b', 'em', 'i', 'u', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 
+                      'ul', 'ol', 'li', 'code', 'pre', 'blockquote', 'a', 'img', 'hr', 'div', 'span'],
+        ALLOWED_ATTR: ['href', 'title', 'src', 'alt'],
+        KEEP_CONTENT: true
+    };
+
+    // Initialize Quill editor when document is ready
+    document.addEventListener('DOMContentLoaded', function() {
+        quillEditor = new Quill('#answer-editor', {
+            theme: 'snow',
+            modules: {
+                toolbar: [
+                    ['bold', 'italic', 'underline', 'strike'],
+                    ['blockquote', 'code-block'],
+                    [{ 'header': 1 }, { 'header': 2 }],
+                    [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                    ['link', 'image'],
+                    ['clean']
+                ]
+            },
+        });
+    });
+
+    // Handle answer form submission
+    function handleAnswerFormSubmit(event) {
+        // Get the HTML content from Quill
+        const html = quillEditor.root.innerHTML;
+        
+        // Check if content is empty or only contains empty tags
+        if (!html || html.trim() === '' || html.trim() === '<p><br></p>' || html.trim() === '<div><br></div>') {
+            alert('Vui lòng viết câu trả lời!');
+            event.preventDefault();
+            return false;
+        }
+        
+        // Sanitize the HTML to prevent XSS attacks
+        let sanitized;
+        if (typeof DOMPurify !== 'undefined') {
+            // Use DOMPurify if available
+            sanitized = DOMPurify.sanitize(html, purifyConfig);
+        } else {
+            // Fallback to basic sanitization
+            sanitized = sanitizeHTML(html);
+        }
+        
+        document.getElementById('answer-body-hidden').value = sanitized;
+        return true;
+    }
+
+    // Basic HTML sanitization function (fallback)
+    function sanitizeHTML(html) {
+        const allowedTags = ['p', 'br', 'strong', 'b', 'em', 'i', 'u', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+                           'ul', 'ol', 'li', 'code', 'pre', 'blockquote', 'a', 'img', 'hr', 'div', 'span'];
+        const allowedAttrs = ['href', 'title', 'src', 'alt'];
+        
+        // Create a temporary div to parse the HTML
+        const temp = document.createElement('div');
+        temp.innerHTML = html;
+        
+        // Remove any script tags and dangerous elements
+        const dangerousElements = temp.querySelectorAll('script, iframe, object, embed, style');
+        dangerousElements.forEach(el => el.remove());
+        
+        // Clean up remaining elements
+        temp.querySelectorAll('*').forEach(el => {
+            if (!allowedTags.includes(el.tagName.toLowerCase())) {
+                // Replace with children or text content
+                while (el.firstChild) {
+                    el.parentNode.insertBefore(el.firstChild, el);
+                }
+                el.parentNode.removeChild(el);
+            } else {
+                // Remove disallowed attributes
+                Array.from(el.attributes).forEach(attr => {
+                    if (!allowedAttrs.includes(attr.name.toLowerCase())) {
+                        el.removeAttribute(attr.name);
+                    }
+                });
+            }
+        });
+        
+        return temp.innerHTML;
+    }
 </script>
+
+<!-- Quill Rich Text Editor Library -->
+<script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+
+<!-- DOMPurify Library for HTML Sanitization (Optional but Recommended) -->
+<script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.6/dist/purify.min.js"></script>
 </body>
 </html>

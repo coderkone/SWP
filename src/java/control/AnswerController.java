@@ -4,6 +4,7 @@ import dal.AnswerDAO;
 import dal.QuestionDAO;
 import dto.QuestionDTO;
 import dto.UserDTO;
+import util.HtmlSanitizer;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
@@ -51,8 +52,11 @@ public class AnswerController extends HttpServlet {
 
             long questionId = Long.parseLong(questionIdParam);
 
+            // Sanitize HTML content to prevent XSS attacks
+            String sanitizedAnswerBody = HtmlSanitizer.sanitize(answerBody);
+
             // Create answer
-            long answerId = answerDao.createAnswer(questionId, userId, answerBody.trim(), "");
+            long answerId = answerDao.createAnswer(questionId, userId, sanitizedAnswerBody, "");
 
             if (answerId > 0) {
                 response.sendRedirect(request.getContextPath() + "/question/detail?id=" + questionId + "&success=Answer posted");

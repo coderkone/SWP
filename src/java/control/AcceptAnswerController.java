@@ -24,13 +24,13 @@ public class AcceptAnswerController extends HttpServlet {
 
         try {
             HttpSession session = request.getSession(false);
-            if (session == null || session.getAttribute("user") == null) {
+            if (session == null || session.getAttribute("USER") == null) {
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 out.print("{\"success\": false, \"error\": \"Not authenticated\"}");
                 return;
             }
 
-            User user = (User) session.getAttribute("user");
+            User user = (User) session.getAttribute("USER");
             if (user == null) {
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 out.print("{\"success\": false, \"error\": \"Invalid user\"}");

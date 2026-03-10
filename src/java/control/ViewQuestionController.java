@@ -72,8 +72,8 @@ public class ViewQuestionController extends HttpServlet {
 
             // Load user's votes (if logged in)
             try {
-                if (session != null && session.getAttribute("user") != null) {
-                    User user = (User) session.getAttribute("user");
+                if (session != null && session.getAttribute("USER") != null) {
+                    User user = (User) session.getAttribute("USER");
                     long userId = user.getUserId();
                     request.setAttribute("questionUserVote", voteDao.getUserVote(userId, questionId, null));
                     java.util.Map<Long, String> answerVotes = new java.util.HashMap<>();
@@ -94,8 +94,8 @@ public class ViewQuestionController extends HttpServlet {
             }
 
             try {
-                if (session != null && session.getAttribute("user") != null) {
-                    User u = (User) session.getAttribute("user");
+                if (session != null && session.getAttribute("USER") != null) {
+                    User u = (User) session.getAttribute("USER");
                     request.setAttribute("isQuestionOwner", u.getUserId() == question.getUserId());
                 } else {
                     request.setAttribute("isQuestionOwner", false);

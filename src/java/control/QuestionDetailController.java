@@ -103,8 +103,8 @@ public class QuestionDetailController extends HttpServlet {
                 
                 try {
                     HttpSession s = request.getSession(false);
-                    if (s != null && s.getAttribute("user") != null) {
-                        User u = (User) s.getAttribute("user");
+                    if (s != null && s.getAttribute("USER") != null) {
+                        User u = (User) s.getAttribute("USER");
                         request.setAttribute("isQuestionOwner", u.getUserId() == question.getUserId());
                     } else {
                         request.setAttribute("isQuestionOwner", false);
@@ -116,8 +116,8 @@ public class QuestionDetailController extends HttpServlet {
                 // Load user's vote (if logged in)
                 try {
                     HttpSession session = request.getSession(false);
-                    if (session != null && session.getAttribute("user") != null) {
-                        User user = (User) session.getAttribute("user");
+                    if (session != null && session.getAttribute("USER") != null) {
+                        User user = (User) session.getAttribute("USER");
                         long userId = user.getUserId();
                         
                         // Get user's vote for question
