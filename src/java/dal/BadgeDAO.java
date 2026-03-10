@@ -49,13 +49,22 @@ public class BadgeDAO extends DBContext {
     }
 
     // 2. Lấy danh sách huy hiệu của user (Tab Badges)
-    public List<BadgeDTO> getUserBadges(long userId) {
+    public List<BadgeDTO> getUserBadges(long userId, String sort) {
         List<BadgeDTO> list = new ArrayList<>();
+        
+        // Mặc định sắp xếp theo ngày nhận mới nhất
+        String orderBy = "ORDER BY ub.created_at DESC"; 
+        
+        // Nếu user chọn lọc theo tên Alphabet
+        if ("name".equals(sort)) {
+            orderBy = "ORDER BY b.name ASC";
+        }
+
         String sql = "SELECT b.name, b.type, b.description, ub.created_at "
-                + "FROM User_Badges ub "
-                + "JOIN Badges b ON ub.badge_id = b.badge_id "
-                + "WHERE ub.user_id = ? "
-                + "ORDER BY ub.created_at DESC";
+                   + "FROM User_Badges ub "
+                   + "JOIN Badges b ON ub.badge_id = b.badge_id "
+                   + "WHERE ub.user_id = ? "
+                   + orderBy;
         try {
             Connection conn = getConnection();
             PreparedStatement ps = conn.prepareStatement(sql);

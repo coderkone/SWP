@@ -1,6 +1,6 @@
 package control;
 
-import dal.BadgeDAO; // Import DAO vừa tạo
+import dal.BadgeDAO;
 import dal.UserDAO;
 import dto.BadgeDTO;
 import dto.ReputationDTO;
@@ -27,14 +27,18 @@ public class BadgeController extends HttpServlet {
         HttpSession session = request.getSession();
         User user = (User) session.getAttribute("user");
 
+        // Yêu cầu đăng nhập
         if (user == null) {
             response.sendRedirect(request.getContextPath() + "/View/User/login.jsp");
             return;
         }
+
+        // Lấy thông tin Profile
         UserDAO userDao = new UserDAO();
         UserDTO userProfile = userDao.getUserProfileById(user.getUserId());
         request.setAttribute("userProfile", userProfile);
 
+        // Điều hướng Tab
         String tab = request.getParameter("tab");
         if (tab == null || tab.isEmpty()) {
             tab = "summary";
@@ -43,6 +47,7 @@ public class BadgeController extends HttpServlet {
 
         BadgeDAO dao = new BadgeDAO();
 
+        // RẼ NHÁNH XỬ LÝ THEO TAB
         if (tab.equals("summary")) {
             Map<String, Integer> badgeCounts = dao.getBadgeCounts(user.getUserId());
             request.setAttribute("badgeCounts", badgeCounts);
@@ -52,15 +57,25 @@ public class BadgeController extends HttpServlet {
             request.setAttribute("repList", repList);
 
         } else if (tab.equals("badges")) {
-            List<BadgeDTO> myBadges = dao.getUserBadges(user.getUserId());
+            // Xử lý bộ lọc sắp xếp (Mặc định là newest)
+            String sort = request.getParameter("sort");
+            if (sort == null) {
+                sort = "newest";
+            }
+
+            List<BadgeDTO> myBadges = dao.getUserBadges(user.getUserId(), sort);
             request.setAttribute("myBadges", myBadges);
+            request.setAttribute("currentSort", sort); // Gửi lại để giữ trạng thái select box
+
         } else if (tab.equals("privileges")) {
+            // Lấy danh sách quyền lợi
             List<PrivilegeDTO> privilegesList = dao.getAllPrivileges();
             request.setAttribute("privilegesList", privilegesList);
 
+            // Xử lý logic Thanh tiến độ (Progress Bar)
             int currentRep = userProfile.getReputation();
             PrivilegeDTO nextPrivilege = null;
-            
+
             // Tìm mốc quyền lợi tiếp theo chưa đạt được
             for (PrivilegeDTO priv : privilegesList) {
                 if (priv.getRequiredReputation() > currentRep) {
@@ -81,6 +96,8 @@ public class BadgeController extends HttpServlet {
                 request.setAttribute("isMaxLevel", true);
             }
         }
+
+        // Chú ý: Đảm bảo tên file JSP dưới này khớp với tên file của bạn
         request.getRequestDispatcher("/View/User/badge.jsp").forward(request, response);
     }
 }
