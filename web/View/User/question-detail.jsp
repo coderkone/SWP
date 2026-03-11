@@ -4,7 +4,10 @@
 <%@ page import="dto.UserDTO" %>
 <%@ page import="model.User" %>
 <%@ page import="java.util.List" %>
+<%@ page import="java.util.Map" %>
+<%@ page import="java.util.ArrayList,java.util.HashMap" %>
 <%@ page import="java.text.SimpleDateFormat" %>
+
 <%@ page import="util.CommentRenderUtil" %>
 <!DOCTYPE html>
 <html lang="vi">
@@ -233,8 +236,8 @@
             <div class="section-header">Answers</div>
 
             <%
-                java.util.List answers = (java.util.List) request.getAttribute("answers");
-                java.util.Map<Long, String> answerVotes = (java.util.Map<Long, String>) request.getAttribute("answerVotes");
+                List answers = (java.util.List) request.getAttribute("answers");
+                Map<Long, String> answerVotes = (java.util.Map<Long, String>) request.getAttribute("answerVotes");
                 Boolean isQuestionOwner = (Boolean) request.getAttribute("isQuestionOwner");
             Integer answerCurrentPage = (Integer) request.getAttribute("answerCurrentPage");
             Integer answerTotalPages = (Integer) request.getAttribute("answerTotalPages");
@@ -267,7 +270,7 @@
                         <i class="fa-solid fa-arrow-down"></i>
                     </button>
                     <%
-                        java.util.Map<Long, Boolean> answerBookmarks = (java.util.Map<Long, Boolean>) request.getAttribute("answerBookmarks");
+                        Map<Long, Boolean> answerBookmarks = (java.util.Map<Long, Boolean>) request.getAttribute("answerBookmarks");
                         if (answerBookmarks == null) answerBookmarks = new java.util.HashMap<>();
                         Boolean answerIsBookmarked = answerBookmarks.get(answer.getAnswerId());
                         if (answerIsBookmarked == null) answerIsBookmarked = false;
@@ -327,14 +330,14 @@
 
                     <!-- Comments Section -->
                     <% 
-                        java.util.Map answerComments = 
-                            (java.util.Map) request.getAttribute("answerComments");
-                        java.util.Map answerCommentTrees =
+                        Map answerComments = 
+                            (Map) request.getAttribute("answerComments");
+                        Map answerCommentTrees =
                             (java.util.Map) request.getAttribute("answerCommentTrees");
                         if (answerComments == null) answerComments = new java.util.HashMap<>();
                         if (answerCommentTrees == null) answerCommentTrees = new java.util.HashMap<>();
-                        java.util.List comments = (java.util.List) answerComments.get(answer.getAnswerId());
-                        java.util.Map commentTree = (java.util.Map) answerCommentTrees.get(answer.getAnswerId());
+                        List comments = (java.util.List) answerComments.get(answer.getAnswerId());
+                        Map commentTree = (java.util.Map) answerCommentTrees.get(answer.getAnswerId());
                         if (comments == null) comments = new java.util.ArrayList<>();
                         if (commentTree == null) commentTree = new java.util.HashMap<>();
                         
@@ -358,8 +361,7 @@
                         <!-- Comments Container -->
                         <div id="answer-comments-container-<%= answer.getAnswerId() %>" 
                              style="<%= answerCommentsCollapsed ? "display: none;" : "display: block;" %>">
-                            <% 
-                                java.util.List rootComments = (java.util.List) commentTree.get(null);
+                            <% List rootComments = (List) commentTree.get(null);
                                 out.print(CommentRenderUtil.renderAnswerCommentThread(
                                     commentTree,
                                     rootComments,
