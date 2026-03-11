@@ -1,8 +1,10 @@
 <%@ page contentType="text/html; charset=UTF-8" %>
 <%@ page import="dto.QuestionDTO" %>
 <%@ page import="dto.AnswerDTO" %>
+<%@ page import="dto.UserDTO" %>
 <%@ page import="model.User" %>
 <%@ page import="java.util.List" %>
+<%@ page import="util.CommentRenderUtil" %>
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -791,8 +793,8 @@
                 <!-- Add Comment Section -->
                 <div style="margin-top: 15px; padding-top: 10px; border-top: 1px solid #e3e6e8;">
                     <%
-                        model.User currentUser = (model.User) session.getAttribute("USER");
-                        boolean isLoggedIn = currentUser != null;
+                        Object principal = session.getAttribute("user");
+                        boolean isLoggedIn = (principal instanceof UserDTO) || (principal instanceof User);
                     %>
                     <% if (isLoggedIn) { %>
                     <div id="add-question-comment-form" style="display: none; margin-top: 12px;">
@@ -805,7 +807,7 @@
                             <div style="display: flex; gap: 8px; margin-top: 8px;">
                                 <button type="submit" class="btn" style="padding: 6px 12px; font-size: 13px;">Add Comment</button>
                                 <button type="button" class="btn" style="padding: 6px 12px; font-size: 13px; background: #f1f2f3; color: #3b4045;" 
-                                        onclick="document.getElementById('add-question-comment-form').style.display='none'">Cancel</button>
+                                        onclick="document.getElementById('add-question-comment-form').style.display='none'; document.getElementById('add-question-comment-btn').style.display='block';">Cancel</button>
                             </div>
                         </form>
                     </div>
@@ -906,11 +908,16 @@
 
                     <!-- Comments Section -->
                     <% 
-                        java.util.Map<Long, java.util.List<dto.CommentDTO>> answerComments = 
-                            (java.util.Map<Long, java.util.List<dto.CommentDTO>>) request.getAttribute("answerComments");
+                        java.util.Map answerComments = 
+                            (java.util.Map) request.getAttribute("answerComments");
+                        java.util.Map answerCommentTrees =
+                            (java.util.Map) request.getAttribute("answerCommentTrees");
                         if (answerComments == null) answerComments = new java.util.HashMap<>();
-                        java.util.List<dto.CommentDTO> comments = answerComments.get(answer.getAnswerId());
+                        if (answerCommentTrees == null) answerCommentTrees = new java.util.HashMap<>();
+                        java.util.List comments = (java.util.List) answerComments.get(answer.getAnswerId());
+                        java.util.Map commentTree = (java.util.Map) answerCommentTrees.get(answer.getAnswerId());
                         if (comments == null) comments = new java.util.ArrayList<>();
+                        if (commentTree == null) commentTree = new java.util.HashMap<>();
                         
                         // Determine if should be collapsed by default
                         boolean answerCommentsCollapsed = comments.size() > 3;
@@ -932,15 +939,17 @@
                         <!-- Comments Container -->
                         <div id="answer-comments-container-<%= answer.getAnswerId() %>" 
                              style="<%= answerCommentsCollapsed ? "display: none;" : "display: block;" %>">
-                            <% for (dto.CommentDTO comment : comments) { %>
-                            <div class="comment-item" style="margin-bottom: 12px; font-size: 13px;">
-                                <div style="color: #6a737c; margin-bottom: 4px;">
-                                    <span style="color: #0a95ff; font-weight: 500;"><%= comment.getAuthorName() %></span>
-                                    <span style="margin-left: 8px;"><%= comment.getCreatedAt() %></span>
-                                </div>
-                                <div style="color: #3b4045;"><%= comment.getBody() %></div>
-                            </div>
-                            <% } %>
+                            <% 
+                                java.util.List rootComments = (java.util.List) commentTree.get(null);
+                                out.print(CommentRenderUtil.renderAnswerCommentThread(
+                                    commentTree,
+                                    rootComments,
+                                        answer.getAnswerId(),
+                                        question.getQuestionId(),
+                                        isLoggedIn,
+                                        request.getContextPath(),
+                                        0));
+                            %>
                         </div>
                     </div>
                     <% } %>
@@ -959,17 +968,18 @@
                                 <div style="display: flex; gap: 8px; margin-top: 8px;">
                                     <button type="submit" class="btn" style="padding: 6px 12px; font-size: 13px;">Add Comment</button>
                                     <button type="button" class="btn" style="padding: 6px 12px; font-size: 13px; background: #f1f2f3; color: #3b4045;" 
-                                            onclick="document.getElementById('comment-form-<%= answer.getAnswerId() %>').style.display='none'">Cancel</button>
+                                            onclick="document.getElementById('comment-form-<%= answer.getAnswerId() %>').style.display='none'; document.getElementById('reply-btn-<%= answer.getAnswerId() %>').style.display='block';">Cancel</button>
                                 </div>
                             </form>
                         </div>
                         <button type="button" class="reply-btn" style="font-size: 13px; color: #0a95ff; background: none; border: none; cursor: pointer; padding: 0;"
+                                id="reply-btn-<%= answer.getAnswerId() %>"
                                 onclick="document.getElementById('comment-form-<%= answer.getAnswerId() %>').style.display='block'; this.style.display='none';">
-                            Reply
+                            Add a comment
                         </button>
                         <% } else { %>
                         <a href="${pageContext.request.contextPath}/auth/login" style="font-size: 13px; color: #0a95ff; text-decoration: none;">
-                            Sign in to reply
+                            Sign in to add a comment
                         </a>
                         <% } %>
                     </div>
@@ -1315,6 +1325,28 @@
             container.style.display = 'none';
             const commentCount = container.querySelectorAll('.comment-item').length;
             textSpan.textContent = 'Show comments (' + commentCount + ')';
+        }
+    }
+
+    function showReplyForm(commentId) {
+        const form = document.getElementById('reply-form-comment-' + commentId);
+        const button = document.getElementById('reply-btn-comment-' + commentId);
+        if (form) {
+            form.style.display = 'block';
+        }
+        if (button) {
+            button.style.display = 'none';
+        }
+    }
+
+    function hideReplyForm(commentId) {
+        const form = document.getElementById('reply-form-comment-' + commentId);
+        const button = document.getElementById('reply-btn-comment-' + commentId);
+        if (form) {
+            form.style.display = 'none';
+        }
+        if (button) {
+            button.style.display = 'inline';
         }
     }
 

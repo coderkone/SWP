@@ -1,3 +1,5 @@
+
+
 package control;
 
 import dal.UserDAO;
@@ -104,7 +106,7 @@ public class AuthController extends HttpServlet {
         }
 
         HttpSession session = request.getSession(true);
-        session.setAttribute("USER", user);
+        session.setAttribute("user", user);
 
         String role = user.getRole(); // admin / moderator / member
         if (role != null && role.equalsIgnoreCase("admin")) {

@@ -91,20 +91,46 @@ public class QuestionDetailController extends HttpServlet {
                 // Load comments for each answer
                 try {
                     java.util.Map<Long, java.util.List<dto.CommentDTO>> answerComments = new java.util.HashMap<>();
+                    java.util.Map<Long, java.util.Map<Long, java.util.List<dto.CommentDTO>>> answerCommentTrees = new java.util.HashMap<>();
                     for (Object answerObj : answers) {
                         dto.AnswerDTO answer = (dto.AnswerDTO) answerObj;
                         java.util.List<dto.CommentDTO> comments = commentDao.getCommentsByAnswerId(answer.getAnswerId());
                         answerComments.put(answer.getAnswerId(), comments);
+
+                        java.util.Map<Long, dto.CommentDTO> byId = new java.util.HashMap<>();
+                        for (dto.CommentDTO c : comments) {
+                            byId.put(c.getCommentId(), c);
+                        }
+
+                        java.util.Map<Long, java.util.List<dto.CommentDTO>> tree = new java.util.HashMap<>();
+                        for (dto.CommentDTO c : comments) {
+                            Long parentId = c.getParentCommentId();
+
+                            // Render orphaned replies as top-level comments to avoid losing data in UI.
+                            if (parentId != null && !byId.containsKey(parentId)) {
+                                parentId = null;
+                            }
+
+                            java.util.List<dto.CommentDTO> siblings = tree.get(parentId);
+                            if (siblings == null) {
+                                siblings = new java.util.ArrayList<>();
+                                tree.put(parentId, siblings);
+                            }
+                            siblings.add(c);
+                        }
+                        answerCommentTrees.put(answer.getAnswerId(), tree);
                     }
                     request.setAttribute("answerComments", answerComments);
+                    request.setAttribute("answerCommentTrees", answerCommentTrees);
                 } catch (Exception e) {
                     request.setAttribute("answerComments", new java.util.HashMap<>());
+                    request.setAttribute("answerCommentTrees", new java.util.HashMap<>());
                 }
                 
                 try {
                     HttpSession s = request.getSession(false);
-                    if (s != null && s.getAttribute("USER") != null) {
-                        User u = (User) s.getAttribute("USER");
+                    if (s != null && s.getAttribute("user") != null) {
+                        User u = (User) s.getAttribute("user");
                         request.setAttribute("isQuestionOwner", u.getUserId() == question.getUserId());
                     } else {
                         request.setAttribute("isQuestionOwner", false);
@@ -116,8 +142,8 @@ public class QuestionDetailController extends HttpServlet {
                 // Load user's vote (if logged in)
                 try {
                     HttpSession session = request.getSession(false);
-                    if (session != null && session.getAttribute("USER") != null) {
-                        User user = (User) session.getAttribute("USER");
+                    if (session != null && session.getAttribute("user") != null) {
+                        User user = (User) session.getAttribute("user");
                         long userId = user.getUserId();
                         
                         // Get user's vote for question

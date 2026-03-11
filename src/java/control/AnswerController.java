@@ -23,12 +23,12 @@ public class AnswerController extends HttpServlet {
         try {
             // Get user from session
             HttpSession session = request.getSession(false);
-            if (session == null || session.getAttribute("USER") == null) {
+            if (session == null || session.getAttribute("user") == null) {
                 response.sendRedirect(request.getContextPath() + "/auth/login");
                 return;
             }
 
-            Object userObj = session.getAttribute("USER");
+            Object userObj = session.getAttribute("user");
             long userId = 0;
             
             // Extract userId from UserDTO

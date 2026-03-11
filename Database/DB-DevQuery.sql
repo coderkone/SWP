@@ -75,11 +75,13 @@ CREATE TABLE [dbo].[Comments](
 	[user_id] [bigint] NOT NULL,
 	[question_id] [bigint] NULL,
 	[answer_id] [bigint] NULL,
+	[parent_comment_id] [bigint] NULL,
 	[body] [nvarchar](max) NOT NULL,
 	[created_at] [datetime] DEFAULT GETDATE(),
     FOREIGN KEY (user_id) REFERENCES Users(user_id),
     FOREIGN KEY (question_id) REFERENCES Questions(question_id) ON DELETE CASCADE,
-    FOREIGN KEY (answer_id) REFERENCES Answers(answer_id)
+    FOREIGN KEY (answer_id) REFERENCES Answers(answer_id),
+    FOREIGN KEY (parent_comment_id) REFERENCES Comments(comment_id)
 )
 GO
 

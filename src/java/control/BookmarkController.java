@@ -25,7 +25,7 @@ public class BookmarkController extends HttpServlet {
         try {
             // 1. Check if user is logged in
             HttpSession session = request.getSession(false);
-            if (session == null || session.getAttribute("USER") == null) {
+            if (session == null || session.getAttribute("user") == null) {
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 jsonResponse.addProperty("success", false);
                 jsonResponse.addProperty("message", "User not logged in");
@@ -34,7 +34,7 @@ public class BookmarkController extends HttpServlet {
                 return;
             }
 
-            UserDTO user = (UserDTO) session.getAttribute("USER");
+            UserDTO user = (UserDTO) session.getAttribute("user");
             long userId = user.getUserId();
 
             // 2. Get question ID or answer ID from request
@@ -118,13 +118,13 @@ public class BookmarkController extends HttpServlet {
         try {
             // 1. Check if user is logged in
             HttpSession session = request.getSession(false);
-            if (session == null || session.getAttribute("USER") == null) {
+            if (session == null || session.getAttribute("user") == null) {
                 jsonResponse.addProperty("isBookmarked", false);
                 out.print(jsonResponse);
                 return;
             }
 
-            UserDTO user = (UserDTO) session.getAttribute("USER");
+            UserDTO user = (UserDTO) session.getAttribute("user");
             long userId = user.getUserId();
 
             // 2. Get question ID or answer ID from request

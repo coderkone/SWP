@@ -5,6 +5,7 @@ import dto.CommentDTO;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,8 +16,15 @@ public class CommentDAO {
      * Insert a new comment on an answer
      */
     public long insertAnswerComment(long userId, long answerId, String body) throws Exception {
-        String sql = "INSERT INTO Comments (user_id, answer_id, body, created_at) " +
-                "VALUES (?, ?, ?, GETDATE())";
+        return insertAnswerComment(userId, answerId, body, null);
+    }
+
+    /**
+     * Insert a new comment/reply on an answer
+     */
+    public long insertAnswerComment(long userId, long answerId, String body, Long parentCommentId) throws Exception {
+        String sql = "INSERT INTO Comments (user_id, answer_id, body, parent_comment_id, created_at) " +
+                "VALUES (?, ?, ?, ?, GETDATE())";
 
         try (Connection con = db.getConnection();
              PreparedStatement ps = con.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS)) {
@@ -24,6 +32,11 @@ public class CommentDAO {
             ps.setLong(1, userId);
             ps.setLong(2, answerId);
             ps.setString(3, body);
+            if (parentCommentId == null) {
+                ps.setNull(4, Types.BIGINT);
+            } else {
+                ps.setLong(4, parentCommentId);
+            }
 
             ps.executeUpdate();
 
@@ -67,7 +80,7 @@ public class CommentDAO {
     public List<CommentDTO> getCommentsByAnswerId(long answerId) throws Exception {
         List<CommentDTO> comments = new ArrayList<>();
 
-        String sql = "SELECT c.comment_id, c.user_id, c.question_id, c.answer_id, c.body, c.created_at, " +
+        String sql = "SELECT c.comment_id, c.user_id, c.question_id, c.answer_id, c.parent_comment_id, c.body, c.created_at, " +
                     "u.username, u.Reputation " +
                     "FROM Comments c " +
                     "JOIN Users u ON c.user_id = u.user_id " +
@@ -86,6 +99,7 @@ public class CommentDAO {
                         rs.getLong("user_id"),
                         rs.getLong("question_id"),
                         rs.getLong("answer_id"),
+                        (Long) rs.getObject("parent_comment_id"),
                         rs.getString("body"),
                         rs.getTimestamp("created_at")
                     );
@@ -105,7 +119,7 @@ public class CommentDAO {
     public List<CommentDTO> getCommentsByQuestionId(long questionId) throws Exception {
         List<CommentDTO> comments = new ArrayList<>();
 
-        String sql = "SELECT c.comment_id, c.user_id, c.question_id, c.answer_id, c.body, c.created_at, " +
+        String sql = "SELECT c.comment_id, c.user_id, c.question_id, c.answer_id, c.parent_comment_id, c.body, c.created_at, " +
                     "u.username, u.Reputation " +
                     "FROM Comments c " +
                     "JOIN Users u ON c.user_id = u.user_id " +
@@ -124,6 +138,7 @@ public class CommentDAO {
                         rs.getLong("user_id"),
                         rs.getLong("question_id"),
                         rs.getLong("answer_id"),
+                        (Long) rs.getObject("parent_comment_id"),
                         rs.getString("body"),
                         rs.getTimestamp("created_at")
                     );
@@ -135,6 +150,36 @@ public class CommentDAO {
         }
 
         return comments;
+    }
+
+    /**
+     * Get single comment by id for reply validation
+     */
+    public CommentDTO getCommentById(long commentId) throws Exception {
+        String sql = "SELECT comment_id, user_id, question_id, answer_id, parent_comment_id, body, created_at " +
+                "FROM Comments WHERE comment_id = ?";
+
+        try (Connection con = db.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setLong(1, commentId);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return new CommentDTO(
+                        rs.getLong("comment_id"),
+                        rs.getLong("user_id"),
+                        rs.getLong("question_id"),
+                        rs.getLong("answer_id"),
+                        (Long) rs.getObject("parent_comment_id"),
+                        rs.getString("body"),
+                        rs.getTimestamp("created_at")
+                    );
+                }
+            }
+        }
+
+        return null;
     }
 
     /**
