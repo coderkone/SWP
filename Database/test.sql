@@ -36,3 +36,33 @@ VALUES
 (18, 5); -- Tặng 1 huy hiệu Đồng (Helper)
 
 GO
+
+INSERT INTO [dbo].[Questions] ([user_id], [title], [body], [created_at], [Score]) 
+VALUES (18, N'Java OOP là gì?', N'Nội dung test', '2025-11-10 10:00:00', 20);
+DECLARE @Q1 BIGINT = SCOPE_IDENTITY();
+
+INSERT INTO [dbo].[Questions] ([user_id], [title], [body], [created_at], [Score]) 
+VALUES (18, N'Hỏi về React Hook', N'Nội dung test', '2026-01-05 09:00:00', 30);
+DECLARE @Q2 BIGINT = SCOPE_IDENTITY();
+
+INSERT INTO [dbo].[Answers] ([question_id], [user_id], [body], [created_at], [Score]) 
+VALUES (1, 18, N'Test Answer tháng 12', '2025-12-15 14:00:00', 15);
+
+INSERT INTO [dbo].[Answers] ([question_id], [user_id], [body], [created_at], [Score]) 
+VALUES (2, 18, N'Test Answer tháng 2', '2026-02-20 16:00:00', 5);
+
+-- B. Gắn Tags cho các câu hỏi của User 18 để test Biểu đồ 2 (Cột ngang: Tags)
+-- 1. Gắn tag cho 2 câu hỏi quá khứ vừa tạo ở trên
+INSERT INTO [dbo].[Question_Tags] ([question_id], [tag_id]) VALUES 
+(@Q1, 1), -- 1 là id của tag 'java' (Điểm +20)
+(@Q2, 4), -- 4 là id của tag 'reactjs' (Điểm +30)
+(@Q2, 5); -- 5 là id của tag 'javascript' (Điểm +30)
+
+-- 2. Gắn thêm tag cho 2 câu hỏi cũ bạn đã tạo ở phần trên của file test.sql
+-- Tìm ID của các câu hỏi cũ thông qua Title và gắn tag tương ứng
+INSERT INTO [dbo].[Question_Tags] ([question_id], [tag_id])
+SELECT question_id, 1 FROM [dbo].[Questions] WHERE user_id = 18 AND title LIKE N'%Java%';
+
+INSERT INTO [dbo].[Question_Tags] ([question_id], [tag_id])
+SELECT question_id, 2 FROM [dbo].[Questions] WHERE user_id = 18 AND title LIKE N'%MVC%'; -- tag 2 là spring-boot
+GO

@@ -34,14 +34,13 @@ CREATE TABLE [dbo].[User_Profile](
 )
 GO
 
--- 3. QUESTIONS (Đã xóa accepted_answer_id để tránh vòng lặp)
+-- 3. QUESTIONS 
 CREATE TABLE [dbo].[Questions](
 	[question_id] [bigint] IDENTITY(1,1) PRIMARY KEY,
 	[user_id] [bigint] NOT NULL,
 	[title] [nvarchar](255) NOT NULL,
 	[body] [nvarchar](max) NOT NULL,
 	[code_snippet] [nvarchar](max) NULL,
-	-- [accepted_answer_id] ĐÃ XÓA
 	[view_count] [int] DEFAULT 0,
 	[is_closed] [bit] DEFAULT 0,
 	[closed_reason] [nvarchar](255) NULL,
@@ -52,7 +51,7 @@ CREATE TABLE [dbo].[Questions](
 )
 GO
 
--- 4. ANSWERS (Thêm is_accepted)
+-- 4. ANSWERS 
 CREATE TABLE [dbo].[Answers](
 	[answer_id] [bigint] IDENTITY(1,1) PRIMARY KEY,
 	[question_id] [bigint] NOT NULL,
@@ -60,7 +59,7 @@ CREATE TABLE [dbo].[Answers](
 	[body] [nvarchar](max) NOT NULL,
 	[code_snippet] [nvarchar](max) NULL,
 	[is_edited] [bit] DEFAULT 0,
-    [is_accepted] [bit] DEFAULT 0, -- THÊM DÒNG NÀY
+    [is_accepted] [bit] DEFAULT 0, 
 	[created_at] [datetime] DEFAULT GETDATE(),
 	[updated_at] [datetime] DEFAULT GETDATE(),
 	[Score] [int] DEFAULT 0,
