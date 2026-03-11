@@ -61,20 +61,31 @@
             /* Inner Left Sidebar */
             .inner-nav-item {
                 display: block;
-                padding: 6px 12px;
+                padding: 10px 12px;
                 color: #525960;
                 text-decoration: none;
-                border-radius: 100px;
-                margin-bottom: 2px;
+                font-size: 14px;
+                border-bottom: 1px solid #e3e6e8; /* Đây chính là đường gạch ngang màu xám nhạt bên dưới mỗi option */
+                transition: background-color 0.2s ease-in-out;
             }
+
+            /* Bỏ đường gạch ngang ở mục cuối cùng cùng để menu trông gọn gàng hơn */
+            .inner-nav-item:last-child {
+                border-bottom: none;
+            }
+
+            /* Khi người dùng di chuột qua (Hover) */
             .inner-nav-item:hover {
-                background-color: #f8f9f9;
+                background-color: #f8f9fa; /* Màu nền xám thật nhạt khi lướt qua */
                 color: #0c0d0e;
             }
+
+            /* Khi mục đó đang được chọn (Active) */
             .inner-nav-item.active {
-                font-weight: bold;
-                background-color: #f1f2f3;
-                color: #0c0d0e;
+                background-color: #f48024; /* Màu cam đặc trưng */
+                color: #ffffff;
+                font-weight: 500;
+                border-bottom-color: #f48024; /* Đổi màu viền dưới thành cam luôn cho đồng bộ */
             }
 
             /* Content Boxes */
@@ -271,8 +282,7 @@
                     <div class="row mt-4">
 
                         <div class="col-md-2">
-                            <nav class="nav flex-column">
-                                <a class="inner-nav-item ${currentTab == 'summary' ? 'active' : ''}" href="?tab=summary">Summary</a>
+                            <nav class="nav flex-column mt-2"> <a class="inner-nav-item ${currentTab == 'summary' ? 'active' : ''}" href="?tab=summary">Summary</a>
                                 <a class="inner-nav-item ${currentTab == 'reputation' ? 'active' : ''}" href="?tab=reputation">Reputation</a>
                                 <a class="inner-nav-item ${currentTab == 'badges' ? 'active' : ''}" href="?tab=badges">Badges</a>
                                 <a class="inner-nav-item ${currentTab == 'privileges' ? 'active' : ''}" href="?tab=privileges">Privileges</a>

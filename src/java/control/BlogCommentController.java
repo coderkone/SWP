@@ -1,7 +1,6 @@
 package control;
 
 import dal.BlogCommentDAO;
-import dal.BlogDAO;
 import model.BlogComment;
 import model.User;
 import java.io.IOException;
@@ -19,49 +18,75 @@ public class BlogCommentController extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         
-        // 1. Kiểm tra đăng nhập
         HttpSession session = request.getSession();
         User user = (User) session.getAttribute("user");
         
-        String blogIdStr = request.getParameter("blogId");
-        
         if (user == null) {
-            // Nếu chưa đăng nhập, đá về trang login
-            response.sendRedirect(request.getContextPath() + "/login");
+            response.sendRedirect(request.getContextPath() + "auth/login");
             return;
         }
 
+        String action = request.getParameter("action");
+        if (action == null || action.isEmpty()) action = "add";
+        
+        String blogIdStr = request.getParameter("blogId");
+
         try {
             int blogId = Integer.parseInt(blogIdStr);
-            String content = request.getParameter("content");
-            String parentIdStr = request.getParameter("parentId"); // Nếu là reply thì sẽ có parentId
-
-            // 2. Tạo đối tượng Comment
-            BlogComment comment = new BlogComment();
-            comment.setBlogId(blogId);
-            comment.setUserId(user.getUserId());
-            comment.setContent(content);
-            
-            if (parentIdStr != null && !parentIdStr.isEmpty()) {
-                comment.setParentId(Integer.parseInt(parentIdStr));
-            }
-
-            // 3. Lưu vào database
             BlogCommentDAO commentDao = new BlogCommentDAO();
-            boolean success = commentDao.insertComment(comment);
 
-            if (success) {
-                // 4. Tăng số lượng comment của bài viết lên 1
-                BlogCommentDAO blogDao = new BlogCommentDAO();
-                blogDao.increaseCommentCount(blogId);
+            if ("add".equals(action)) {
+                String content = request.getParameter("content");
+                String parentIdStr = request.getParameter("parentId");
+                
+                BlogComment comment = new BlogComment();
+                comment.setBlogId(blogId);
+                comment.setUserId(user.getUserId());
+                comment.setContent(content);
+                
+                if (parentIdStr != null && !parentIdStr.isEmpty()) {
+                    comment.setParentId(Integer.parseInt(parentIdStr));
+                }
+                if (commentDao.insertComment(comment)) {
+                    commentDao.increaseCommentCount(blogId);
+                }
+
+            } else if ("edit".equals(action)) {
+                String commentIdStr = request.getParameter("commentId");
+                if (commentIdStr != null && !commentIdStr.isEmpty()) {
+                    int commentId = Integer.parseInt(commentIdStr);
+                    String content = request.getParameter("content");
+                    commentDao.updateComment(commentId, user.getUserId(), content);
+                }
+
+            } else if ("delete".equals(action)) {
+                String commentIdStr = request.getParameter("commentId");
+                if (commentIdStr != null && !commentIdStr.isEmpty()) {
+                    int commentId = Integer.parseInt(commentIdStr);
+                    commentDao.deleteComment(commentId, user.getUserId());
+                    commentDao.syncCommentCount(blogId);
+                }
             }
 
-            // 5. Quay trở lại đúng trang bài viết vừa comment
+            // Xử lý thành công, luôn quay lại trang bài viết hiện tại
             response.sendRedirect(request.getContextPath() + "/blog/detail?id=" + blogId);
 
         } catch (Exception e) {
+            System.out.println("=== LỖI TẠI BLOG COMMENT CONTROLLER ===");
             e.printStackTrace();
-            response.sendRedirect(request.getContextPath() + "/blog");
+            
+            // Dù có lỗi ngầm, vẫn cố gắng giữ người dùng lại trang detail chứ không văng ra blogHome
+            if (blogIdStr != null && !blogIdStr.isEmpty()) {
+                response.sendRedirect(request.getContextPath() + "/blog/detail?id=" + blogIdStr);
+            } else {
+                response.sendRedirect(request.getContextPath() + "/blog");
+            }
         }
+    }
+
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        doPost(request, response);
     }
 }

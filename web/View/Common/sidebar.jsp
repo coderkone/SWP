@@ -76,7 +76,7 @@
                 </li>
                 <li class="nav-item">
                     <a class="nav-link ${uri.contains('/blog') ? 'active' : ''}" href="${pageContext.request.contextPath}/blog">
-                        <i class="fa-solid fa-bookmark me-2"></i> Dev Blog
+                        <i class="fa-solid fa-book-open"></i> Dev Blog
                     </a>
                 </li>
             </c:if>

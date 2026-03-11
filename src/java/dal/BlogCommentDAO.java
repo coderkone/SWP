@@ -144,4 +144,79 @@ public class BlogCommentDAO extends DBContext {
         }
         return null;
     }
+
+    // Lấy danh sách những người đã comment trong 1 bài viết cụ thể
+    public List<String> getCommentersByBlogId(int blogId) {
+        List<String> list = new ArrayList<>();
+        // Dùng DISTINCT để tránh lặp tên
+        String sql = "SELECT DISTINCT u.username "
+                + "FROM BlogComments c "
+                + "JOIN Users u ON c.user_id = u.user_id "
+                + "WHERE c.blog_id = ?";
+
+        try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, blogId);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                list.add(rs.getString("username"));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
+    // CẬP NHẬT BÌNH LUẬN (EDIT)
+    // ==========================================================
+    // CẬP NHẬT BÌNH LUẬN (Bản An Toàn)
+    // ==========================================================
+    public boolean updateComment(int commentId, long userId, String newContent) {
+        // Chỉ Update Content, loại bỏ updated_at để tránh lỗi DB
+        String sql = "UPDATE BlogComments SET content = ? WHERE comment_id = ? AND user_id = ?";
+        try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, newContent);
+            ps.setInt(2, commentId);
+            ps.setLong(3, userId);
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            System.out.println("LỖI UPDATE COMMENT TRONG DAO: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    // XÓA BÌNH LUẬN (Bản An Toàn)
+    public void deleteComment(int commentId, long userId) {
+        String sqlChild = "DELETE FROM BlogComments WHERE parent_id = ?";
+        String sqlParent = "DELETE FROM BlogComments WHERE comment_id = ? AND user_id = ?";
+        try (Connection conn = getConnection()) {
+            // Xóa comment con
+            try (PreparedStatement psChild = conn.prepareStatement(sqlChild)) {
+                psChild.setInt(1, commentId);
+                psChild.executeUpdate();
+            }
+            // Xóa comment gốc
+            try (PreparedStatement psParent = conn.prepareStatement(sqlParent)) {
+                psParent.setInt(1, commentId);
+                psParent.setLong(2, userId);
+                psParent.executeUpdate();
+            }
+        } catch (Exception e) {
+            System.out.println("LỖI DELETE COMMENT TRONG DAO: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+    // ĐỒNG BỘ LẠI SỐ LƯỢNG BÌNH LUẬN (Dùng sau khi Xóa)
+    public void syncCommentCount(int blogId) {
+        // Đếm số lượng thực tế trong bảng BlogComments và đè vào bảng Blogs
+        String sql = "UPDATE Blogs SET comment_count = (SELECT COUNT(*) FROM BlogComments WHERE blog_id = ?) WHERE blog_id = ?";
+        try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, blogId);
+            ps.setInt(2, blogId);
+            ps.executeUpdate();
+        } catch (Exception e) {
+            System.out.println("LỖI ĐỒNG BỘ SỐ LƯỢNG COMMENT: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
 }
