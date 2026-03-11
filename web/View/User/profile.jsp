@@ -1,6 +1,7 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<%@taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 
 <!DOCTYPE html>
 <html lang="en">
@@ -184,6 +185,87 @@
                 border: 1px solid #d6d9dc;
                 font-weight: normal;
             }
+            .badge-dashboard {
+                background: #ffffff;
+                border: 1px solid #e9ecef;
+                border-radius: 12px;
+                padding: 24px;
+                box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+            }
+
+            .sticker-box {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                padding: 20px 10px;
+                border-radius: 12px;
+                transition: transform 0.2s ease, box-shadow 0.2s ease;
+                height: 100%;
+            }
+            .sticker-box:hover {
+                transform: translateY(-4px);
+                box-shadow: 0 8px 15px rgba(0,0,0,0.05);
+            }
+
+            /* Màu Gradient cho từng Rank */
+            .sticker-gold {
+                background: linear-gradient(135deg, #fffcf0, #fef4cb);
+                border: 1px solid #fde073;
+            }
+            .sticker-silver {
+                background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+                border: 1px solid #ced4da;
+            }
+            .sticker-bronze {
+                background: linear-gradient(135deg, #fdf8f5, #f5e2d3);
+                border: 1px solid #e8bba1;
+            }
+
+            .sticker-icon {
+                font-size: 2.5rem;
+                margin-bottom: 8px;
+            }
+            .sticker-count {
+                font-size: 1.8rem;
+                font-weight: 700;
+                color: #212529;
+                line-height: 1.2;
+            }
+            .sticker-label {
+                font-size: 0.85rem;
+                color: #6c757d;
+                font-weight: 600;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+            }
+
+            /* Các Chip hiển thị tên danh hiệu */
+            .achievement-chip {
+                display: inline-flex;
+                align-items: center;
+                padding: 6px 14px;
+                border-radius: 20px;
+                font-size: 0.85rem;
+                font-weight: 500;
+                margin: 0 8px 10px 0;
+                background-color: #f8f9fa;
+                border: 1px solid #e9ecef;
+                color: #495057;
+            }
+            .achievement-chip i {
+                margin-right: 6px;
+                font-size: 1rem;
+            }
+            .chip-gold i {
+                color: #f1c40f;
+            }
+            .chip-silver i {
+                color: #adb5bd;
+            }
+            .chip-bronze i {
+                color: #d35400;
+            }
         </style>
     </head>
     <body>
@@ -192,80 +274,200 @@
 
             <div class="container-fluid" style="max-width: 1264px; margin: 0 auto;">
                 <div class="row">
-
                     <nav class="col-md-2 d-none d-md-block bg-light sidebar p-0 pt-4" style="border-right: 1px solid #d6d9dc; min-height: 100vh;">
                     <jsp:include page="../Common/sidebar.jsp" />
                 </nav>
 
                 <main class="col-md-10 px-md-4 pt-4">
-
-                    <div class="dd-flex align-items-start mb-4">
-
+                    <div class="d-flex justify-content-between mb-5">
                         <div class="d-flex">
                             <div class="me-4">
-                                <img src="${sessionScope.user.avatarUrl != null ? sessionScope.user.avatarUrl : 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png'}" 
-                                     class="user-avatar-lg" alt="Avatar">
+                                <img src="${not empty uPro.avatarUrl ? uPro.avatarUrl : 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png'}" 
+                                     alt="Avatar" style="width: 144px; height: 144px; border-radius: 5px; box-shadow: 0 1px 2px rgba(0,0,0,0.15); object-fit: cover;">
                             </div>
-                            <div class="flex-grow-1">
-                                <h1 class="user-name">${uPro.username}</h1>
+
+                            <div class="pt-1">
+                                <h1 class="user-name" style="margin-bottom: 8px;">${uPro.username}</h1>
                                 <div class="user-meta mb-3">
-                                    <c:choose>
-                                        <c:when test="${not empty uPro.bio}">
-                                            ${uPro.bio}
-                                        </c:when>
-                                        <c:otherwise>
-                                            <span class="text-muted fst-italic">No bio yet.</span>
-                                        </c:otherwise>
-                                    </c:choose>
-                                    <span class="mx-2">|</span>      
-                                    <i class="fa-solid fa-cake-candles"></i> Member since ${userProfile.createdAt}
+                                    <i class="fa-solid fa-cake-candles me-1"></i> Member since <fmt:formatDate value="${uPro.createdAt}" pattern="MMM dd, yyyy"/>
                                     <span class="mx-2">|</span> 
-                                    <i class="fa-solid fa-star text-warning"></i> ${userProfile.reputation} reputation
+                                    <i class="fa-solid fa-star text-warning me-1"></i> ${uPro.reputation} reputation
+
+                                    <c:if test="${not empty uPro.location}">
+                                        <span class="mx-2">|</span>
+                                        <i class="fa-solid fa-location-dot me-1"></i> ${uPro.location}
+                                    </c:if>
                                 </div>
+
                                 <ul class="nav profile-tabs">
                                     <li class="nav-item"><a class="nav-link active" href="#">Profile</a></li>
+                                    <li class="nav-item"><a class="nav-link" href="${pageContext.request.contextPath}/activity">Activity</a></li>
                                     <li class="nav-item"><a class="nav-link" href="${pageContext.request.contextPath}/badge">Badge</a></li>
                                     <li class="nav-item"><a class="nav-link" href="${pageContext.request.contextPath}/saves">Saves</a></li>
                                     <li class="nav-item"><a class="nav-link" href="#">Settings</a></li>
                                 </ul>
-
                             </div>
                         </div>
-                    </div>
 
+                        <div class="pt-2">
+                            <c:if test="${sessionScope.user != null && sessionScope.user.userId == uPro.userId}">
+                                <a href="${pageContext.request.contextPath}/edit-profile" class="btn btn-outline-secondary btn-sm" style="border-color: #9fa6ad; color: #525960;">
+                                    <i class="fas fa-pencil-alt me-1"></i> Edit profile
+                                </a>
+                            </c:if>
+                        </div>
+                    </div>
 
                     <div class="row">
-                        <div class="col-md-6 mb-4">
-                            <h3 class="panel-header">Top Tags</h3>
-                            <div class="panel">
-                                <c:if test="${true}"> 
-                                    <div>
-                                        <a href="#" class="tag-badge">java</a>
-                                        <a href="#" class="tag-badge">spring-boot</a>
-                                        <a href="#" class="tag-badge">jsp</a>
-                                        <a href="#" class="tag-badge">servlet</a>
+
+                        <div class="col-md-3">
+                            <h3 style="font-size: 21px; margin-bottom: 16px; font-weight: 600; color: #2b2d42;">Stats</h3>
+                            <div class="badge-dashboard mb-4" style="padding: 20px 15px;">
+                                <div class="row g-3 text-center">
+                                    <div class="col-6">
+                                        <div style="font-size: 17px; font-weight: bold; color: #212529;">${uPro.reputation}</div>
+                                        <div style="font-size: 11px; color: #6c757d; text-transform: uppercase; font-weight: 600;">reputation</div>
                                     </div>
-                                </c:if>
+                                    <div class="col-6">
+                                        <div style="font-size: 17px; font-weight: bold; color: #212529;">${viewCount != null ? viewCount : 0}</div>
+                                        <div style="font-size: 11px; color: #6c757d; text-transform: uppercase; font-weight: 600;">views</div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div style="font-size: 17px; font-weight: bold; color: #212529;">${answersCount != null ? answersCount : 0}</div>
+                                        <div style="font-size: 11px; color: #6c757d; text-transform: uppercase; font-weight: 600;">answers</div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div style="font-size: 17px; font-weight: bold; color: #212529;">${questionsCount != null ? questionsCount : 0}</div>
+                                        <div style="font-size: 11px; color: #6c757d; text-transform: uppercase; font-weight: 600;">questions</div>
+                                    </div>
+                                </div>
                             </div>
+                            <h3 style="font-size: 21px; margin-bottom: 16px; font-weight: 600; color: #2b2d42;">Links</h3>
+                            <div class="badge-dashboard mb-4" style="padding: 15px;">
+                                <c:choose>
+                                    <c:when test="${not empty userLinks}">
+                                        <ul class="list-unstyled mb-0" style="font-size: 14px;">
+                                            <c:forEach var="link" items="${userLinks}">
+                                                <%-- Chỉ hiển thị những link người dùng có nhập dữ liệu --%>
+                                                <c:if test="${not empty link.value}">
+                                                    <li class="mb-2">
+                                                        <c:choose>
+                                                            <c:when test="${link.key == 'github'}">
+                                                                <i class="fa-brands fa-github me-2 text-dark"></i>
+                                                                <a href="${link.value}" target="_blank" class="text-decoration-none" style="color: #0074cc;">GitHub</a>
+                                                            </c:when>
+                                                            <c:when test="${link.key == 'linkedin'}">
+                                                                <i class="fa-brands fa-linkedin me-2" style="color: #0077b5;"></i>
+                                                                <a href="${link.value}" target="_blank" class="text-decoration-none" style="color: #0074cc;">LinkedIn</a>
+                                                            </c:when>
+                                                            <c:when test="${link.key == 'website'}">
+                                                                <i class="fa-solid fa-link me-2 text-muted"></i>
+                                                                <a href="${link.value}" target="_blank" class="text-decoration-none" style="color: #0074cc;">Website</a>
+                                                            </c:when>
+                                                        </c:choose>
+                                                    </li>
+                                                </c:if>
+                                            </c:forEach>
+                                        </ul>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <p class="text-muted mb-0" style="font-size: 13px;">No links added.</p>
+                                    </c:otherwise>
+                                </c:choose>
+                            </div>            
                         </div>
 
-                        <div class="col-md-6 mb-4">
-                            <h3 class="panel-header">Top Posts</h3>
-                            <div class="panel p-0 px-3"> <a href="#" class="post-link">
-                                    <span class="post-score">5</span>
-                                    How to fix NullPointerException in Java?
-                                </a>
-                                <a href="#" class="post-link">
-                                    <span class="post-score zero">0</span>
-                                    Understanding Servlet Lifecycle
-                                </a>
+                        <div class="col-md-9">
+                            <h3 style="font-size: 21px; margin-bottom: 16px; font-weight: 600; color: #2b2d42;">About</h3>
+                            <div class="badge-dashboard mb-4" style="text-align: left; min-height: 150px;">
+                                <c:choose>
+                                    <c:when test="${not empty uPro.bio}">
+                                        <div style="color: #495057; font-size: 15px; line-height: 1.6; white-space: pre-wrap; word-break: break-word;"><c:out value="${uPro.bio}" />
+                                        </div>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <div class="text-center py-3">
+                                            <p class="text-muted mb-3">Your about me section is currently blank.</p>
+                                            <a href="${pageContext.request.contextPath}/edit-profile" class="btn btn-outline-primary btn-sm">Edit Profile</a>
+                                        </div>
+                                    </c:otherwise>
+                                </c:choose>
                             </div>
+
+                            <h3 style="font-size: 21px; margin-bottom: 16px; font-weight: 600; color: #2b2d42;">Achievements</h3>
+                            <div class="badge-dashboard mb-5">
+                                <div class="row g-3 mb-4">
+                                    <div class="col-4">
+                                        <div class="sticker-box sticker-gold">
+                                            <i class="fa-solid fa-medal sticker-icon" style="color: #f1c40f;"></i>
+                                            <span class="sticker-count">${empty goldBadges ? 0 : fn:length(goldBadges)}</span>
+                                            <span class="sticker-label">Gold</span>
+                                        </div>
+                                    </div>
+                                    <div class="col-4">
+                                        <div class="sticker-box sticker-silver">
+                                            <i class="fa-solid fa-medal sticker-icon" style="color: #adb5bd;"></i>
+                                            <span class="sticker-count">${empty silverBadges ? 0 : fn:length(silverBadges)}</span>
+                                            <span class="sticker-label">Silver</span>
+                                        </div>
+                                    </div>
+                                    <div class="col-4">
+                                        <div class="sticker-box sticker-bronze">
+                                            <i class="fa-solid fa-medal sticker-icon" style="color: #d35400;"></i>
+                                            <span class="sticker-count">${empty bronzeBadges ? 0 : fn:length(bronzeBadges)}</span>
+                                            <span class="sticker-label">Bronze</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="achievement-details border-top pt-4">
+                                    <c:choose>
+                                        <c:when test="${empty goldBadges && empty silverBadges && empty bronzeBadges}">
+                                            <div class="text-center py-3">
+                                                <p class="text-muted mb-3">You haven't earned any badges yet. Keep participating to unlock achievements!</p>
+                                                <a href="${pageContext.request.contextPath}/home" class="btn btn-outline-primary btn-sm">Explore Community</a>
+                                            </div>
+                                        </c:when>
+
+                                        <c:otherwise>
+                                            <c:if test="${not empty goldBadges}">
+                                                <div class="mb-3">
+                                                    <c:forEach items="${goldBadges}" var="b">
+                                                        <span class="achievement-chip chip-gold" title="${b.description}">
+                                                            <i class="fa-solid fa-award"></i> ${b.name}
+                                                        </span>
+                                                    </c:forEach>
+                                                </div>
+                                            </c:if>
+
+                                            <c:if test="${not empty silverBadges}">
+                                                <div class="mb-3">
+                                                    <c:forEach items="${silverBadges}" var="b">
+                                                        <span class="achievement-chip chip-silver" title="${b.description}">
+                                                            <i class="fa-solid fa-award"></i> ${b.name}
+                                                        </span>
+                                                    </c:forEach>
+                                                </div>
+                                            </c:if>
+
+                                            <c:if test="${not empty bronzeBadges}">
+                                                <div class="mb-1">
+                                                    <c:forEach items="${bronzeBadges}" var="b">
+                                                        <span class="achievement-chip chip-bronze" title="${b.description}">
+                                                            <i class="fa-solid fa-award"></i> ${b.name}
+                                                        </span>
+                                                    </c:forEach>
+                                                </div>
+                                            </c:if>
+                                        </c:otherwise>
+                                    </c:choose>
+                                </div>
+                            </div>
+
                         </div>
                     </div>
-
                 </main>
             </div>
         </div>
-
     </body>
 </html>

@@ -111,7 +111,7 @@ public class UserDAO {
         String sql = "INSERT INTO Users (username, email, password_hash, role, provider, provider_id) VALUES (?, ?, ?, 'member', ?, ?)";
         
         try (Connection con = db.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            PreparedStatement ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             
             String safeName = (name != null ? name : "User").replaceAll("\\s+", "") + "_" + (int)(Math.random() * 10000);
             if (safeName.length() > 50) safeName = safeName.substring(0, 50);

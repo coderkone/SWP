@@ -37,6 +37,7 @@ public class SearchController extends HttpServlet {
         String keyword = request.getParameter("q");
         String tab = request.getParameter("tab");       
         String filter = request.getParameter("filter"); 
+        String tag = request.getParameter("tag");
                 
         // Nếu người dùng bấm "Unanswered" -> Reset tab về newest
         if ("unanswered".equals(filter)) {
@@ -63,15 +64,18 @@ public class SearchController extends HttpServlet {
         }
 
         // Lấy danh sách và tính toán phân trang
-        List<QuestionDTO> list = dao.getQuestions(pageIndex, pageSize, tab, keyword, filter);
-        int totalRecords = dao.getTotalQuestions(keyword, filter);
+        List<QuestionDTO> list = dao.getQuestions(pageIndex, pageSize, tab, keyword, filter,tag);
+        int totalRecords = dao.getTotalQuestions(keyword, filter, tag);
         int totalPage = (totalRecords % pageSize == 0) ? (totalRecords / pageSize) : (totalRecords / pageSize + 1);
 
+        List<String> popularTags = dao.getPopularTags(10);
+        
         // Truyền dữ liệu sang JSP
         request.setAttribute("questions", list);
         request.setAttribute("totalPage", totalPage);
         request.setAttribute("currentPage", pageIndex);
         request.setAttribute("totalQuestions", totalRecords); // Gửi tổng số bài thực tế
+        request.setAttribute("popularTags", popularTags);
         
         request.setAttribute("currentKeyword", keyword);
         request.setAttribute("currentSort", tab);

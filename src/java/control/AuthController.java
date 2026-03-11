@@ -103,7 +103,7 @@ public class AuthController extends HttpServlet {
         UserDTO dto = dao.login(email, pass);
 
         if (dto == null) {
-            request.setAttribute("error", "Sai email hoặc password.");
+            request.setAttribute("error", "Email or Password is not correct.");
             request.getRequestDispatcher("/View/User/login.jsp").forward(request, response);
             return;
         }

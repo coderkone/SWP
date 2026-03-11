@@ -266,3 +266,4 @@ CREATE TABLE [dbo].[Privileges](
 )
 GO
 
+select * from [dbo].[Users];
