@@ -8,6 +8,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 
 public class QuestionDAO extends DBContext {
@@ -394,4 +395,133 @@ public class QuestionDAO extends DBContext {
             return ps.executeUpdate() > 0;
         }
     }
+
+    public boolean updateQuestionWithHistory(long questionId, long editorId,
+                                             String title, String body, String codeSnippet,
+                                             String tagsInput, int userReputation) throws Exception {
+        Connection conn = null;
+        try {
+            conn = getConnection();
+            conn.setAutoCommit(false);
+
+            String oldTitle = null;
+            String oldBody = null;
+            String oldCodeSnippet = null;
+
+            String loadSql = "SELECT title, body, code_snippet FROM Questions WHERE question_id = ?";
+            try (PreparedStatement ps = conn.prepareStatement(loadSql)) {
+                ps.setLong(1, questionId);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (!rs.next()) {
+                        conn.rollback();
+                        return false;
+                    }
+                    oldTitle = rs.getString("title");
+                    oldBody = rs.getString("body");
+                    oldCodeSnippet = rs.getString("code_snippet");
+                }
+            }
+
+            String oldTags = getTagsCsvByQuestionId(conn, questionId);
+            insertEditHistory(conn, "question", questionId, oldTitle, oldBody, oldCodeSnippet, oldTags, editorId);
+
+            String updateSql = "UPDATE Questions SET title = ?, body = ?, code_snippet = ?, updated_at = GETDATE() WHERE question_id = ?";
+            try (PreparedStatement ps = conn.prepareStatement(updateSql)) {
+                ps.setString(1, title);
+                ps.setString(2, body);
+                ps.setString(3, codeSnippet != null ? codeSnippet : "");
+                ps.setLong(4, questionId);
+                if (ps.executeUpdate() == 0) {
+                    conn.rollback();
+                    return false;
+                }
+            }
+
+            try (PreparedStatement ps = conn.prepareStatement("DELETE FROM Question_Tags WHERE question_id = ?")) {
+                ps.setLong(1, questionId);
+                ps.executeUpdate();
+            }
+
+            if (tagsInput != null && !tagsInput.trim().isEmpty()) {
+                processTagsForQuestion(conn, questionId, normalizeTags(tagsInput), userReputation);
+            }
+
+            conn.commit();
+            return true;
+        } catch (Exception e) {
+            try {
+                if (conn != null) {
+                    conn.rollback();
+                }
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            }
+            throw e;
+        } finally {
+            try {
+                if (conn != null) {
+                    conn.setAutoCommit(true);
+                    conn.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private String getTagsCsvByQuestionId(Connection conn, long questionId) throws SQLException {
+        List<String> tags = new ArrayList<>();
+        String sql = "SELECT t.tag_name FROM Tags t "
+                + "JOIN Question_Tags qt ON t.tag_id = qt.tag_id "
+                + "WHERE qt.question_id = ? ORDER BY t.tag_name";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setLong(1, questionId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    tags.add(rs.getString("tag_name"));
+                }
+            }
+        }
+        return String.join(",", tags);
+    }
+
+    private void insertEditHistory(Connection conn, String postType, long postId,
+                                   String title, String body, String codeSnippet, String tags,
+                                   long editorId)
+            throws SQLException {
+        String editedContent = "title=" + (title != null ? title : "")
+            + "\nbody=" + (body != null ? body : "")
+            + "\ncode=" + (codeSnippet != null ? codeSnippet : "")
+            + "\ntags=" + (tags != null ? tags : "");
+
+        String sql = "INSERT INTO Post_Edit_History (post_type, post_id, title, body, code_snippet, tags, editor_id, edited_content, edited_at) "
+            + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, GETDATE())";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, postType);
+            ps.setLong(2, postId);
+            ps.setString(3, title != null ? title : "");
+            ps.setString(4, body != null ? body : "");
+            ps.setString(5, codeSnippet != null ? codeSnippet : "");
+            ps.setString(6, tags != null ? tags : "");
+            ps.setLong(7, editorId);
+            ps.setString(8, editedContent);
+            ps.executeUpdate();
+        }
+    }
+
+    private String normalizeTags(String tagsInput) {
+        String[] rawTags = tagsInput.split(",");
+        LinkedHashSet<String> uniqueTags = new LinkedHashSet<>();
+        for (String tag : rawTags) {
+            if (tag == null) {
+                continue;
+            }
+            String clean = tag.trim().toLowerCase();
+            if (!clean.isEmpty()) {
+                uniqueTags.add(clean);
+            }
+        }
+        return String.join(",", uniqueTags);
+    }
+
 }

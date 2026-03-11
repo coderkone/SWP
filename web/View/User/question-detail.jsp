@@ -4,6 +4,7 @@
 <%@ page import="dto.UserDTO" %>
 <%@ page import="model.User" %>
 <%@ page import="java.util.List" %>
+<%@ page import="java.text.SimpleDateFormat" %>
 <%@ page import="util.CommentRenderUtil" %>
 <!DOCTYPE html>
 <html lang="vi">
@@ -14,634 +15,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Quill Rich Text Editor -->
     <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
-    <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Liberation Sans", sans-serif;
-        }
-
-        body {
-            background-color: #f1f2f3;
-            color: #3b4045;
-        }
-
-        /* Header */
-        header {
-            background-color: white;
-            height: 53px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-            border-top: 3px solid #f48024;
-            position: fixed;
-            top: 0;
-            width: 100%;
-            z-index: 1000;
-            padding: 0 10px;
-        }
-
-        .header-left {
-            display: flex;
-            align-items: center;
-        }
-
-        .menu-btn {
-            background: none;
-            border: none;
-            cursor: pointer;
-            padding: 0 15px;
-            font-size: 18px;
-            color: #525960;
-            transition: color 0.2s;
-        }
-
-        .menu-btn:hover {
-            color: #232629;
-        }
-
-        .logo {
-            display: flex;
-            align-items: center;
-            margin-left: 5px;
-            text-decoration: none;
-            color: black;
-        }
-
-        .logo i {
-            color: #f48024;
-            font-size: 24px;
-            margin-right: 5px;
-        }
-
-        .logo span {
-            font-size: 18px;
-            font-weight: 400;
-        }
-
-        .logo span b {
-            font-weight: 700;
-        }
-
-        .search-box {
-            flex: 1;
-            max-width: 600px;
-            margin: 0 20px;
-        }
-
-        .search-input {
-            width: 100%;
-            padding: 8px 12px;
-            font-size: 13px;
-            border: 1px solid #c8ccd0;
-            border-radius: 4px;
-            background-color: #f8f9fa;
-        }
-
-        .search-input:focus {
-            background-color: white;
-            border-color: #0a95ff;
-            outline: none;
-        }
-
-        .header-right {
-            padding-right: 15px;
-        }
-
-        .header-right a {
-            text-decoration: none;
-            color: #525960;
-            padding: 8px 12px;
-            border-radius: 1000px;
-        }
-
-        .header-right a:hover {
-            background-color: #e3e6e8;
-        }
-
-        /* Sidebar */
-        .sidebar {
-            position: fixed;
-            top: 53px;
-            left: -240px;
-            width: 240px;
-            height: calc(100vh - 53px);
-            background-color: white;
-            box-shadow: 1px 0 3px rgba(0,0,0,0.05);
-            transition: left 0.3s ease;
-            padding-top: 20px;
-            overflow-y: auto;
-            border-right: 1px solid #e3e6e8;
-            z-index: 999;
-        }
-
-        .sidebar.active {
-            left: 0;
-        }
-
-        .nav-list {
-            list-style: none;
-            padding: 0;
-        }
-
-        .nav-link {
-            display: flex;
-            align-items: center;
-            padding: 10px 15px;
-            color: #525960;
-            text-decoration: none;
-            font-size: 14px;
-            transition: all 0.2s;
-        }
-
-        .nav-link:hover {
-            color: #232629;
-            background-color: #f1f2f3;
-            border-right: 3px solid #f48024;
-        }
-
-        .nav-link i {
-            width: 20px;
-            text-align: center;
-            margin-right: 10px;
-        }
-
-        /* Main Container */
-        .container {
-            max-width: 1264px;
-            margin: 53px auto 0;
-            padding: 24px 16px;
-            display: flex;
-            gap: 24px;
-            transition: margin-left 0.3s ease;
-        }
-
-        body.sidebar-open .container {
-            margin-left: 240px;
-        }
-
-        .main-content {
-            flex: 1;
-        }
-
-        .sidebar-right {
-            width: 300px;
-        }
-
-        /* Question Section */
-        .question-box {
-            background: white;
-            border: 1px solid #d6d9dc;
-            border-radius: 6px;
-            padding: 24px;
-            margin-bottom: 24px;
-            display: flex;
-            gap: 16px;
-        }
-
-        .vote-box {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 8px;
-            min-width: 60px;
-        }
-
-        .vote-btn {
-            width: 36px;
-            height: 36px;
-            border: 1px solid #c8ccd0;
-            background: white;
-            border-radius: 3px;
-            cursor: pointer;
-            font-size: 18px;
-            color: #525960;
-            transition: all 0.2s;
-        }
-
-        .vote-btn:hover {
-            background-color: #e3e6e8;
-        }
-
-        .vote-btn.voted-up {
-            background-color: #fff3cd;
-            border-color: #f59e0b;
-            color: #f59e0b;
-        }
-
-        .vote-btn.voted-down {
-            background-color: #fee2e2;
-            border-color: #ef4444;
-            color: #ef4444;
-        }
-
-        .vote-btn.bookmarked {
-            background-color: #fff3cd;
-            border-color: #f59e0b;
-            color: #f59e0b;
-        }
-
-        .vote-count {
-            font-size: 18px;
-            font-weight: bold;
-            color: #232629;
-        }
-
-        .answer-box.accepted {
-            border-left: 4px solid #2e7d32;
-            background-color: #f1f8f4;
-        }
-
-        .accept-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 6px 12px;
-            font-size: 13px;
-            border: 1px solid #2e7d32;
-            background: white;
-            color: #2e7d32;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .accept-btn:hover {
-            background: #2e7d32;
-            color: white;
-        }
-
-        .accept-btn.accepted {
-            background: #2e7d32;
-            color: white;
-        }
-
-        .question-content {
-            flex: 1;
-        }
-
-        .question-title {
-            font-size: 26px;
-            font-weight: bold;
-            color: #232629;
-            margin-bottom: 16px;
-            line-height: 1.3;
-        }
-
-        .question-body {
-            font-size: 14px;
-            line-height: 1.6;
-            color: #3b4045;
-            margin-bottom: 16px;
-        }
-
-        .code-block {
-            background: #f5f5f5;
-            border: 1px solid #d6d9dc;
-            border-radius: 4px;
-            padding: 12px;
-            overflow-x: auto;
-            margin: 10px 0;
-            font-family: Consolas, monospace;
-            font-size: 13px;
-        }
-
-        .tags-list {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            margin-bottom: 16px;
-        }
-
-        .tag-badge {
-            background: #e1ecf4;
-            border: 1px solid #bcd0e2;
-            color: #3b4045;
-            padding: 6px 8px;
-            border-radius: 3px;
-            font-size: 12px;
-            text-decoration: none;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .tag-badge:hover {
-            background-color: #d0e1f7;
-        }
-
-        .question-meta {
-            padding-top: 16px;
-            border-top: 1px solid #e2e3e4;
-            font-size: 12px;
-            color: #6a737c;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .user-card {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            background: #f8f9fa;
-            padding: 12px;
-            border-radius: 4px;
-            border-left: 3px solid #0a95ff;
-            margin-top: 16px;
-        }
-
-        .user-avatar {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 16px;
-        }
-
-        .user-info {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .user-name {
-            font-size: 12px;
-            color: #0a95ff;
-            font-weight: bold;
-            text-decoration: none;
-        }
-
-        .user-meta {
-            font-size: 11px;
-            color: #6a737c;
-        }
-
-        /* Answers Section */
-        .answers-section {
-            margin-top: 32px;
-        }
-
-        .section-header {
-            font-size: 20px;
-            font-weight: bold;
-            color: #232629;
-            margin-bottom: 16px;
-            padding-bottom: 12px;
-            border-bottom: 1px solid #d6d9dc;
-        }
-
-        .answer-box {
-            background: white;
-            border: 1px solid #d6d9dc;
-            border-radius: 6px;
-            padding: 24px;
-            margin-bottom: 24px;
-            display: flex;
-            gap: 16px;
-        }
-
-        .answer-content {
-            flex: 1;
-        }
-
-        .answer-body {
-            font-size: 14px;
-            line-height: 1.6;
-            color: #3b4045;
-            margin-bottom: 16px;
-        }
-
-        /* Rendered HTML Content Styling */
-        .answer-body h1,
-        .answer-body h2,
-        .answer-body h3,
-        .answer-body h4,
-        .answer-body h5,
-        .answer-body h6 {
-            margin-top: 12px;
-            margin-bottom: 8px;
-            font-weight: 600;
-        }
-
-        .answer-body h1 { font-size: 20px; }
-        .answer-body h2 { font-size: 18px; }
-        .answer-body h3 { font-size: 16px; }
-
-        .answer-body code {
-            background-color: #f5f5f5;
-            padding: 2px 6px;
-            border-radius: 3px;
-            font-family: 'Courier New', Courier, monospace;
-            font-size: 13px;
-        }
-
-        .answer-body pre {
-            background-color: #f5f5f5;
-            border: 1px solid #d6d9dc;
-            border-radius: 4px;
-            padding: 12px;
-            overflow-x: auto;
-            margin: 8px 0;
-        }
-
-        .answer-body pre code {
-            background: none;
-            padding: 0;
-            border-radius: 0;
-        }
-
-        .answer-body ul,
-        .answer-body ol {
-            margin-left: 20px;
-            margin-bottom: 8px;
-        }
-
-        .answer-body li {
-            margin-bottom: 4px;
-        }
-
-        .answer-body a {
-            color: #0a95ff;
-            text-decoration: none;
-        }
-
-        .answer-body a:hover {
-            text-decoration: underline;
-        }
-
-        .answer-body blockquote {
-            border-left: 4px solid #d6d9dc;
-            padding-left: 12px;
-            margin-left: 0;
-            margin-right: 0;
-            color: #6a737c;
-            font-style: italic;
-        }
-
-        /* Add Answer Form */
-        .add-answer-section {
-            background: white;
-            border: 1px solid #d6d9dc;
-            border-radius: 6px;
-            padding: 24px;
-            margin-top: 32px;
-        }
-
-        .form-group {
-            margin-bottom: 16px;
-        }
-
-        .form-label {
-            font-size: 14px;
-            font-weight: bold;
-            margin-bottom: 8px;
-            display: block;
-        }
-
-        .form-input {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #c8ccd0;
-            border-radius: 4px;
-            font-size: 13px;
-            font-family: inherit;
-        }
-
-        .form-input:focus {
-            border-color: #0a95ff;
-            outline: none;
-            box-shadow: 0 0 0 3px rgba(10,149,255,0.15);
-        }
-
-        textarea.form-input {
-            resize: vertical;
-            min-height: 120px;
-            font-family: Consolas, monospace;
-        }
-
-        /* Quill Editor Styling */
-        #answer-editor {
-            background: white;
-            min-height: 300px;
-        }
-
-        .ql-container {
-            font-size: 13px;
-            border: 1px solid #c8ccd0;
-            border-radius: 4px;
-        }
-
-        .ql-editor {
-            min-height: 300px;
-            padding: 12px;
-            font-family: inherit;
-        }
-
-        .ql-toolbar {
-            border: 1px solid #c8ccd0 !important;
-            border-bottom: none !important;
-            border-radius: 4px 4px 0 0 !important;
-            background-color: #f8f9fa !important;
-        }
-
-        .ql-toolbar.ql-snow .ql-picker-label,
-        .ql-toolbar.ql-snow .ql-stroke,
-        .ql-toolbar.ql-snow .ql-fill {
-            color: #525960;
-        }
-
-        .ql-toolbar.ql-snow .ql-stroke { stroke: #525960; }
-        .ql-toolbar.ql-snow .ql-fill { fill: #525960; }
-        .ql-toolbar.ql-snow .ql-picker-label { color: #525960; }
-
-        .ql-toolbar.ql-snow button:hover,
-        .ql-toolbar.ql-snow button:focus,
-        .ql-toolbar.ql-snow button.ql-active,
-        .ql-toolbar.ql-snow .ql-picker-label:hover,
-        .ql-toolbar.ql-snow .ql-picker-item:hover,
-        .ql-toolbar.ql-snow .ql-picker-item.ql-selected {
-            color: #0a95ff;
-        }
-
-        .ql-toolbar.ql-snow button:hover .ql-stroke,
-        .ql-toolbar.ql-snow button:focus .ql-stroke,
-        .ql-toolbar.ql-snow button.ql-active .ql-stroke,
-        .ql-toolbar.ql-snow .ql-picker-label:hover .ql-stroke,
-        .ql-toolbar.ql-snow .ql-picker-item:hover .ql-stroke,
-        .ql-toolbar.ql-snow .ql-picker-item.ql-selected .ql-stroke {
-            stroke: #0a95ff;
-        }
-
-        .ql-toolbar.ql-snow button:hover .ql-fill,
-        .ql-toolbar.ql-snow button:focus .ql-fill,
-        .ql-toolbar.ql-snow button.ql-active .ql-fill,
-        .ql-toolbar.ql-snow .ql-picker-label:hover .ql-fill,
-        .ql-toolbar.ql-snow .ql-picker-item:hover .ql-fill,
-        .ql-toolbar.ql-snow .ql-picker-item.ql-selected .ql-fill {
-            fill: #0a95ff;
-        }
-
-        .btn {
-            padding: 10px 16px;
-            background: #0a95ff;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 500;
-            transition: all 0.2s;
-        }
-
-        .btn:hover {
-            background: #0074cc;
-        }
-
-        /* Sidebar Cards */
-        .card {
-            background: white;
-            border: 1px solid #d6d9dc;
-            border-radius: 6px;
-            padding: 16px;
-            margin-bottom: 16px;
-        }
-
-        .card-title {
-            font-size: 13px;
-            font-weight: bold;
-            color: #3b4045;
-            margin-bottom: 12px;
-        }
-
-        .linked-box {
-            border-left: 3px solid #0a95ff;
-            padding-left: 12px;
-        }
-
-        .linked-link {
-            display: block;
-            font-size: 13px;
-            color: #0a95ff;
-            text-decoration: none;
-            margin-bottom: 8px;
-            line-height: 1.4;
-        }
-
-        .linked-link:hover {
-            color: #0074cc;
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 40px 20px;
-            color: #6a737c;
-        }
-    </style>
+    <%@ include file="partials/question-detail-styles.jspf" %>
 </head>
 <body>
 
@@ -681,6 +55,14 @@
     <div class="main-content">
         <% 
             QuestionDTO question = (QuestionDTO) request.getAttribute("question");
+            Object sessionPrincipal = session.getAttribute("user");
+            Long currentUserId = null;
+            if (sessionPrincipal instanceof UserDTO) {
+                currentUserId = ((UserDTO) sessionPrincipal).getUserId();
+            } else if (sessionPrincipal instanceof User) {
+                currentUserId = ((User) sessionPrincipal).getUserId();
+            }
+            SimpleDateFormat editDateFormat = new SimpleDateFormat("MMM d, yyyy 'at' HH:mm");
             if (question != null) {
         %>
 
@@ -712,7 +94,19 @@
             </div>
 
             <div class="question-content">
-                <div class="question-title"><%= question.getTitle() %></div>
+                <div class="question-title-row">
+                    <div class="question-title"><%= question.getTitle() %></div>
+                    <div class="share-wrapper">
+                        <button type="button" class="share-btn" onclick="toggleSharePopup(event)">
+                            <i class="fa-solid fa-share-nodes"></i> Share
+                        </button>
+                        <div id="share-popup" class="share-popup">
+                            <input type="text" id="share-link-input" class="share-input" readonly>
+                            <button type="button" class="copy-link-btn" onclick="copyQuestionLink()">Copy link</button>
+                            <span id="copy-link-status" class="copy-link-status"></span>
+                        </div>
+                    </div>
+                </div>
 
                 <div class="question-body">
                     <%= question.getBody() %>
@@ -735,9 +129,19 @@
                 <div class="question-meta">
                     <div>
                         <strong>asked</strong> <%= question.getCreatedAt() %>
+                        <% if (question.getUpdatedAt() != null && question.getCreatedAt() != null
+                                && question.getUpdatedAt().after(question.getCreatedAt())) { %>
+                        <span style="margin-left: 10px; color: #6a737c;">
+                            edited <%= editDateFormat.format(question.getUpdatedAt()) %>
+                        </span>
+                        <% } %>
                     </div>
-                    <div>
+                    <div style="display: flex; align-items: center; gap: 10px;">
                         <strong>viewed</strong> <%= question.getViewCount() %> times
+                        <a class="edit-link" href="${pageContext.request.contextPath}/question/<%= question.getQuestionId() %>/revisions">Revisions</a>
+                        <% if (currentUserId != null && currentUserId == question.getUserId()) { %>
+                        <a class="edit-link" href="${pageContext.request.contextPath}/post/edit?type=question&id=<%= question.getQuestionId() %>">Edit</a>
+                        <% } %>
                     </div>
                 </div>
 
@@ -825,13 +229,21 @@
         </div>
 
         <!-- Answers Section -->
-        <div class="answers-section">
+        <div class="answers-section" id="answers-section">
             <div class="section-header">Answers</div>
 
             <%
                 java.util.List answers = (java.util.List) request.getAttribute("answers");
                 java.util.Map<Long, String> answerVotes = (java.util.Map<Long, String>) request.getAttribute("answerVotes");
                 Boolean isQuestionOwner = (Boolean) request.getAttribute("isQuestionOwner");
+            Integer answerCurrentPage = (Integer) request.getAttribute("answerCurrentPage");
+            Integer answerTotalPages = (Integer) request.getAttribute("answerTotalPages");
+            Integer answerTotalCount = (Integer) request.getAttribute("answerTotalCount");
+                Integer answerPageSize = (Integer) request.getAttribute("answerPageSize");
+            if (answerCurrentPage == null || answerCurrentPage < 1) answerCurrentPage = 1;
+            if (answerTotalPages == null || answerTotalPages < 1) answerTotalPages = 1;
+            if (answerTotalCount == null || answerTotalCount < 0) answerTotalCount = 0;
+                if (answerPageSize == null || answerPageSize < 1) answerPageSize = 5;
                 if (answerVotes == null) answerVotes = new java.util.HashMap<>();
                 if (isQuestionOwner == null) isQuestionOwner = false;
 
@@ -881,10 +293,17 @@
                     <div class="question-meta" style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
                         <div>
                             <strong>answered</strong> <%= answer.getCreatedAt() %>
-                            <% if (answer.isIsEdited()) { %>
-                            <span style="color: #6a737c;"> (edited)</span>
+                            <% if (answer.getUpdatedAt() != null && answer.getCreatedAt() != null
+                                    && answer.getUpdatedAt().after(answer.getCreatedAt())) { %>
+                            <span style="color: #6a737c; margin-left: 10px;">
+                                edited <%= editDateFormat.format(answer.getUpdatedAt()) %>
+                            </span>
                             <% } %>
                         </div>
+                        <% if (currentUserId != null && currentUserId == answer.getUserId()) { %>
+                        <a class="edit-link" href="${pageContext.request.contextPath}/post/edit?type=answer&id=<%= answer.getAnswerId() %>">Edit</a>
+                        <% } %>
+                        <a class="edit-link" href="${pageContext.request.contextPath}/answer/<%= answer.getAnswerId() %>/revisions">Revisions</a>
                         <% if (isQuestionOwner) { %>
                         <button type="button" class="accept-btn<%= accepted ? " accepted" : "" %>" 
                                 data-question-id="<%= question.getQuestionId() %>" data-answer-id="<%= answer.getAnswerId() %>"
@@ -1000,6 +419,39 @@
             <%
                 }
             %>
+
+            <% if (answerTotalPages > 1) {
+                int startAnswerIndex = ((answerCurrentPage - 1) * answerPageSize) + 1;
+                int endAnswerIndex = Math.min(answerCurrentPage * answerPageSize, answerTotalCount);
+                String detailPath = (String) request.getAttribute("answerPaginationPath");
+                if (detailPath == null || detailPath.trim().isEmpty()) {
+                    detailPath = request.getContextPath() + "/question/detail";
+                }
+            %>
+            <div class="answers-pagination">
+                <div class="answers-pagination-info">
+                    Showing <%= startAnswerIndex %>-<%= endAnswerIndex %> of <%= answerTotalCount %> answers
+                </div>
+                <div class="answers-pagination-links">
+                    <% if (answerCurrentPage > 1) { %>
+                    <a href="<%= detailPath %>?id=<%= question.getQuestionId() %>&page=<%= answerCurrentPage - 1 %>#answers-section" aria-label="Previous page">&laquo;</a>
+                    <% } else { %>
+                    <span class="disabled" aria-disabled="true">&laquo;</span>
+                    <% } %>
+
+                    <% for (int pageIndex = 1; pageIndex <= answerTotalPages; pageIndex++) { %>
+                    <a href="<%= detailPath %>?id=<%= question.getQuestionId() %>&page=<%= pageIndex %>#answers-section"
+                       class="<%= answerCurrentPage == pageIndex ? "active" : "" %>"><%= pageIndex %></a>
+                    <% } %>
+
+                    <% if (answerCurrentPage < answerTotalPages) { %>
+                    <a href="<%= detailPath %>?id=<%= question.getQuestionId() %>&page=<%= answerCurrentPage + 1 %>#answers-section" aria-label="Next page">&raquo;</a>
+                    <% } else { %>
+                    <span class="disabled" aria-disabled="true">&raquo;</span>
+                    <% } %>
+                </div>
+            </div>
+            <% } %>
         </div>
 
         <!-- Add Answer Section -->
@@ -1074,376 +526,6 @@
 <!-- Footer -->
 <%@ include file="../Common/footer.jsp" %>
 
-<script>
-    function toggleMenu() {
-        var sidebar = document.getElementById('sidebar');
-        sidebar.classList.toggle('active');
-        document.body.classList.toggle('sidebar-open');
-    }
-
-    function handleAcceptClick(ev, button) {
-        if (ev) ev.preventDefault();
-        const questionId = button.getAttribute('data-question-id');
-        const answerId = button.getAttribute('data-answer-id');
-        if (!questionId || !answerId) return;
-        const params = new URLSearchParams();
-        params.append('questionId', questionId);
-        params.append('answerId', answerId);
-        fetch('${pageContext.request.contextPath}/answer/accept', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: params
-        })
-        .then(r => r.text()).then(text => {
-            let data;
-            try { data = JSON.parse(text); } catch (e) { return; }
-            if (data && data.success) {
-                const box = document.getElementById('answer-' + answerId);
-                const btn = button;
-                const allBoxes = document.querySelectorAll('.answer-box.accepted');
-                const allBtns = document.querySelectorAll('.accept-btn.accepted');
-                allBoxes.forEach(b => b.classList.remove('accepted'));
-                allBtns.forEach(b => { b.classList.remove('accepted'); b.innerHTML = '<i class="fa-solid fa-check"></i> Accept'; });
-                if (data.accepted) {
-                    if (box) box.classList.add('accepted');
-                    btn.classList.add('accepted');
-                    btn.innerHTML = '<i class="fa-solid fa-check"></i> Accepted';
-                } else {
-                    btn.innerHTML = '<i class="fa-solid fa-check"></i> Accept';
-                }
-            } else if (data && data.error) {
-                alert('Lỗi: ' + data.error);
-            }
-        }).catch(err => alert('Có lỗi xảy ra'));
-    }
-
-    function handleVoteClick(ev, button) {
-        if (ev) ev.preventDefault();
-        // Extract data from button attributes
-        const questionId = button.getAttribute('data-question-id') || null;
-        const answerId = button.getAttribute('data-answer-id') || null;
-        const voteType = button.getAttribute('data-vote-type');
-        
-        if (!voteType) {
-            alert('Invalid vote type');
-            return;
-        }
-        
-        submitVote(questionId, answerId, voteType);
-    }
-
-    function submitVote(questionId, answerId, voteType) {
-        // Use URLSearchParams (application/x-www-form-urlencoded) so servlet getParameter() works.
-        // FormData sends multipart/form-data which requires @MultipartConfig to parse.
-        const params = new URLSearchParams();
-        if (questionId !== null && questionId !== undefined && questionId !== '' && !isNaN(questionId)) {
-            params.append('questionId', questionId);
-        }
-        if (answerId !== null && answerId !== undefined && answerId !== '' && !isNaN(answerId)) {
-            params.append('answerId', answerId);
-        }
-        if (voteType) {
-            params.append('voteType', voteType);
-        }
-
-        fetch('${pageContext.request.contextPath}/vote/submit', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: params
-        })
-        .then(response => response.text().then(text => ({ ok: response.ok, status: response.status, text: text })))
-        .then(({ ok, status, text }) => {
-            if (status === 401) {
-                alert('Vui lòng đăng nhập để vote');
-                window.location.href = '${pageContext.request.contextPath}/auth/login';
-                return;
-            }
-            let data;
-            try { data = JSON.parse(text); } catch (e) { alert('Lỗi phản hồi từ server'); return; }
-            if (data && data.success) {
-                const isQuestion = questionId != null && questionId !== '' && !isNaN(questionId);
-                let upvoteBtn, downvoteBtn, voteCountEl;
-                if (isQuestion) {
-                    upvoteBtn = document.getElementById('question-upvote');
-                    downvoteBtn = document.getElementById('question-downvote');
-                    voteCountEl = upvoteBtn && upvoteBtn.parentElement ? upvoteBtn.parentElement.querySelector('.vote-count') : null;
-                } else {
-                    const btn = document.querySelector('button[data-answer-id="' + answerId + '"]');
-                    if (btn) {
-                        const box = btn.closest('.vote-box');
-                        upvoteBtn = box ? box.querySelector('.upvote-btn') : null;
-                        downvoteBtn = box ? box.querySelector('.downvote-btn') : null;
-                        voteCountEl = box ? box.querySelector('.vote-count') : null;
-                    }
-                }
-                if (upvoteBtn && downvoteBtn) {
-                    if (voteType === 'upvote') {
-                        upvoteBtn.classList.add('voted-up');
-                        downvoteBtn.classList.remove('voted-down');
-                    } else if (voteType === 'downvote') {
-                        downvoteBtn.classList.add('voted-down');
-                        upvoteBtn.classList.remove('voted-up');
-                    }
-                }
-                if (voteCountEl) voteCountEl.textContent = data.score;
-            } else if (data && data.error) {
-                alert('Lỗi: ' + data.error);
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('Có lỗi xảy ra khi vote');
-        });
-    }
-
-    function handleBookmarkClick(ev, button) {
-        if (ev) ev.preventDefault();
-        const questionId = button.getAttribute('data-question-id');
-        
-        if (!questionId) {
-            alert('Invalid question ID');
-            return;
-        }
-
-        toggleBookmark(questionId, button);
-    }
-
-    function toggleBookmark(questionId, button) {
-        const params = new URLSearchParams();
-        params.append('questionId', questionId);
-
-        fetch('${pageContext.request.contextPath}/bookmark/toggle', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: params
-        })
-        .then(response => response.text().then(text => ({ ok: response.ok, status: response.status, text: text })))
-        .then(({ ok, status, text }) => {
-            if (status === 401) {
-                window.location.href = '${pageContext.request.contextPath}/auth/login';
-                return;
-            }
-            let data;
-            try { data = JSON.parse(text); } catch (e) { alert('Lỗi phản hồi từ server'); return; }
-            if (data && data.success) {
-                const isBookmarked = data.isBookmarked;
-                if (isBookmarked) {
-                    button.classList.add('bookmarked');
-                    button.setAttribute('title', 'Remove bookmark');
-                } else {
-                    button.classList.remove('bookmarked');
-                    button.setAttribute('title', 'Bookmark');
-                }
-            } else if (data && data.message) {
-                alert('Lỗi: ' + data.message);
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('Có lỗi xảy ra khi bookmark');
-        });
-    }
-
-    function handleAnswerBookmarkClick(ev, button) {
-        if (ev) ev.preventDefault();
-        const answerId = button.getAttribute('data-answer-id');
-        
-        if (!answerId) {
-            alert('Invalid answer ID');
-            return;
-        }
-
-        toggleAnswerBookmark(answerId, button);
-    }
-
-    function toggleAnswerBookmark(answerId, button) {
-        const params = new URLSearchParams();
-        params.append('answerId', answerId);
-
-        fetch('${pageContext.request.contextPath}/bookmark/toggle', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: params
-        })
-        .then(response => response.text().then(text => ({ ok: response.ok, status: response.status, text: text })))
-        .then(({ ok, status, text }) => {
-            if (status === 401) {
-                window.location.href = '${pageContext.request.contextPath}/auth/login';
-                return;
-            }
-            let data;
-            try { data = JSON.parse(text); } catch (e) { alert('Lỗi phản hồi từ server'); return; }
-            if (data && data.success) {
-                const isBookmarked = data.isBookmarked;
-                if (isBookmarked) {
-                    button.classList.add('bookmarked');
-                    button.setAttribute('title', 'Remove bookmark');
-                } else {
-                    button.classList.remove('bookmarked');
-                    button.setAttribute('title', 'Bookmark');
-                }
-            } else if (data && data.message) {
-                alert('Lỗi: ' + data.message);
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('Có lỗi xảy ra khi bookmark');
-        });
-    }
-
-    // Toggle Question Comments
-    function toggleQuestionComments() {
-        const container = document.getElementById('question-comments-container');
-        const btn = document.getElementById('question-comments-toggle-btn');
-        const textSpan = document.getElementById('question-comments-toggle-text');
-        const isHidden = container.style.display === 'none';
-        
-        if (isHidden) {
-            container.style.display = 'block';
-            const commentCount = container.querySelectorAll('.comment-item').length;
-            textSpan.textContent = 'Hide comments (' + commentCount + ')';
-        } else {
-            container.style.display = 'none';
-            const commentCount = container.querySelectorAll('.comment-item').length;
-            textSpan.textContent = 'Show comments (' + commentCount + ')';
-        }
-    }
-
-    // Toggle Answer Comments
-    function toggleAnswerComments(answerId) {
-        const container = document.getElementById('answer-comments-container-' + answerId);
-        const btn = document.getElementById('answer-comments-toggle-btn-' + answerId);
-        const textSpan = document.getElementById('answer-comments-toggle-text-' + answerId);
-        const isHidden = container.style.display === 'none';
-        
-        if (isHidden) {
-            container.style.display = 'block';
-            const commentCount = container.querySelectorAll('.comment-item').length;
-            textSpan.textContent = 'Hide comments (' + commentCount + ')';
-        } else {
-            container.style.display = 'none';
-            const commentCount = container.querySelectorAll('.comment-item').length;
-            textSpan.textContent = 'Show comments (' + commentCount + ')';
-        }
-    }
-
-    function showReplyForm(commentId) {
-        const form = document.getElementById('reply-form-comment-' + commentId);
-        const button = document.getElementById('reply-btn-comment-' + commentId);
-        if (form) {
-            form.style.display = 'block';
-        }
-        if (button) {
-            button.style.display = 'none';
-        }
-    }
-
-    function hideReplyForm(commentId) {
-        const form = document.getElementById('reply-form-comment-' + commentId);
-        const button = document.getElementById('reply-btn-comment-' + commentId);
-        if (form) {
-            form.style.display = 'none';
-        }
-        if (button) {
-            button.style.display = 'inline';
-        }
-    }
-
-    // ===== QUILL RICH TEXT EDITOR INITIALIZATION =====
-    let quillEditor;
-
-    // Define allowed HTML tags and attributes
-    const purifyConfig = {
-        ALLOWED_TAGS: ['p', 'br', 'strong', 'b', 'em', 'i', 'u', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 
-                      'ul', 'ol', 'li', 'code', 'pre', 'blockquote', 'a', 'img', 'hr', 'div', 'span'],
-        ALLOWED_ATTR: ['href', 'title', 'src', 'alt'],
-        KEEP_CONTENT: true
-    };
-
-    // Initialize Quill editor when document is ready
-    document.addEventListener('DOMContentLoaded', function() {
-        quillEditor = new Quill('#answer-editor', {
-            theme: 'snow',
-            modules: {
-                toolbar: [
-                    ['bold', 'italic', 'underline', 'strike'],
-                    ['blockquote', 'code-block'],
-                    [{ 'header': 1 }, { 'header': 2 }],
-                    [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-                    ['link', 'image'],
-                    ['clean']
-                ]
-            },
-        });
-    });
-
-    // Handle answer form submission
-    function handleAnswerFormSubmit(event) {
-        // Get the HTML content from Quill
-        const html = quillEditor.root.innerHTML;
-        
-        // Check if content is empty or only contains empty tags
-        if (!html || html.trim() === '' || html.trim() === '<p><br></p>' || html.trim() === '<div><br></div>') {
-            alert('Vui lòng viết câu trả lời!');
-            event.preventDefault();
-            return false;
-        }
-        
-        // Sanitize the HTML to prevent XSS attacks
-        let sanitized;
-        if (typeof DOMPurify !== 'undefined') {
-            // Use DOMPurify if available
-            sanitized = DOMPurify.sanitize(html, purifyConfig);
-        } else {
-            // Fallback to basic sanitization
-            sanitized = sanitizeHTML(html);
-        }
-        
-        document.getElementById('answer-body-hidden').value = sanitized;
-        return true;
-    }
-
-    // Basic HTML sanitization function (fallback)
-    function sanitizeHTML(html) {
-        const allowedTags = ['p', 'br', 'strong', 'b', 'em', 'i', 'u', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
-                           'ul', 'ol', 'li', 'code', 'pre', 'blockquote', 'a', 'img', 'hr', 'div', 'span'];
-        const allowedAttrs = ['href', 'title', 'src', 'alt'];
-        
-        // Create a temporary div to parse the HTML
-        const temp = document.createElement('div');
-        temp.innerHTML = html;
-        
-        // Remove any script tags and dangerous elements
-        const dangerousElements = temp.querySelectorAll('script, iframe, object, embed, style');
-        dangerousElements.forEach(el => el.remove());
-        
-        // Clean up remaining elements
-        temp.querySelectorAll('*').forEach(el => {
-            if (!allowedTags.includes(el.tagName.toLowerCase())) {
-                // Replace with children or text content
-                while (el.firstChild) {
-                    el.parentNode.insertBefore(el.firstChild, el);
-                }
-                el.parentNode.removeChild(el);
-            } else {
-                // Remove disallowed attributes
-                Array.from(el.attributes).forEach(attr => {
-                    if (!allowedAttrs.includes(attr.name.toLowerCase())) {
-                        el.removeAttribute(attr.name);
-                    }
-                });
-            }
-        });
-        
-        return temp.innerHTML;
-    }
-</script>
-
-<!-- Quill Rich Text Editor Library -->
-<script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
-
-<!-- DOMPurify Library for HTML Sanitization (Optional but Recommended) -->
-<script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.6/dist/purify.min.js"></script>
+<%@ include file="partials/question-detail-scripts.jspf" %>
 </body>
 </html>

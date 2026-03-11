@@ -24,6 +24,7 @@ public class QuestionDetailController extends HttpServlet {
     private final VoteDAO voteDao = new VoteDAO();
     private final BookmarkDAO bookmarkDao = new BookmarkDAO();
     private final CommentDAO commentDao = new CommentDAO();
+    private static final int ANSWERS_PER_PAGE = 5;
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -54,11 +55,31 @@ public class QuestionDetailController extends HttpServlet {
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
+
+                int answerCurrentPage = 1;
+                String pageParam = request.getParameter("page");
+                if (pageParam != null && !pageParam.trim().isEmpty()) {
+                    try {
+                        answerCurrentPage = Integer.parseInt(pageParam);
+                    } catch (NumberFormatException ex) {
+                        answerCurrentPage = 1;
+                    }
+                }
                 
                 // Try to load answers
                 List answers = new ArrayList();
+                int totalAnswers = 0;
+                int answerTotalPages = 1;
                 try {
-                    answers = answerDao.getAnswersByQuestionId(questionId);
+                    totalAnswers = answerDao.getTotalAnswersByQuestionId(questionId);
+                    answerTotalPages = Math.max(1, (int) Math.ceil(totalAnswers / (double) ANSWERS_PER_PAGE));
+                    if (answerCurrentPage < 1) {
+                        answerCurrentPage = 1;
+                    } else if (answerCurrentPage > answerTotalPages) {
+                        answerCurrentPage = answerTotalPages;
+                    }
+
+                    answers = answerDao.getAnswersByQuestionId(questionId, answerCurrentPage, ANSWERS_PER_PAGE);
                     
                     // Set vote scores and accepted status for answers
                     Long acceptedId = question.getAcceptedAnswerId();
@@ -79,6 +100,11 @@ public class QuestionDetailController extends HttpServlet {
                 // 3. Đẩy dữ liệu sang JSP
                 request.setAttribute("question", question);
                 request.setAttribute("answers", answers);
+                request.setAttribute("answerCurrentPage", answerCurrentPage);
+                request.setAttribute("answerTotalPages", answerTotalPages);
+                request.setAttribute("answerTotalCount", totalAnswers);
+                request.setAttribute("answerPageSize", ANSWERS_PER_PAGE);
+                request.setAttribute("answerPaginationPath", request.getContextPath() + request.getServletPath());
                 
                 // Load comments for question
                 try {

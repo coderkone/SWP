@@ -19,6 +19,7 @@ public class ViewQuestionController extends HttpServlet {
     private final AnswerDAO answerDao = new AnswerDAO();
     private final VoteDAO voteDao = new VoteDAO();
     private static final long VIEW_COOLDOWN_MS = 30 * 60 * 1000; // 30 minutes
+    private static final int ANSWERS_PER_PAGE = 5;
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -58,10 +59,30 @@ public class ViewQuestionController extends HttpServlet {
                 question.setScore(questionScore);
             } catch (Exception e) { /* use default score */ }
 
+            int answerCurrentPage = 1;
+            String pageParam = request.getParameter("page");
+            if (pageParam != null && !pageParam.trim().isEmpty()) {
+                try {
+                    answerCurrentPage = Integer.parseInt(pageParam);
+                } catch (NumberFormatException e) {
+                    answerCurrentPage = 1;
+                }
+            }
+
             // Load answers with vote scores
             List answers = new ArrayList();
+            int totalAnswers = 0;
+            int answerTotalPages = 1;
             try {
-                answers = answerDao.getAnswersByQuestionId(questionId);
+                totalAnswers = answerDao.getTotalAnswersByQuestionId(questionId);
+                answerTotalPages = Math.max(1, (int) Math.ceil(totalAnswers / (double) ANSWERS_PER_PAGE));
+                if (answerCurrentPage < 1) {
+                    answerCurrentPage = 1;
+                } else if (answerCurrentPage > answerTotalPages) {
+                    answerCurrentPage = answerTotalPages;
+                }
+
+                answers = answerDao.getAnswersByQuestionId(questionId, answerCurrentPage, ANSWERS_PER_PAGE);
                 Long acceptedId = question.getAcceptedAnswerId();
                 for (Object answerObj : answers) {
                     dto.AnswerDTO answer = (dto.AnswerDTO) answerObj;
@@ -105,6 +126,11 @@ public class ViewQuestionController extends HttpServlet {
             }
             request.setAttribute("question", question);
             request.setAttribute("answers", answers);
+            request.setAttribute("answerCurrentPage", answerCurrentPage);
+            request.setAttribute("answerTotalPages", answerTotalPages);
+            request.setAttribute("answerTotalCount", totalAnswers);
+            request.setAttribute("answerPageSize", ANSWERS_PER_PAGE);
+            request.setAttribute("answerPaginationPath", request.getContextPath() + request.getServletPath());
             request.getRequestDispatcher("/View/User/question-detail.jsp").forward(request, response);
 
         } catch (NumberFormatException e) {
