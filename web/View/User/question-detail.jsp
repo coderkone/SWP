@@ -1,4 +1,3 @@
-<%@ page contentType="text/html; charset=UTF-8" %>
 <%@ page import="dto.QuestionDTO" %>
 <%@ page import="dto.AnswerDTO" %>
 <%@ page import="dto.UserDTO" %>
@@ -7,7 +6,7 @@
 <%@ page import="java.util.Map" %>
 <%@ page import="java.util.ArrayList,java.util.HashMap" %>
 <%@ page import="java.text.SimpleDateFormat" %>
-
+<%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ page import="util.CommentRenderUtil" %>
 <!DOCTYPE html>
 <html lang="vi">
@@ -60,10 +59,13 @@
             QuestionDTO question = (QuestionDTO) request.getAttribute("question");
             Object sessionPrincipal = session.getAttribute("user");
             Long currentUserId = null;
+            String currentUserRole = null;
             if (sessionPrincipal instanceof UserDTO) {
                 currentUserId = ((UserDTO) sessionPrincipal).getUserId();
+                currentUserRole = ((UserDTO) sessionPrincipal).getRole();
             } else if (sessionPrincipal instanceof User) {
                 currentUserId = ((User) sessionPrincipal).getUserId();
+                currentUserRole = ((User) sessionPrincipal).getRole();
             }
             SimpleDateFormat editDateFormat = new SimpleDateFormat("MMM d, yyyy 'at' HH:mm");
             if (question != null) {
@@ -144,6 +146,20 @@
                         <a class="edit-link" href="${pageContext.request.contextPath}/question/<%= question.getQuestionId() %>/revisions">Revisions</a>
                         <% if (currentUserId != null && currentUserId == question.getUserId()) { %>
                         <a class="edit-link" href="${pageContext.request.contextPath}/post/edit?type=question&id=<%= question.getQuestionId() %>">Edit</a>
+                        <% } %>
+                        <% if (currentUserId != null
+                                && (currentUserId == question.getUserId()
+                                || (currentUserRole != null && currentUserRole.equalsIgnoreCase("admin")))) { %>
+                        <form method="post"
+                              action="${pageContext.request.contextPath}/question/delete?id=<%= question.getQuestionId() %>"
+                              style="display: inline;"
+                              onsubmit="return confirmDeleteQuestion();">
+                            <button type="submit"
+                                    class="edit-link"
+                                    style="background: none; border: none; padding: 0; cursor: pointer; color: #d93025;">
+                                Delete
+                            </button>
+                        </form>
                         <% } %>
                     </div>
                 </div>

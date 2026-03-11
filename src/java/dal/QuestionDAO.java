@@ -319,6 +319,15 @@ public class QuestionDAO extends DBContext {
             ps.executeUpdate();
         }
     }
+
+    public boolean deleteQuestion(long questionId) throws Exception {
+        String sql = "DELETE FROM Questions WHERE question_id = ?";
+        try (Connection con = getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setLong(1, questionId);
+            return ps.executeUpdate() > 0;
+        }
+    }
     
     // 8. Toggle accept answer (chuyển đổi câu trả lời được chấp nhận)
     public boolean toggleAcceptAnswer(long questionId, long answerId, long questionOwnerId) throws Exception {
