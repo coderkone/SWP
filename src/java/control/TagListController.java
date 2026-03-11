@@ -28,7 +28,14 @@ public class TagListController extends HttpServlet {
     throws ServletException, IOException {
         TagDAO dao = new TagDAO();
         List<Tag> list = dao.getAllTags();
+        String keyword = request.getParameter("search");
+        if(keyword != null && !keyword.trim().isEmpty()){
+            list = dao.searchTags(keyword.trim());
+        }else{
+            list = dao.getAllTags();
+        }
         request.setAttribute("tagList", list);
+        request.setAttribute("keyword", keyword);
         request.getRequestDispatcher("/View/User/tag.jsp").forward(request, response);
     } 
 
