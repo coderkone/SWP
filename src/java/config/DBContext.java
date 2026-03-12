@@ -14,7 +14,7 @@ public class DBContext {
 
     static {
         String user = "sa";
-        String pass = "123456";
+        String pass = "123";
         
         try {
             // Cố gắng đọc từ DBconfig.properties

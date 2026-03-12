@@ -52,8 +52,6 @@
         </button>
 
         <div class="collapse navbar-collapse" id="navbarContent">
-            
-            <form class="d-flex flex-grow-1 mx-lg-4" action="${pageContext.request.contextPath}/search" method="GET">
 
             <form class="d-flex mx-auto" style="max-width: 500px; width: 100%;" action="${pageContext.request.contextPath}/SearchController" method="GET">
                 <div class="input-group position-relative w-100">
@@ -67,40 +65,31 @@
 
             <ul class="navbar-nav ms-auto align-items-center gap-2 mt-2 mt-lg-0">
                 
-                <c:if test="${sessionScope.user != null}">
-                    
-                    <li class="nav-item">
-                        <a class="nav-link d-flex align-items-center py-0" href="${pageContext.request.contextPath}/profile">
-                            <img src="${sessionScope.user.avatarUrl != null ? sessionScope.user.avatarUrl : 'https://via.placeholder.com/32'}" 
-                                 alt="Avatar" width="32" height="32" class="rounded bg-light border avatar-img">
-                            
-                            <span class="ms-2 fw-bold text-dark small">${sessionScope.user.reputation != null ? sessionScope.user.reputation : 0}</span>
-                        </a>
-                    </li>
-
-                    <li class="nav-item">
-                        <a class="nav-link text-secondary" href="#"><i class="fa-solid fa-inbox fa-lg"></i></a>
-                    </li>
-                    
-                    <li class="nav-item me-2">
-                         <a class="nav-link text-secondary" href="#"><i class="fa-solid fa-circle-question fa-lg"></i></a>
-                    </li>
-
-                    <li class="nav-item">
-                        <a class="btn btn-outline-secondary btn-sm btn-auth" href="${pageContext.request.contextPath}/logout">
-                            <i class="fa-solid fa-right-from-bracket"></i>
-                        </a>
-                    </li>
-                </c:if>
-
-                <c:if test="${sessionScope.user == null}">
-                    <li class="nav-item">
-                        <a class="btn btn-outline-primary btn-sm btn-auth px-3" href="${pageContext.request.contextPath}/login.jsp">Log in</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="btn btn-primary btn-sm btn-auth px-3" href="${pageContext.request.contextPath}/register.jsp">Sign up</a>
-                    </li>
-                </c:if>
+                <c:choose>
+                    <c:when test="${sessionScope.USER != null || sessionScope.user != null}">
+                        <c:set var="currentUser" value="${sessionScope.USER != null ? sessionScope.USER : sessionScope.user}" />
+                        <li class="nav-item">
+                            <a class="nav-link d-flex align-items-center py-0" href="${pageContext.request.contextPath}/profile">
+                                <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png"
+                                     alt="Avatar" width="32" height="32" class="rounded bg-light border avatar-img">
+                                <span class="ms-2 fw-bold text-dark small">${currentUser.username}</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="btn btn-outline-secondary btn-sm btn-auth" href="${pageContext.request.contextPath}/logout">
+                                <i class="fa-solid fa-right-from-bracket"></i> Log out
+                            </a>
+                        </li>
+                    </c:when>
+                    <c:otherwise>
+                        <li class="nav-item">
+                            <a class="btn btn-outline-primary btn-sm btn-auth px-3" href="${pageContext.request.contextPath}/auth/login">Log in</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="btn btn-primary btn-sm btn-auth px-3" href="${pageContext.request.contextPath}/auth/register">Sign up</a>
+                        </li>
+                    </c:otherwise>
+                </c:choose>
 
             </ul>
         </div>

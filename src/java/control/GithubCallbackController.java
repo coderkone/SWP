@@ -3,6 +3,7 @@ package control;
 import util.GithubUtils;
 import model.GithubUser;
 import dal.UserDAO;
+import dto.UserDTO;
 import model.User;
 import java.io.IOException;
 import jakarta.servlet.ServletException;
@@ -25,7 +26,7 @@ public class GithubCallbackController extends HttpServlet {
                 GithubUser gitUser = GithubUtils.getUserInfo(accessToken);
                 
                 if (gitUser.email == null) {
-                    response.sendRedirect(request.getContextPath() + "/View/User/login.jsp?error=GithubEmailPrivate");
+                    response.sendRedirect(request.getContextPath() + "/auth/login?error=GithubEmailPrivate");
                     return;
                 }
 
@@ -33,17 +34,19 @@ public class GithubCallbackController extends HttpServlet {
                 User user = dao.loginWithGithub(gitUser);
 
                 if (user != null) {
+                    UserDTO userDTO = new UserDTO(user.getUserId(), user.getUsername(), user.getEmail(), user.getRole());
+                    request.getSession().setAttribute("USER", userDTO);
                     request.getSession().setAttribute("user", user);
-                    response.sendRedirect(request.getContextPath() + "/View/User/home.jsp");
+                    response.sendRedirect(request.getContextPath() + "/home");
                 } else {
-                    response.sendRedirect(request.getContextPath() + "/View/User/login.jsp?error=GithubLoginFailed");
+                    response.sendRedirect(request.getContextPath() + "/auth/login?error=GithubLoginFailed");
                 }
             } else {
-                response.sendRedirect(request.getContextPath() + "/View/User/login.jsp");
+                response.sendRedirect(request.getContextPath() + "/auth/login");
             }
         } catch (Exception e) {
             e.printStackTrace();
-            response.sendRedirect(request.getContextPath() + "/View/User/login.jsp");
+            response.sendRedirect(request.getContextPath() + "/auth/login");
         }
     }
 }

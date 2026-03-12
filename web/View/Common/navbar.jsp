@@ -1,4 +1,4 @@
-http://localhost:8080/DevQuery/<%@ page contentType="text/html; charset=UTF-8" %>
+<%@ page contentType="text/html; charset=UTF-8" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <style>
     .navbar-custom {
@@ -91,7 +91,7 @@ http://localhost:8080/DevQuery/<%@ page contentType="text/html; charset=UTF-8" %
                     <span style="color: #666;">Xin chào, <%= user.getUsername() %></span>
                 </li>
                 <li>
-                    <a href="${pageContext.request.contextPath}/auth/logout" class="btn-logout">Đăng xuất</a>
+                    <a href="${pageContext.request.contextPath}/logout" class="btn-logout">Đăng xuất</a>
                 </li>
             <% } else { %>
                 <li><a href="${pageContext.request.contextPath}/auth/login">Đăng nhập</a></li>

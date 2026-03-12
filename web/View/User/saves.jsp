@@ -73,9 +73,9 @@
                         </div>
 
                         <ul class="nav profile-tabs mt-4">
-                            <li class="nav-item"><a class="nav-link" href="#">Profile</a></li>
-                            <li class="nav-item"><a class="nav-link" href="#">Activity</a></li>
-                            <li class="nav-item"><a class="nav-link active" href="#">Saves</a></li>
+                            <li class="nav-item"><a class="nav-link" href="${pageContext.request.contextPath}/profile">Profile</a></li>
+                            <li class="nav-item"><a class="nav-link" href="${pageContext.request.contextPath}/activity">Activity</a></li>
+                            <li class="nav-item"><a class="nav-link active" href="${pageContext.request.contextPath}/saves">Saves</a></li>
                             <li class="nav-item"><a class="nav-link" href="#">Settings</a></li>
                         </ul>
                     </div>

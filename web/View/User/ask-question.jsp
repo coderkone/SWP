@@ -363,11 +363,10 @@
             </div>
 
             <div class="search-box">
-                <form method="get" action="${pageContext.request.contextPath}/home">
+                <form method="get" action="${pageContext.request.contextPath}/SearchController">
                     <input type="text" name="q" class="search-input" placeholder="Search...">
                 </form>
             </div>
-
             <div class="header-right">
                 <a class="btn-logout" href="<%=request.getContextPath()%>/logout">Log out</a>
             </div>
@@ -382,38 +381,23 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="#" class="nav-link selected"> <i class="fa-solid fa-earth-americas"></i>
+                    <a href="${pageContext.request.contextPath}/home" class="nav-link selected"><i class="fa-solid fa-earth-americas"></i>
                         <span>Questions</span>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="#" class="nav-link">
+                    <a href="${pageContext.request.contextPath}/View/User/tags-list.jsp" class="nav-link">
                         <i class="fa-solid fa-tags"></i>
                         <span>Tags</span>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="#" class="nav-link">
+                    <a href="${pageContext.request.contextPath}/saves" class="nav-link">
                         <i class="fa-solid fa-bookmark"></i>
                         <span>Saves</span>
                     </a>
                 </li>
-                <li class="nav-item">
-                    <a href="#" class="nav-link">
-                        <i class="fa-solid fa-message"></i>
-                        <span>Chat</span>
-                    </a>
-                </li>
             </ul>
-
-            <div class="collectives-section">
-                <div class="collectives-header">
-                    <span>Collectives</span>
-                    <i class="fa-solid fa-plus"></i>
-                </div>
-                <p class="collectives-text">Communities for your favorite technologies.</p>
-                <a href="#" class="collectives-link">Explore all Collectives</a>
-            </div>
         </div>
 
         <div class="main-wrap">
@@ -426,7 +410,7 @@
                 </div>
                 <% } %>
 
-                <form id="askForm" method="post" action="${pageContext.request.contextPath}/questions/create">
+                <form id="askForm" method="post" action="${pageContext.request.contextPath}/ask">
                     <div class="section-box">
                         <div class="section-title">Tiêu đề</div>
 

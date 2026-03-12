@@ -62,13 +62,13 @@
             <li class="sidebar-heading">Public</li>
 
             <li class="nav-item">
-                <a class="nav-link ${param.page == 'questions' ? 'active' : ''}" href="${pageContext.request.contextPath}/questions">
+                <a class="nav-link ${param.page == 'questions' ? 'active' : ''}" href="${pageContext.request.contextPath}/home">
                     <i class="fa-solid fa-earth-americas me-2"></i> Questions
                 </a>
             </li>
 
             <li class="nav-item">
-                <a class="nav-link ${param.page == 'tags' ? 'active' : ''}" href="${pageContext.request.contextPath}/tags">
+                <a class="nav-link ${param.page == 'tags' ? 'active' : ''}" href="${pageContext.request.contextPath}/View/User/tags-list.jsp">
                     <i class="fa-solid fa-tags me-2"></i> Tags
                 </a>
             </li>

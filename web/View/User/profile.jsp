@@ -223,7 +223,7 @@
                                     <i class="fa-solid fa-star text-warning"></i> ${userProfile.reputation} reputation
                                 </div>
                                 <ul class="nav profile-tabs">
-                                    <li class="nav-item"><a class="nav-link active" href="#">Profile</a></li>
+                                    <li class="nav-item"><a class="nav-link active" href="${pageContext.request.contextPath}/profile">Profile</a></li>
                                     <li class="nav-item"><a class="nav-link" href="${pageContext.request.contextPath}/activity">Activity</a></li>
                                     <li class="nav-item"><a class="nav-link" href="${pageContext.request.contextPath}/saves">Saves</a></li>
                                     <li class="nav-item"><a class="nav-link" href="#">Settings</a></li>
@@ -755,10 +755,9 @@
 <div class="sidebar" id="sidebar">
     <ul class="nav-list">
         <li><a href="${pageContext.request.contextPath}/home" class="nav-link"><i class="fa-solid fa-house"></i> Home</a></li>
-        <li><a href="#" class="nav-link"><i class="fa-solid fa-earth-americas"></i> Questions</a></li>
-        <li><a href="#" class="nav-link"><i class="fa-solid fa-tags"></i> Tags</a></li>
-        <li><a href="#" class="nav-link"><i class="fa-solid fa-bookmark"></i> Saves</a></li>
-        <li><a href="#" class="nav-link"><i class="fa-solid fa-message"></i> Chat</a></li>
+        <li><a href="${pageContext.request.contextPath}/home" class="nav-link"><i class="fa-solid fa-earth-americas"></i> Questions</a></li>
+        <li><a href="${pageContext.request.contextPath}/View/User/tags-list.jsp" class="nav-link"><i class="fa-solid fa-tags"></i> Tags</a></li>
+        <li><a href="${pageContext.request.contextPath}/saves" class="nav-link"><i class="fa-solid fa-bookmark"></i> Saves</a></li>
     </ul>
 </div>
 

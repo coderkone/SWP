@@ -476,7 +476,7 @@
     </div>
 
     <div class="search-box">
-        <form method="get" action="${pageContext.request.contextPath}/home">
+        <form method="get" action="${pageContext.request.contextPath}/SearchController">
             <input type="text" name="q" class="search-input" placeholder="Search...">
         </form>
     </div>
@@ -489,10 +489,10 @@
 <div class="sidebar" id="sidebar">
     <ul class="nav-list">
         <li><a href="${pageContext.request.contextPath}/home" class="nav-link"><i class="fa-solid fa-house"></i> Home</a></li>
-        <li><a href="#" class="nav-link"><i class="fa-solid fa-earth-americas"></i> Questions</a></li>
+        <li><a href="${pageContext.request.contextPath}/home" class="nav-link"><i class="fa-solid fa-earth-americas"></i> Questions</a></li>
         <li><a href="${pageContext.request.contextPath}/ask" class="nav-link"><i class="fa-solid fa-pen"></i> Ask</a></li>
-        <li><a href="${pageContext.request.contextPath}/tags" class="nav-link"><i class="fa-solid fa-tags"></i> Tags</a></li>
-        <li><a href="#" class="nav-link"><i class="fa-solid fa-bookmark"></i> Saves</a></li>
+        <li><a href="${pageContext.request.contextPath}/View/User/tags-list.jsp" class="nav-link"><i class="fa-solid fa-tags"></i> Tags</a></li>
+        <li><a href="${pageContext.request.contextPath}/saves" class="nav-link"><i class="fa-solid fa-bookmark"></i> Saves</a></li>
     </ul>
 </div>
 
@@ -534,7 +534,7 @@
                 <% if (question.getTags() != null && !question.getTags().isEmpty()) { %>
                 <div class="tags-list">
                     <% for (String tag : question.getTags()) { %>
-                    <a href="#" class="tag-badge"><%= tag %></a>
+                    <a href="<%=request.getContextPath()%>/SearchController?q=<%=java.net.URLEncoder.encode(tag,\"UTF-8\")%>&tab=newest" class="tag-badge"><%= tag %></a>
                     <% } %>
                 </div>
                 <% } %>
@@ -553,7 +553,7 @@
                         <i class="fa-solid fa-user"></i>
                     </div>
                     <div class="user-info">
-                        <a href="#" class="user-name"><%= question.getAuthorName() %></a>
+                        <a href="<%=request.getContextPath()%>/profile?id=<%=question.getUserId()%>" class="user-name"><%= question.getAuthorName() %></a>
                         <div class="user-meta">Member since today • reputation: 1</div>
                     </div>
                 </div>
@@ -609,7 +609,7 @@
                             <i class="fa-solid fa-user"></i>
                         </div>
                         <div class="user-info">
-                            <a href="#" class="user-name"><%= answer.getAuthorName() %></a>
+                                <a href="<%=request.getContextPath()%>/profile?id=<%=answer.getUserId()%>" class="user-name"><%= answer.getAuthorName() %></a>
                             <div class="user-meta">Member since today • reputation: 1</div>
                         </div>
                     </div>
@@ -715,7 +715,7 @@
         .then(response => {
             if (response.status === 401) {
                 alert('Please log in to vote');
-                window.location.href = '${pageContext.request.contextPath}/View/User/login.jsp';
+                window.location.href = '${pageContext.request.contextPath}/auth/login';
                 return null;
             }
             return response.json();

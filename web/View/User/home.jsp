@@ -456,11 +456,19 @@
                 </div>
 
                 <div class="user-nav">
-                    <div class="user-profile">
-                        <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" alt="avatar">
-                        <span>User</span>
-                    </div>
-<a class="btn-logout" href="<%=request.getContextPath()%>/logout">Log out</a>
+                    <c:choose>
+                        <c:when test="${sessionScope.USER != null || sessionScope.user != null}">
+                            <c:set var="currentUser" value="${sessionScope.USER != null ? sessionScope.USER : sessionScope.user}" />
+                            <div class="user-profile">
+                                <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" alt="avatar">
+                                <span>${not empty currentUser.fullName ? currentUser.fullName : currentUser.username}</span>
+                            </div>
+                            <a class="btn-logout" href="${pageContext.request.contextPath}/logout">Log out</a>
+                        </c:when>
+                        <c:otherwise>
+                            <a class="btn-logout" href="${pageContext.request.contextPath}/auth/login">Log in</a>
+                        </c:otherwise>
+                    </c:choose>
                 </div>
             </div>
         </header>
@@ -468,9 +476,9 @@
         <div class="container">
             <aside class="left-sidebar">
                 <a href="${pageContext.request.contextPath}/home" class="nav-link main active">Home</a>
-                <a href="#" class="nav-link">Questions</a>
-                <a href="#" class="nav-link">Tags</a>
-                <a href="#" class="nav-link">Users</a>
+                <a href="${pageContext.request.contextPath}/home" class="nav-link">Questions</a>
+                <a href="${pageContext.request.contextPath}/View/User/tags-list.jsp" class="nav-link">Tags</a>
+                <a href="${pageContext.request.contextPath}/profile" class="nav-link">Users</a>
             </aside>
 
             <main class="main-content">
@@ -621,12 +629,12 @@
                 <div class="popular-tags">
                     <h3>Popular tags</h3>
                     <div class="tags" style="flex-wrap: wrap;">
-                        <a href="#" class="tag">javascript</a>
-                        <a href="#" class="tag">python</a>
-                        <a href="#" class="tag">java</a>
-                        <a href="#" class="tag">c#</a>
-                        <a href="#" class="tag">php</a>
-                        <a href="#" class="tag">android</a>
+                        <a href="${pageContext.request.contextPath}/SearchController?q=javascript&tab=newest" class="tag">javascript</a>
+                        <a href="${pageContext.request.contextPath}/SearchController?q=python&tab=newest" class="tag">python</a>
+                        <a href="${pageContext.request.contextPath}/SearchController?q=java&tab=newest" class="tag">java</a>
+                        <a href="${pageContext.request.contextPath}/SearchController?q=c%23&tab=newest" class="tag">c#</a>
+                        <a href="${pageContext.request.contextPath}/SearchController?q=php&tab=newest" class="tag">php</a>
+                        <a href="${pageContext.request.contextPath}/SearchController?q=android&tab=newest" class="tag">android</a>
                     </div>
                 </div>
             </aside>
