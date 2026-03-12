@@ -1,6 +1,7 @@
 package control;
 
 import dal.CommentDAO;
+import dal.QuestionDAO;
 import dto.UserDTO;
 import model.User;
 import jakarta.servlet.ServletException;
@@ -12,6 +13,7 @@ import java.io.IOException;
 public class CommentController extends HttpServlet {
 
     private final CommentDAO commentDao = new CommentDAO();
+    private final QuestionDAO questionDao = new QuestionDAO();
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
@@ -75,6 +77,12 @@ public class CommentController extends HttpServlet {
 
                 long answerId = Long.parseLong(answerIdParam);
                 long questionId = Long.parseLong(questionIdParam);
+
+                if (questionDao.isQuestionClosed(questionId)) {
+                    response.sendRedirect(request.getContextPath() + "/question/detail?id=" + questionId + "&error=Question is closed");
+                    return;
+                }
+
                 Long parentCommentId = null;
 
                 // Optional reply target for nested comments
@@ -123,6 +131,11 @@ public class CommentController extends HttpServlet {
                 }
 
                 long questionId = Long.parseLong(questionIdParam);
+
+                if (questionDao.isQuestionClosed(questionId)) {
+                    response.sendRedirect(request.getContextPath() + "/question/detail?id=" + questionId + "&error=Question is closed");
+                    return;
+                }
 
                 // Insert comment on question
                 long commentId = commentDao.insertQuestionComment(userId, questionId, commentBody.trim());

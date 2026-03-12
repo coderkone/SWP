@@ -46,6 +46,11 @@ public class DeleteQuestionController extends HttpServlet {
                 return;
             }
 
+            if (question.isIsClosed()) {
+                response.sendError(HttpServletResponse.SC_FORBIDDEN, "Question is closed. Delete is disabled.");
+                return;
+            }
+
             boolean isOwner = sessionUser.userId == question.getUserId();
             boolean isAdmin = sessionUser.role != null && sessionUser.role.equalsIgnoreCase("admin");
             if (!isOwner && !isAdmin) {

@@ -37,6 +37,30 @@
         document.body.style.overflow = '';
     }
 
+    function openCloseModal(questionId) {
+        const modal = document.getElementById('close-modal');
+        if (!modal) return;
+
+        const questionIdInput = document.getElementById('close-question-id');
+        const reasonInput = document.getElementById('close-reason');
+
+        if (questionIdInput) questionIdInput.value = questionId || '';
+        if (reasonInput) reasonInput.value = '';
+
+        modal.classList.add('active');
+        modal.setAttribute('aria-hidden', 'false');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeCloseModal() {
+        const modal = document.getElementById('close-modal');
+        if (!modal) return;
+
+        modal.classList.remove('active');
+        modal.setAttribute('aria-hidden', 'true');
+        document.body.style.overflow = '';
+    }
+
     function toggleMenu() {
         var sidebar = document.getElementById('sidebar');
         sidebar.classList.toggle('active');
@@ -110,11 +134,17 @@
         if (flagModal && event.target === flagModal) {
             closeFlagModal();
         }
+
+        const closeModal = document.getElementById('close-modal');
+        if (closeModal && event.target === closeModal) {
+            closeCloseModal();
+        }
     });
 
     document.addEventListener('keydown', function(event) {
         if (event.key === 'Escape') {
             closeFlagModal();
+            closeCloseModal();
         }
     });
 

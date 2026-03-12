@@ -37,7 +37,7 @@ public class AnswerDAO extends DBContext {
     }
 
     public List<AnswerDTO> getAnswersByQuestionId(long questionId) throws Exception {
-        String sql = "SELECT a.*, u.username FROM Answers a " +
+        String sql = "SELECT a.*, u.username, u.Reputation AS author_reputation FROM Answers a " +
                 "JOIN Users u ON a.user_id = u.user_id WHERE a.question_id = ? " +
                 "ORDER BY CASE WHEN a.answer_id = (SELECT accepted_answer_id FROM Questions WHERE question_id = ?) THEN 1 ELSE 0 END DESC, a.Score DESC, a.created_at DESC";
 
@@ -61,7 +61,7 @@ public class AnswerDAO extends DBContext {
     }
 
     public List<AnswerDTO> getAnswersByQuestionId(long questionId, int pageIndex, int pageSize) throws Exception {
-        String sql = "SELECT a.*, u.username FROM Answers a " +
+        String sql = "SELECT a.*, u.username, u.Reputation AS author_reputation FROM Answers a " +
                 "JOIN Users u ON a.user_id = u.user_id WHERE a.question_id = ? " +
                 "ORDER BY CASE WHEN a.answer_id = (SELECT accepted_answer_id FROM Questions WHERE question_id = ?) THEN 1 ELSE 0 END DESC, a.Score DESC, a.created_at DESC " +
                 "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
@@ -110,7 +110,7 @@ public class AnswerDAO extends DBContext {
     }
 
     public AnswerDTO getAnswerById(long answerId) throws Exception {
-        String sql = "SELECT a.*, u.username FROM Answers a " +
+        String sql = "SELECT a.*, u.username, u.Reputation AS author_reputation FROM Answers a " +
                 "JOIN Users u ON a.user_id = u.user_id WHERE a.answer_id = ?";
 
         try (Connection con = getConnection();
@@ -235,7 +235,7 @@ public class AnswerDAO extends DBContext {
     }
 
     private AnswerDTO mapAnswer(ResultSet rs) throws Exception {
-        return new AnswerDTO(
+        AnswerDTO answer = new AnswerDTO(
                 rs.getLong("answer_id"),
                 rs.getLong("question_id"),
                 rs.getLong("user_id"),
@@ -250,5 +250,7 @@ public class AnswerDAO extends DBContext {
                 "", // Avatar can be added later
                 rs.getInt("Score")
         );
+            answer.setAuthorReputation(rs.getInt("author_reputation"));
+            return answer;
     }
 }

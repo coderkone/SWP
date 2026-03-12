@@ -45,6 +45,10 @@ public class EditPostController extends HttpServlet {
                     response.sendError(HttpServletResponse.SC_NOT_FOUND, "Question not found.");
                     return;
                 }
+                if (question.isIsClosed()) {
+                    response.sendError(HttpServletResponse.SC_FORBIDDEN, "Question is closed. Editing is disabled.");
+                    return;
+                }
                 if (question.getUserId() != sessionUser.userId) {
                     response.sendError(HttpServletResponse.SC_FORBIDDEN, "You are not allowed to edit this question.");
                     return;
@@ -57,6 +61,10 @@ public class EditPostController extends HttpServlet {
                 AnswerDTO answer = answerDao.getAnswerById(postId);
                 if (answer == null) {
                     response.sendError(HttpServletResponse.SC_NOT_FOUND, "Answer not found.");
+                    return;
+                }
+                if (questionDao.isQuestionClosed(answer.getQuestionId())) {
+                    response.sendError(HttpServletResponse.SC_FORBIDDEN, "Question is closed. Editing is disabled.");
                     return;
                 }
                 if (answer.getUserId() != sessionUser.userId) {
@@ -111,6 +119,10 @@ public class EditPostController extends HttpServlet {
             response.sendError(HttpServletResponse.SC_NOT_FOUND, "Question not found.");
             return;
         }
+        if (question.isIsClosed()) {
+            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Question is closed. Editing is disabled.");
+            return;
+        }
         if (question.getUserId() != sessionUser.userId) {
             response.sendError(HttpServletResponse.SC_FORBIDDEN, "You are not allowed to edit this question.");
             return;
@@ -162,6 +174,10 @@ public class EditPostController extends HttpServlet {
         AnswerDTO answer = answerDao.getAnswerById(answerId);
         if (answer == null) {
             response.sendError(HttpServletResponse.SC_NOT_FOUND, "Answer not found.");
+            return;
+        }
+        if (questionDao.isQuestionClosed(answer.getQuestionId())) {
+            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Question is closed. Editing is disabled.");
             return;
         }
         if (answer.getUserId() != sessionUser.userId) {

@@ -1,6 +1,7 @@
-package control;
+    package control;
 
 import dal.ReportDAO;
+import dal.QuestionDAO;
 import dto.UserDTO;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -32,6 +33,7 @@ public class FlagServlet extends HttpServlet {
             ));
 
     private final ReportDAO reportDao = new ReportDAO();
+    private final QuestionDAO questionDao = new QuestionDAO();
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
@@ -87,6 +89,16 @@ public class FlagServlet extends HttpServlet {
             questionId = Long.parseLong(questionIdParam);
         } catch (Exception ex) {
             redirectWithError(request, response, null, "Invalid question ID");
+            return;
+        }
+
+        try {
+            if (questionDao.isQuestionClosed(questionId)) {
+                redirectWithError(request, response, questionIdParam, "Question is closed");
+                return;
+            }
+        } catch (Exception ex) {
+            redirectWithError(request, response, questionIdParam, "Unable to validate question status");
             return;
         }
 

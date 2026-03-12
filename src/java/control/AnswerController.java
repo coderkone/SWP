@@ -52,6 +52,11 @@ public class AnswerController extends HttpServlet {
 
             long questionId = Long.parseLong(questionIdParam);
 
+            if (questionDao.isQuestionClosed(questionId)) {
+                response.sendRedirect(request.getContextPath() + "/question/detail?id=" + questionId + "&error=Question is closed");
+                return;
+            }
+
             // Sanitize HTML content to prevent XSS attacks
             String sanitizedAnswerBody = HtmlSanitizer.sanitize(answerBody);
 

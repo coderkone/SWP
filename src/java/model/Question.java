@@ -16,7 +16,9 @@ public class Question {
     private String codeSnippet;
     private int viewCount;
     private boolean isClosed; // bit trong SQL -> boolean
+    private Long closedBy;
     private String closedReason;
+    private Timestamp closedAt;
     private Timestamp createdAt;
     private Timestamp updatedAt;
     private int score;
@@ -101,6 +103,22 @@ public class Question {
 
     public void setClosedReason(String closedReason) {
         this.closedReason = closedReason;
+    }
+
+    public Long getClosedBy() {
+        return closedBy;
+    }
+
+    public void setClosedBy(Long closedBy) {
+        this.closedBy = closedBy;
+    }
+
+    public Timestamp getClosedAt() {
+        return closedAt;
+    }
+
+    public void setClosedAt(Timestamp closedAt) {
+        this.closedAt = closedAt;
     }
 
     public Timestamp getCreatedAt() {

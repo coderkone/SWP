@@ -19,7 +19,7 @@ public class QuestionDAO extends DBContext {
         
         // Dùng StringBuilder để nối chuỗi tối ưu hơn
         StringBuilder sql = new StringBuilder();
-        sql.append("SELECT q.*, u.username, up.avatar_url, ")
+        sql.append("SELECT q.*, u.username, u.Reputation AS author_reputation, up.avatar_url, ")
            .append("(SELECT COUNT(*) FROM Answers a WHERE a.question_id = q.question_id) as ans_count ")
            .append("FROM Questions q ")
            .append("JOIN Users u ON q.user_id = u.user_id ")
@@ -87,10 +87,18 @@ public class QuestionDAO extends DBContext {
         q.setTitle(rs.getString("title"));
         q.setBody(rs.getString("body"));
         q.setViewCount(rs.getInt("view_count"));
+        q.setIsClosed(rs.getBoolean("is_closed"));
+        q.setClosedReason(rs.getString("closed_reason"));
+        long closedBy = rs.getLong("closed_by");
+        if (!rs.wasNull()) {
+            q.setClosedBy(closedBy);
+        }
+        q.setClosedAt(rs.getTimestamp("closed_at"));
         q.setScore(rs.getInt("Score"));
         q.setCreatedAt(rs.getTimestamp("created_at"));
         
         q.setAuthorName(rs.getString("username"));
+        q.setAuthorReputation(rs.getInt("author_reputation"));
         q.setAuthorAvatar(rs.getString("avatar_url"));
         q.setAnswerCount(rs.getInt("ans_count"));
         
@@ -291,7 +299,7 @@ public class QuestionDAO extends DBContext {
     
     // 6. Lấy câu hỏi theo ID
     public QuestionDTO getQuestionById(long questionId) throws Exception {      
-        String sql = "SELECT q.*, u.username FROM Questions q " +
+        String sql = "SELECT q.*, u.username, u.Reputation AS author_reputation FROM Questions q " +
                 "JOIN Users u ON q.user_id = u.user_id WHERE q.question_id = ?";
 
         try (Connection con = getConnection();
@@ -341,7 +349,7 @@ public class QuestionDAO extends DBContext {
     // 9. Lấy các câu hỏi liên quan (cùng tags)
     public List<QuestionDTO> getRelatedQuestions(long questionId, int limit) throws Exception {
         List<QuestionDTO> relatedQuestions = new ArrayList<>();
-        String sql = "SELECT TOP (?) q.*, u.username FROM Questions q " +       
+        String sql = "SELECT TOP (?) q.*, u.username, u.Reputation AS author_reputation FROM Questions q " +       
                 "JOIN Users u ON q.user_id = u.user_id " +
                 "WHERE q.question_id IN (" +
                 "  SELECT DISTINCT q2.question_id FROM Questions q2 " +
@@ -377,9 +385,18 @@ public class QuestionDAO extends DBContext {
         q.setTitle(rs.getString("title"));
         q.setBody(rs.getString("body"));
         q.setViewCount(rs.getInt("view_count"));
+        q.setIsClosed(rs.getBoolean("is_closed"));
+        q.setClosedReason(rs.getString("closed_reason"));
+        long closedBy = rs.getLong("closed_by");
+        if (!rs.wasNull()) {
+            q.setClosedBy(closedBy);
+        }
+        q.setClosedAt(rs.getTimestamp("closed_at"));
         q.setScore(rs.getInt("Score"));
         q.setCreatedAt(rs.getTimestamp("created_at"));
+        q.setUpdatedAt(rs.getTimestamp("updated_at"));
         q.setAuthorName(rs.getString("username"));
+        q.setAuthorReputation(rs.getInt("author_reputation"));
         
         // Lấy accepted_answer_id nếu tồn tại
         long acceptedId = rs.getLong("accepted_answer_id");
@@ -531,6 +548,98 @@ public class QuestionDAO extends DBContext {
             }
         }
         return String.join(",", uniqueTags);
+    }
+
+    public boolean closeQuestion(long questionId, long closedByUserId, String closeReason) throws Exception {
+        Connection conn = null;
+        try {
+            conn = getConnection();
+            conn.setAutoCommit(false);
+
+            int reputation;
+            String userSql = "SELECT reputation FROM Users WHERE user_id = ?";
+            try (PreparedStatement ps = conn.prepareStatement(userSql)) {
+                ps.setLong(1, closedByUserId);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (!rs.next()) {
+                        conn.rollback();
+                        return false;
+                    }
+                    reputation = rs.getInt("reputation");
+                }
+            }
+
+            if (reputation < 3000) {
+                conn.rollback();
+                return false;
+            }
+
+            String closeSql = "UPDATE Questions "
+                    + "SET is_closed = 1, closed_by = ?, closed_reason = ?, closed_at = GETDATE(), updated_at = GETDATE() "
+                    + "WHERE question_id = ? AND (is_closed = 0 OR is_closed IS NULL)";
+
+            int updated;
+            try (PreparedStatement ps = conn.prepareStatement(closeSql)) {
+                ps.setLong(1, closedByUserId);
+                ps.setString(2, closeReason);
+                ps.setLong(3, questionId);
+                updated = ps.executeUpdate();
+            }
+
+            if (updated > 0) {
+                conn.commit();
+                return true;
+            }
+
+            conn.rollback();
+            return false;
+        } catch (Exception e) {
+            try {
+                if (conn != null) {
+                    conn.rollback();
+                }
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            }
+            throw e;
+        } finally {
+            if (conn != null) {
+                try {
+                    conn.setAutoCommit(true);
+                    conn.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+    public boolean isQuestionClosed(long questionId) throws Exception {
+        String sql = "SELECT is_closed FROM Questions WHERE question_id = ?";
+        try (Connection con = getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setLong(1, questionId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getBoolean("is_closed");
+                }
+            }
+        }
+        return false;
+    }
+
+    public Long getQuestionIdByAnswerId(long answerId) throws Exception {
+        String sql = "SELECT question_id FROM Answers WHERE answer_id = ?";
+        try (Connection con = getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setLong(1, answerId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getLong("question_id");
+                }
+            }
+        }
+        return null;
     }
 
 }

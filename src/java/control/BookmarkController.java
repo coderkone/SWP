@@ -1,6 +1,8 @@
 package control;
 
 import dal.BookmarkDAO;
+import dal.QuestionDAO;
+import dal.AnswerDAO;
 import dto.UserDTO;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -13,6 +15,8 @@ import com.google.gson.JsonObject;
 public class BookmarkController extends HttpServlet {
 
     private final BookmarkDAO bookmarkDao = new BookmarkDAO();
+    private final QuestionDAO questionDao = new QuestionDAO();
+    private final AnswerDAO answerDao = new AnswerDAO();
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
@@ -57,6 +61,15 @@ public class BookmarkController extends HttpServlet {
             // 3. Toggle question bookmark
             if (questionIdParam != null && questionIdParam.matches("\\d+")) {
                 long questionId = Long.parseLong(questionIdParam);
+
+                if (questionDao.isQuestionClosed(questionId)) {
+                    response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                    jsonResponse.addProperty("success", false);
+                    jsonResponse.addProperty("message", "Question is closed");
+                    out.print(jsonResponse);
+                    return;
+                }
+
                 boolean isBookmarked = bookmarkDao.checkIfBookmarked(userId, questionId);
                 
                 if (isBookmarked) {
@@ -72,6 +85,14 @@ public class BookmarkController extends HttpServlet {
             // 4. Toggle answer bookmark
             else if (answerIdParam != null && answerIdParam.matches("\\d+")) {
                 long answerId = Long.parseLong(answerIdParam);
+                dto.AnswerDTO answer = answerDao.getAnswerById(answerId);
+                if (answer != null && questionDao.isQuestionClosed(answer.getQuestionId())) {
+                    response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                    jsonResponse.addProperty("success", false);
+                    jsonResponse.addProperty("message", "Question is closed");
+                    out.print(jsonResponse);
+                    return;
+                }
                 boolean isBookmarked = bookmarkDao.checkIfAnswerBookmarked(userId, answerId);
                 
                 if (isBookmarked) {

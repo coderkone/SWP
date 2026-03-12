@@ -44,11 +44,14 @@ CREATE TABLE [dbo].[Questions](
 	-- [accepted_answer_id] ĐÃ XÓA
 	[view_count] [int] DEFAULT 0,
 	[is_closed] [bit] DEFAULT 0,
+	[closed_by] [bigint] NULL,
 	[closed_reason] [nvarchar](255) NULL,
+	[closed_at] [datetime] NULL,
 	[created_at] [datetime] DEFAULT GETDATE(),
 	[updated_at] [datetime] DEFAULT GETDATE(),
 	[Score] [int] DEFAULT 0,
-    FOREIGN KEY (user_id) REFERENCES Users(user_id)
+    FOREIGN KEY (user_id) REFERENCES Users(user_id),
+    FOREIGN KEY (closed_by) REFERENCES Users(user_id)
 )
 GO
 

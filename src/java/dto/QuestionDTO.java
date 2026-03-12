@@ -16,6 +16,7 @@ import model.Question;
 public class QuestionDTO extends Question {
     private String authorName;
     private String authorAvatar;
+    private int authorReputation;
     private int answerCount;
     private boolean hasAcceptedAnswer;
 
@@ -50,6 +51,14 @@ public class QuestionDTO extends Question {
     }
     public void setAuthorAvatar(String authorAvatar) { 
         this.authorAvatar = authorAvatar; 
+    }
+
+    public int getAuthorReputation() {
+        return authorReputation;
+    }
+
+    public void setAuthorReputation(int authorReputation) {
+        this.authorReputation = authorReputation;
     }
 
     public int getAnswerCount() { 

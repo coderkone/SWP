@@ -1,6 +1,8 @@
 package control;
 
 import dal.VoteDAO;
+import dal.QuestionDAO;
+import dal.AnswerDAO;
 import model.User;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -12,6 +14,8 @@ import java.io.PrintWriter;
 public class VoteController extends HttpServlet {
 
     private final VoteDAO voteDao = new VoteDAO();
+    private final QuestionDAO questionDao = new QuestionDAO();
+    private final AnswerDAO answerDao = new AnswerDAO();
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
@@ -92,6 +96,22 @@ public class VoteController extends HttpServlet {
             }
 
             // Add or update vote
+            Long relatedQuestionId = null;
+            if (questionId != null) {
+                relatedQuestionId = questionId;
+            } else if (answerId != null) {
+                dto.AnswerDTO answer = answerDao.getAnswerById(answerId);
+                if (answer != null) {
+                    relatedQuestionId = answer.getQuestionId();
+                }
+            }
+
+            if (relatedQuestionId != null && questionDao.isQuestionClosed(relatedQuestionId)) {
+                response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                out.println("{\"error\": \"Question is closed\"}");
+                return;
+            }
+
             boolean success = voteDao.addVote(userId, questionId, answerId, voteType);
 
             if (success) {

@@ -57,6 +57,12 @@ public class AcceptAnswerController extends HttpServlet {
                 return;
             }
 
+            if (question.isIsClosed()) {
+                response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                out.print("{\"success\": false, \"error\": \"Question is closed\"}");
+                return;
+            }
+
             if (question.getUserId() != user.getUserId()) {
                 response.setStatus(HttpServletResponse.SC_FORBIDDEN);
                 out.print("{\"success\": false, \"error\": \"Only the question owner can accept answers\"}");

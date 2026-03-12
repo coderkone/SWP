@@ -60,16 +60,20 @@
                     Object sessionPrincipal = session.getAttribute("user");
                     Long currentUserId = null;
                     String currentUserRole = null;
+                    int currentUserReputation = 0;
                     if (sessionPrincipal instanceof UserDTO) {
                         currentUserId = ((UserDTO) sessionPrincipal).getUserId();
                         currentUserRole = ((UserDTO) sessionPrincipal).getRole();
+                        currentUserReputation = ((UserDTO) sessionPrincipal).getReputation();
                     } else if (sessionPrincipal instanceof User) {
                         currentUserId = ((User) sessionPrincipal).getUserId();
                         currentUserRole = ((User) sessionPrincipal).getRole();
+                        currentUserReputation = ((User) sessionPrincipal).getReputation();
                     }
                     boolean isLoggedIn = (sessionPrincipal instanceof UserDTO) || (sessionPrincipal instanceof User);
                     SimpleDateFormat editDateFormat = new SimpleDateFormat("MMM d, yyyy 'at' HH:mm");
                     if (question != null) {
+                    boolean isQuestionClosed = question.isIsClosed();
                 %>
 
                 <% if ("success".equals(request.getParameter("flag"))) { %>
@@ -80,6 +84,16 @@
                 <% if (request.getParameter("flagError") != null) { %>
                 <div class="flag-notice error" role="alert">
                     <%= request.getParameter("flagError") %>
+                </div>
+                <% } %>
+                <% if ("success".equals(request.getParameter("close"))) { %>
+                <div class="flag-notice success" role="status" aria-live="polite">
+                    This question has been closed by a high-reputation user.
+                </div>
+                <% } %>
+                <% if (request.getParameter("closeError") != null) { %>
+                <div class="flag-notice error" role="alert">
+                    <%= request.getParameter("closeError") %>
                 </div>
                 <% } %>
 
@@ -95,11 +109,14 @@
                             String bookmarkClass = isBookmarked ? " bookmarked" : "";
                             long qid = question.getQuestionId();
                         %>
+                        <% if (!isQuestionClosed) { %>
                         <button type="button" id="question-upvote" class="vote-btn upvote-btn<%= upvoteClass %>" title="Upvote" 
                                 data-question-id="<%= qid %>" data-vote-type="upvote" onclick="handleVoteClick(event, this)">
                             <i class="fa-solid fa-arrow-up"></i>
                         </button>
+                        <% } %>
                         <div class="vote-count"><%= question.getScore() %></div>
+                        <% if (!isQuestionClosed) { %>
                         <button type="button" id="question-downvote" class="vote-btn downvote-btn<%= downvoteClass %>" title="Downvote" 
                                 data-question-id="<%= qid %>" data-vote-type="downvote" onclick="handleVoteClick(event, this)">
                             <i class="fa-solid fa-arrow-down"></i>
@@ -108,13 +125,20 @@
                                 data-question-id="<%= qid %>" onclick="handleBookmarkClick(event, this)">
                             <i class="fa-solid fa-bookmark"></i>
                         </button>
+                        <% } %>
                     </div>
 
                     <div class="question-content">
                         <div class="question-title-row">
-                            <div class="question-title"><%= question.getTitle() %></div>
+                            <div>
+                                <div class="question-title"><%= question.getTitle() %></div>
+                                <% if (question.isIsClosed()) { %>
+                                <span class="closed-badge"><i class="fa-solid fa-lock"></i> Closed</span>
+                                <% } %>
+                            </div>
                             <div class="post-actions-group">
                                 <div class="share-wrapper">
+                                    <% if (!isQuestionClosed) { %>
                                     <button type="button" class="action-btn" onclick="toggleSharePopup(event)">
                                         <i class="fa-solid fa-share-nodes"></i> Share
                                     </button>
@@ -123,23 +147,33 @@
                                         <button type="button" class="copy-link-btn" onclick="copyQuestionLink()">Copy link</button>
                                         <span id="copy-link-status" class="copy-link-status"></span>
                                     </div>
+                                    <% } %>
                                 </div>
+                                <% if (!isQuestionClosed) { %>
                                 <a class="action-btn" href="${pageContext.request.contextPath}/question/<%= question.getQuestionId() %>/revisions">
                                     <i class="fa-solid fa-clock-rotate-left"></i> Revisions
                                 </a>
-                                <% if (isLoggedIn && (currentUserId == null || currentUserId != question.getUserId())) { %>
+                                <% } %>
+                                <% if (!isQuestionClosed && isLoggedIn && (currentUserId == null || currentUserId != question.getUserId())) { %>
                                 <button type="button"
                                         class="action-btn"
                                         onclick="openFlagModal('question', '<%= question.getQuestionId() %>', '<%= question.getQuestionId() %>', '')">
                                     <i class="fa-solid fa-flag"></i> Flag
                                 </button>
                                 <% } %>
-                                <% if (currentUserId != null && currentUserId == question.getUserId()) { %>
+                                <% if (!isQuestionClosed && isLoggedIn && currentUserReputation >= 3000 && !question.isIsClosed()) { %>
+                                <button type="button"
+                                        class="action-btn action-btn-warning"
+                                        onclick="openCloseModal('<%= question.getQuestionId() %>')">
+                                    <i class="fa-solid fa-lock"></i> Close Question
+                                </button>
+                                <% } %>
+                                <% if (!isQuestionClosed && currentUserId != null && currentUserId == question.getUserId()) { %>
                                 <a class="action-btn" href="${pageContext.request.contextPath}/post/edit?type=question&id=<%= question.getQuestionId() %>">
                                     <i class="fa-solid fa-pen"></i> Edit
                                 </a>
                                 <% } %>
-                                <% if (currentUserId != null
+                                <% if (!isQuestionClosed && currentUserId != null
                                         && (currentUserId == question.getUserId()
                                         || (currentUserRole != null && currentUserRole.equalsIgnoreCase("admin")))) { %>
                                 <form method="post"
@@ -157,6 +191,15 @@
                         <div class="question-body">
                             <%= question.getBody() %>
                         </div>
+
+                        <% if (question.isIsClosed()) { %>
+                        <div class="closed-question-message">
+                            <strong>This question has been closed by a high-reputation user.</strong>
+                            <% if (question.getClosedReason() != null && !question.getClosedReason().isEmpty()) { %>
+                            <div class="closed-question-reason">Reason: <%= question.getClosedReason() %></div>
+                            <% } %>
+                        </div>
+                        <% } %>
 
                         <% if (question.getCodeSnippet() != null && !question.getCodeSnippet().isEmpty()) { %>
                         <div class="code-block">
@@ -195,7 +238,7 @@
                                 <div class="user-info">
                                     <a href="#" class="user-name"><%= question.getAuthorName() %></a>
                                     <div class="user-meta">asked at <%= question.getCreatedAt() %></div>
-                                    <div class="user-meta">reputation: 1</div>
+                                    <div class="user-meta">reputation: <%= question.getAuthorReputation() %></div>
                                 </div>
                             </div>
                         </div>
@@ -241,7 +284,7 @@
 
                         <!-- Add Comment Section -->
                         <div style="margin-top: 15px; padding-top: 10px; border-top: 1px solid #e3e6e8;">
-                            <% if (isLoggedIn) { %>
+                            <% if (isLoggedIn && !isQuestionClosed) { %>
                             <div id="add-question-comment-form" style="display: none; margin-top: 12px;">
                                 <form method="post" action="${pageContext.request.contextPath}/comment/add">
                                     <input type="hidden" name="questionId" value="<%= question.getQuestionId() %>">
@@ -260,10 +303,12 @@
                                     onclick="document.getElementById('add-question-comment-form').style.display = 'block'; this.style.display = 'none';">
                                 Add a comment
                             </button>
-                            <% } else { %>
+                            <% } else if (!isLoggedIn) { %>
                             <a href="${pageContext.request.contextPath}/auth/login" style="font-size: 13px; color: #0a95ff; text-decoration: none;">
                                 Sign in to add a comment
                             </a>
+                            <% } else { %>
+                            <span style="font-size: 13px; color: #6a737c;">Comments are disabled because this question is closed</span>
                             <% } %>
                         </div>
                     </div>
@@ -298,11 +343,14 @@
                     %>
                     <div class="answer-box<%= accepted ? " accepted" : "" %>" id="answer-<%= answer.getAnswerId() %>">
                         <div class="vote-box">
+                            <% if (!isQuestionClosed) { %>
                             <button type="button" id="answer-upvote-<%= answer.getAnswerId() %>" class="vote-btn upvote-btn<%= answerUpvoteClass %>" title="Upvote" 
                                     data-answer-id="<%= answer.getAnswerId() %>" data-vote-type="upvote" onclick="handleVoteClick(event, this)">
                                 <i class="fa-solid fa-arrow-up"></i>
                             </button>
+                            <% } %>
                             <div class="vote-count"><%= answer.getScore() %></div>
+                            <% if (!isQuestionClosed) { %>
                             <button type="button" id="answer-downvote-<%= answer.getAnswerId() %>" class="vote-btn downvote-btn<%= answerDownvoteClass %>" title="Downvote" 
                                     data-answer-id="<%= answer.getAnswerId() %>" data-vote-type="downvote" onclick="handleVoteClick(event, this)">
                                 <i class="fa-solid fa-arrow-down"></i>
@@ -318,6 +366,7 @@
                                     data-answer-id="<%= answer.getAnswerId() %>" onclick="handleAnswerBookmarkClick(event, this)">
                                 <i class="fa-solid fa-bookmark"></i>
                             </button>
+                            <% } %>
                         </div>
 
                         <div class="answer-content">
@@ -344,22 +393,24 @@
                                     </div>
 
                                     <div class="answer-meta-actions">
-                                        <% if (currentUserId != null && currentUserId == answer.getUserId()) { %>
+                                        <% if (!isQuestionClosed && currentUserId != null && currentUserId == answer.getUserId()) { %>
                                         <a class="action-btn" href="${pageContext.request.contextPath}/post/edit?type=answer&id=<%= answer.getAnswerId() %>">
                                             <i class="fa-solid fa-pen"></i> Edit
                                         </a>
                                         <% } %>
+                                        <% if (!isQuestionClosed) { %>
                                         <a class="action-btn" href="${pageContext.request.contextPath}/answer/<%= answer.getAnswerId() %>/revisions">
                                             <i class="fa-solid fa-clock-rotate-left"></i> Revisions
                                         </a>
-                                        <% if (isLoggedIn && (currentUserId == null || currentUserId != answer.getUserId())) { %>
+                                        <% } %>
+                                        <% if (!isQuestionClosed && isLoggedIn && (currentUserId == null || currentUserId != answer.getUserId())) { %>
                                         <button type="button"
                                                 class="action-btn"
                                                 onclick="openFlagModal('answer', '<%= answer.getAnswerId() %>', '<%= question.getQuestionId() %>', '<%= answer.getAnswerId() %>')">
                                             <i class="fa-solid fa-flag"></i> Flag
                                         </button>
                                         <% } %>
-                                        <% if (isQuestionOwner) { %>
+                                        <% if (!isQuestionClosed && isQuestionOwner) { %>
                                         <button type="button" class="accept-btn<%= accepted ? " accepted" : "" %>" 
                                                 data-question-id="<%= question.getQuestionId() %>" data-answer-id="<%= answer.getAnswerId() %>"
                                                 onclick="handleAcceptClick(event, this)" title="<%= accepted ? "Unaccept" : "Accept" %>">
@@ -378,7 +429,7 @@
                                     <div class="user-info">
                                         <a href="#" class="user-name"><%= answer.getAuthorName() %></a>
                                         <div class="user-meta">answered at <%= answer.getCreatedAt() %></div>
-                                        <div class="user-meta">reputation: 1</div>
+                                        <div class="user-meta">reputation: <%= answer.getAuthorReputation() %></div>
                                     </div>
                                 </div>
                             </div>
@@ -432,7 +483,7 @@
 
                             <!-- Reply Button and Form -->
                             <div style="margin-top: 12px; padding-top: 10px; border-top: 1px solid #e3e6e8;">
-                                <% if (isLoggedIn) { %>
+                                <% if (isLoggedIn && !isQuestionClosed) { %>
                                 <div id="comment-form-<%= answer.getAnswerId() %>" style="display: none; margin-top: 12px;">
                                     <form method="post" action="${pageContext.request.contextPath}/comment/add">
                                         <input type="hidden" name="answerId" value="<%= answer.getAnswerId() %>">
@@ -453,10 +504,12 @@
                                         onclick="document.getElementById('comment-form-<%= answer.getAnswerId() %>').style.display = 'block'; this.style.display = 'none';">
                                     Add a comment
                                 </button>
-                                <% } else { %>
+                                <% } else if (!isLoggedIn) { %>
                                 <a href="${pageContext.request.contextPath}/auth/login" style="font-size: 13px; color: #0a95ff; text-decoration: none;">
                                     Sign in to add a comment
                                 </a>
+                                <% } else { %>
+                                <span style="font-size: 13px; color: #6a737c;">Comments are disabled because this question is closed</span>
                                 <% } %>
                             </div>
                         </div>
@@ -512,6 +565,7 @@
                 </div>
 
                 <!-- Add Answer Section -->
+                <% if (!isQuestionClosed) { %>
                 <div class="add-answer-section">
                     <div class="section-header">Your Answer</div>
 
@@ -527,6 +581,12 @@
                         <button type="submit" class="btn">Post Answer</button>
                     </form>
                 </div>
+                <% } else { %>
+                <div class="add-answer-section">
+                    <div class="section-header">This question is closed</div>
+                    <div style="font-size: 14px; color: #6a737c;">All interaction features are disabled. You can only view the question and existing answers.</div>
+                </div>
+                <% } %>
 
                 <% } else { %>
                 <div class="empty-state">
@@ -595,7 +655,7 @@
                     <form method="post" action="${pageContext.request.contextPath}/flag/submit" class="flag-form">
                         <input type="hidden" id="flag-post-type" name="postType">
                         <input type="hidden" id="flag-post-id" name="postId">
-                        <input type="hidden" id="flag-question-id" name="questionId" value="<%= question.getQuestionId() %>">
+                        <input type="hidden" id="flag-question-id" name="questionId" value="<%= question != null ? question.getQuestionId() : 0 %>">
                         <input type="hidden" id="flag-answer-id" name="answerId">
 
                         <div class="flag-field">
@@ -621,6 +681,38 @@
                         <div class="flag-actions">
                             <button type="submit" class="btn">Submit Report</button>
                             <button type="button" class="btn btn-secondary" onclick="closeFlagModal()">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div id="close-modal" class="simple-modal" aria-hidden="true">
+            <div class="simple-modal-dialog flag-modal-dialog" role="dialog" aria-modal="true" aria-labelledby="close-modal-title">
+                <div class="simple-modal-header">
+                    <h3 id="close-modal-title">Close Question</h3>
+                    <button type="button" class="simple-modal-close" onclick="closeCloseModal()" aria-label="Close">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+                <div class="simple-modal-body flag-modal-body">
+                    <form method="post" action="${pageContext.request.contextPath}/question/close" class="flag-form">
+                        <input type="hidden" id="close-question-id" name="questionId" value="<%= question != null ? question.getQuestionId() : 0 %>">
+
+                        <div class="flag-field">
+                            <label for="close-reason" class="form-label">Reason</label>
+                            <select id="close-reason" name="closeReason" class="form-input" required>
+                                <option value="">Select a reason</option>
+                                <option value="Duplicate question">Duplicate question</option>
+                                <option value="Needs more details">Needs more details</option>
+                                <option value="Off-topic">Off-topic</option>
+                                <option value="Opinion-based">Opinion-based</option>
+                            </select>
+                        </div>
+
+                        <div class="flag-actions">
+                            <button type="submit" class="btn">Close Question</button>
+                            <button type="button" class="btn btn-secondary" onclick="closeCloseModal()">Cancel</button>
                         </div>
                     </form>
                 </div>
