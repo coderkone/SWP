@@ -101,15 +101,42 @@
             <div class="question-content">
                 <div class="question-title-row">
                     <div class="question-title"><%= question.getTitle() %></div>
-                    <div class="share-wrapper">
-                        <button type="button" class="share-btn" onclick="toggleSharePopup(event)">
-                            <i class="fa-solid fa-share-nodes"></i> Share
-                        </button>
-                        <div id="share-popup" class="share-popup">
-                            <input type="text" id="share-link-input" class="share-input" readonly>
-                            <button type="button" class="copy-link-btn" onclick="copyQuestionLink()">Copy link</button>
-                            <span id="copy-link-status" class="copy-link-status"></span>
+                    <div class="post-actions-group">
+                        <div class="share-wrapper">
+                            <button type="button" class="action-btn" onclick="toggleSharePopup(event)">
+                                <i class="fa-solid fa-share-nodes"></i> Share
+                            </button>
+                            <div id="share-popup" class="share-popup">
+                                <input type="text" id="share-link-input" class="share-input" readonly>
+                                <button type="button" class="copy-link-btn" onclick="copyQuestionLink()">Copy link</button>
+                                <span id="copy-link-status" class="copy-link-status"></span>
+                            </div>
                         </div>
+                        <a class="action-btn" href="${pageContext.request.contextPath}/question/<%= question.getQuestionId() %>/revisions">
+                            <i class="fa-solid fa-clock-rotate-left"></i> Revisions
+                        </a>
+                        <% if (currentUserId != null && currentUserId == question.getUserId()) { %>
+                        <a class="action-btn" href="${pageContext.request.contextPath}/post/edit?type=question&id=<%= question.getQuestionId() %>">
+                            <i class="fa-solid fa-pen"></i> Edit
+                        </a>
+                        <% } %>
+                        <% if (currentUserId != null
+                                && (currentUserId == question.getUserId()
+                                || (currentUserRole != null && currentUserRole.equalsIgnoreCase("admin")))) { %>
+                        <form method="post"
+                              action="${pageContext.request.contextPath}/question/delete?id=<%= question.getQuestionId() %>"
+                              class="inline-action-form"
+                              onsubmit="return confirmDeleteQuestion();">
+                            <button type="submit" class="action-btn action-btn-danger">
+                                <i class="fa-solid fa-trash"></i> Delete
+                            </button>
+                        </form>
+                        <% } %>
+                        <button type="button"
+                                class="action-btn"
+                                onclick="openRevisionModal('${pageContext.request.contextPath}/question/<%= question.getQuestionId() %>/revisions', 'Question Edit History')">
+                            <i class="fa-solid fa-list"></i> View edit history
+                        </button>
                     </div>
                 </div>
 
@@ -131,46 +158,38 @@
                 </div>
                 <% } %>
 
-                <div class="question-meta">
-                    <div>
-                        <strong>asked</strong> <%= question.getCreatedAt() %>
-                        <% if (question.getUpdatedAt() != null && question.getCreatedAt() != null
-                                && question.getUpdatedAt().after(question.getCreatedAt())) { %>
-                        <span style="margin-left: 10px; color: #6a737c;">
-                            edited <%= editDateFormat.format(question.getUpdatedAt()) %>
-                        </span>
-                        <% } %>
+                <div class="post-footer-row">
+                    <div class="question-meta question-meta-main">
+                        <div>
+                            <strong>asked</strong> <%= question.getCreatedAt() %>
+                            <% if (question.getUpdatedAt() != null && question.getCreatedAt() != null
+                                    && question.getUpdatedAt().after(question.getCreatedAt())) { %>
+                            <span style="margin-left: 10px; color: #6a737c;">
+                                edited <%= editDateFormat.format(question.getUpdatedAt()) %>
+                            </span>
+                            <% } %>
+                        </div>
+                        <div>
+                            <strong>viewed</strong> <%= question.getViewCount() %> times
+                        </div>
+                        <div>
+                            <a class="edit-link"
+                               href="#"
+                               onclick="openRevisionModal('${pageContext.request.contextPath}/question/<%= question.getQuestionId() %>/revisions', 'Question Edit History'); return false;">
+                                View edit history
+                            </a>
+                        </div>
                     </div>
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                        <strong>viewed</strong> <%= question.getViewCount() %> times
-                        <a class="edit-link" href="${pageContext.request.contextPath}/question/<%= question.getQuestionId() %>/revisions">Revisions</a>
-                        <% if (currentUserId != null && currentUserId == question.getUserId()) { %>
-                        <a class="edit-link" href="${pageContext.request.contextPath}/post/edit?type=question&id=<%= question.getQuestionId() %>">Edit</a>
-                        <% } %>
-                        <% if (currentUserId != null
-                                && (currentUserId == question.getUserId()
-                                || (currentUserRole != null && currentUserRole.equalsIgnoreCase("admin")))) { %>
-                        <form method="post"
-                              action="${pageContext.request.contextPath}/question/delete?id=<%= question.getQuestionId() %>"
-                              style="display: inline;"
-                              onsubmit="return confirmDeleteQuestion();">
-                            <button type="submit"
-                                    class="edit-link"
-                                    style="background: none; border: none; padding: 0; cursor: pointer; color: #d93025;">
-                                Delete
-                            </button>
-                        </form>
-                        <% } %>
-                    </div>
-                </div>
 
-                <div class="user-card">
-                    <div class="user-avatar">
-                        <i class="fa-solid fa-user"></i>
-                    </div>
-                    <div class="user-info">
-                        <a href="#" class="user-name"><%= question.getAuthorName() %></a>
-                        <div class="user-meta">Member since today • reputation: 1</div>
+                    <div class="user-card user-card-compact">
+                        <div class="user-avatar">
+                            <i class="fa-solid fa-user"></i>
+                        </div>
+                        <div class="user-info">
+                            <a href="#" class="user-name"><%= question.getAuthorName() %></a>
+                            <div class="user-meta">asked at <%= question.getCreatedAt() %></div>
+                            <div class="user-meta">reputation: 1</div>
+                        </div>
                     </div>
                 </div>
 
@@ -309,38 +328,45 @@
                     </div>
                     <% } %>
 
-                    <div class="question-meta" style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
-                        <div>
-                            <strong>answered</strong> <%= answer.getCreatedAt() %>
-                            <% if (answer.getUpdatedAt() != null && answer.getCreatedAt() != null
-                                    && answer.getUpdatedAt().after(answer.getCreatedAt())) { %>
-                            <span style="color: #6a737c; margin-left: 10px;">
-                                edited <%= editDateFormat.format(answer.getUpdatedAt()) %>
-                            </span>
+                    <div class="post-footer-row answer-footer-row">
+                        <div class="question-meta" style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                            <div>
+                                <strong>answered</strong> <%= answer.getCreatedAt() %>
+                                <% if (answer.getUpdatedAt() != null && answer.getCreatedAt() != null
+                                        && answer.getUpdatedAt().after(answer.getCreatedAt())) { %>
+                                <span style="color: #6a737c; margin-left: 10px;">
+                                    edited <%= editDateFormat.format(answer.getUpdatedAt()) %>
+                                </span>
+                                <% } %>
+                            </div>
+                            <% if (currentUserId != null && currentUserId == answer.getUserId()) { %>
+                            <a class="action-btn" href="${pageContext.request.contextPath}/post/edit?type=answer&id=<%= answer.getAnswerId() %>">
+                                <i class="fa-solid fa-pen"></i> Edit
+                            </a>
+                            <% } %>
+                            <a class="action-btn" href="${pageContext.request.contextPath}/answer/<%= answer.getAnswerId() %>/revisions">
+                                <i class="fa-solid fa-clock-rotate-left"></i> Revisions
+                            </a>
+                            <% if (isQuestionOwner) { %>
+                            <button type="button" class="accept-btn<%= accepted ? " accepted" : "" %>" 
+                                    data-question-id="<%= question.getQuestionId() %>" data-answer-id="<%= answer.getAnswerId() %>"
+                                    onclick="handleAcceptClick(event, this)" title="<%= accepted ? "Unaccept" : "Accept" %>">
+                                <i class="fa-solid fa-check"></i> <%= accepted ? "Accepted" : "Accept" %>
+                            </button>
+                            <% } else if (accepted) { %>
+                            <span style="color: #2e7d32; font-weight: 500;"><i class="fa-solid fa-check-circle"></i> Accepted</span>
                             <% } %>
                         </div>
-                        <% if (currentUserId != null && currentUserId == answer.getUserId()) { %>
-                        <a class="edit-link" href="${pageContext.request.contextPath}/post/edit?type=answer&id=<%= answer.getAnswerId() %>">Edit</a>
-                        <% } %>
-                        <a class="edit-link" href="${pageContext.request.contextPath}/answer/<%= answer.getAnswerId() %>/revisions">Revisions</a>
-                        <% if (isQuestionOwner) { %>
-                        <button type="button" class="accept-btn<%= accepted ? " accepted" : "" %>" 
-                                data-question-id="<%= question.getQuestionId() %>" data-answer-id="<%= answer.getAnswerId() %>"
-                                onclick="handleAcceptClick(event, this)" title="<%= accepted ? "Unaccept" : "Accept" %>">
-                            <i class="fa-solid fa-check"></i> <%= accepted ? "Accepted" : "Accept" %>
-                        </button>
-                        <% } else if (accepted) { %>
-                        <span style="color: #2e7d32; font-weight: 500;"><i class="fa-solid fa-check-circle"></i> Accepted</span>
-                        <% } %>
-                    </div>
 
-                    <div class="user-card">
-                        <div class="user-avatar">
-                            <i class="fa-solid fa-user"></i>
-                        </div>
-                        <div class="user-info">
-                            <a href="#" class="user-name"><%= answer.getAuthorName() %></a>
-                            <div class="user-meta">Member since today • reputation: 1</div>
+                        <div class="user-card user-card-compact">
+                            <div class="user-avatar">
+                                <i class="fa-solid fa-user"></i>
+                            </div>
+                            <div class="user-info">
+                                <a href="#" class="user-name"><%= answer.getAuthorName() %></a>
+                                <div class="user-meta">answered at <%= answer.getCreatedAt() %></div>
+                                <div class="user-meta">reputation: 1</div>
+                            </div>
                         </div>
                     </div>
 
@@ -543,6 +569,20 @@
 
 <!-- Footer -->
 <%@ include file="../Common/footer.jsp" %>
+
+<div id="revision-modal" class="simple-modal" aria-hidden="true">
+    <div class="simple-modal-dialog" role="dialog" aria-modal="true" aria-labelledby="revision-modal-title">
+        <div class="simple-modal-header">
+            <h3 id="revision-modal-title">Edit History</h3>
+            <button type="button" class="simple-modal-close" onclick="closeRevisionModal()" aria-label="Close">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+        <div class="simple-modal-body">
+            <iframe id="revision-modal-frame" title="Edit history"></iframe>
+        </div>
+    </div>
+</div>
 
 <%@ include file="partials/question-detail-scripts.jspf" %>
 </body>
