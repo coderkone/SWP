@@ -218,6 +218,7 @@ CREATE TABLE [dbo].[Reports](
 	[target_type] [varchar](20) NOT NULL,
 	[target_id] [bigint] NOT NULL,
 	[reason] [nvarchar](max) NOT NULL,
+	[note] [nvarchar](500) NULL,
 	[status] [varchar](20) DEFAULT 'open',
 	[created_at] [datetime] DEFAULT GETDATE(),
     FOREIGN KEY (reporter_id) REFERENCES Users(user_id)

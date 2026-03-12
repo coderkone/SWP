@@ -5,29 +5,35 @@
         return window.confirm('Are you sure you want to delete this question?');
     }
 
-    function openRevisionModal(url, title) {
-        const modal = document.getElementById('revision-modal');
-        const frame = document.getElementById('revision-modal-frame');
-        const heading = document.getElementById('revision-modal-title');
-        if (!modal || !frame) return;
+    function openFlagModal(postType, postId, questionId, answerId) {
+        const modal = document.getElementById('flag-modal');
+        if (!modal) return;
 
-        if (heading && title) {
-            heading.textContent = title;
-        }
-        frame.src = url;
+        const postTypeInput = document.getElementById('flag-post-type');
+        const postIdInput = document.getElementById('flag-post-id');
+        const questionIdInput = document.getElementById('flag-question-id');
+        const answerIdInput = document.getElementById('flag-answer-id');
+        const reasonInput = document.getElementById('flag-reason');
+        const noteInput = document.getElementById('flag-note');
+
+        if (postTypeInput) postTypeInput.value = postType || '';
+        if (postIdInput) postIdInput.value = postId || '';
+        if (questionIdInput) questionIdInput.value = questionId || '';
+        if (answerIdInput) answerIdInput.value = answerId || '';
+        if (reasonInput) reasonInput.value = '';
+        if (noteInput) noteInput.value = '';
+
         modal.classList.add('active');
         modal.setAttribute('aria-hidden', 'false');
         document.body.style.overflow = 'hidden';
     }
 
-    function closeRevisionModal() {
-        const modal = document.getElementById('revision-modal');
-        const frame = document.getElementById('revision-modal-frame');
-        if (!modal || !frame) return;
+    function closeFlagModal() {
+        const modal = document.getElementById('flag-modal');
+        if (!modal) return;
 
         modal.classList.remove('active');
         modal.setAttribute('aria-hidden', 'true');
-        frame.src = 'about:blank';
         document.body.style.overflow = '';
     }
 
@@ -100,15 +106,15 @@
             popup.classList.remove('active');
         }
 
-        const modal = document.getElementById('revision-modal');
-        if (modal && event.target === modal) {
-            closeRevisionModal();
+        const flagModal = document.getElementById('flag-modal');
+        if (flagModal && event.target === flagModal) {
+            closeFlagModal();
         }
     });
 
     document.addEventListener('keydown', function(event) {
         if (event.key === 'Escape') {
-            closeRevisionModal();
+            closeFlagModal();
         }
     });
 
