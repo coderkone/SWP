@@ -15,7 +15,7 @@ public class SystemRuleDTO {
     public SystemRuleDTO() {
     }
 
-    public SystemRuleDTO(long ruleId, String title, String content) {
+    public SystemRuleDTO(int ruleId, Object par2) {
         this.ruleId = ruleId;
         this.title = title;
         this.content = content;
