@@ -48,7 +48,7 @@ public class SearchController extends HttpServlet {
             filter = "all";
         }
         
-        if (keyword == null) keyword = "";
+        keyword = (keyword == null) ? "" : keyword.trim();
         if (tab == null) tab = "newest";
         if (filter == null) filter = "all";
 
