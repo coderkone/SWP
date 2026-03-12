@@ -29,13 +29,19 @@ public class TagListController extends HttpServlet {
         TagDAO dao = new TagDAO();
         List<Tag> list = dao.getAllTags();
         String keyword = request.getParameter("search");
+        String sort = request.getParameter("sort");
         if(keyword != null && !keyword.trim().isEmpty()){
             list = dao.searchTags(keyword.trim());
-        }else{
-            list = dao.getAllTags();
+        }else if ("popular".equals(sort)){
+            list = dao.sortByPopular();
+        }else if ("newest".equals(sort)){
+            list = dao.sortByNewest();
+        }else {
+            list = dao.sortByName();
         }
         request.setAttribute("tagList", list);
         request.setAttribute("keyword", keyword);
+        request.setAttribute("sort", sort);
         request.getRequestDispatcher("/View/User/tag.jsp").forward(request, response);
     } 
 

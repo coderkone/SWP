@@ -166,7 +166,7 @@
             </p>
         </div>
 
-        <div class="tags-controls">
+        
             <form method="get" action="${pageContext.request.contextPath}/tags">
                 <div class="tags-controls">
 
@@ -182,15 +182,15 @@
 
                 <div class="sort-buttons">
                     <a href="${pageContext.request.contextPath}/tags?sort=popular&search=${param.search}"
-                       class="${empty param.sort || param.sort == 'popular' ? 'active' : ''}">Popular</a>
+                       class="${sort == 'popular' ? 'active' : ''}">Popular</a>
                     <a href="${pageContext.request.contextPath}/tags?sort=name&search=${param.search}"
-                       class="${param.sort == 'name' ? 'active' : ''}">Name</a>
+                       class="${empty sort || sort == 'name' ? 'active' : ''}">Name</a>
                     <a href="${pageContext.request.contextPath}/tags?sort=newest&search=${param.search}"
-                       class="${param.sort == 'newest' ? 'active' : ''}">New</a>
+                       class="${sort == 'newest' ? 'active' : ''}">New</a>
                 </div>
                 </div>
             </form>
-        </div>
+        
                 <c:if test="${not empty keyword}">
                     <p class="search-result-count">
                         Found <strong>${tagList.size()}</strong>
