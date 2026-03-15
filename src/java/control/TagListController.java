@@ -6,6 +6,7 @@
 package control;
 
 import dal.TagDAO;
+import dto.TagDTO;
 import java.io.IOException;
 import java.io.PrintWriter;
 import jakarta.servlet.ServletException;
@@ -13,8 +14,10 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import java.util.List;
 import model.Tag;
+import model.User;
 
 /**
  *
@@ -27,21 +30,25 @@ public class TagListController extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
     throws ServletException, IOException {
         TagDAO dao = new TagDAO();
-        List<Tag> list = dao.getAllTags();
+        
+        HttpSession session = request.getSession();
+        User currentUser = (User) session.getAttribute("user");
+        long userId;
+        if(currentUser != null){
+           userId = currentUser.getUserId();
+        }else{
+           userId = 0;
+        }
+        
         String keyword = request.getParameter("search");
         String sort = request.getParameter("sort");
-        if(keyword != null && !keyword.trim().isEmpty()){
-            list = dao.searchTags(keyword.trim());
-        }else if ("popular".equals(sort)){
-            list = dao.sortByPopular();
-        }else if ("newest".equals(sort)){
-            list = dao.sortByNewest();
-        }else {
-            list = dao.sortByName();
-        }
+        
+        List<TagDTO> list = dao.getAllTags(userId,keyword,sort);
+        
         request.setAttribute("tagList", list);
         request.setAttribute("keyword", keyword);
         request.setAttribute("sort", sort);
+        request.setAttribute("isLoggedIn", currentUser != null);
         request.getRequestDispatcher("/View/User/tag.jsp").forward(request, response);
     } 
 

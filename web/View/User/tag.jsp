@@ -1,8 +1,4 @@
-<%-- 
-    Document   : tag.jsp
-    Created on : Mar 10, 2026, 5:41:47 PM
-    Author     : Asus
---%>
+
 
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
@@ -115,14 +111,40 @@
                 display: flex; flex-direction: column; gap: 8px;
                 transition: box-shadow 0.15s;
             }
+            
             .tag-card:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
 
             .tag-badge {
                 display: inline-block; background: var(--blue-tag-bg); color: var(--blue-tag-text);
                 padding: 4px 8px; border-radius: 4px; font-size: 12px;
-                font-weight: 500; text-decoration: none; align-self: flex-start;
+                font-weight: 500; text-decoration: none; 
             }
             .tag-badge:hover { background: #d0e3f1; }
+            .tag-badge.followed-badge {
+                background: #fff3cd;
+                color: #b8860b;
+            }
+            .tag-card-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+            .btn-follow {
+                background: none;
+                border: none;
+                cursor: pointer;
+                padding: 2px 6px;
+                border-radius: 3px;
+                font-size: 14px;
+                font-weight: bold;
+                line-height: 1;
+                transition: all 0.15s;
+            }
+            .btn-plus  { color: #6a737c; }
+            .btn-plus:hover  { background: #e1ecf4; color: #39739d; }
+            .btn-minus { color: #b8860b; }
+            .btn-minus:hover { background: #ffe082; color: #8a6200; }
+
 
             .tag-desc {
                 font-size: 12px; color: #3b4045; line-height: 1.5; flex: 1;
@@ -149,7 +171,7 @@
 
 <div class="container">
 
-    <%-- Sidebar --%>
+    
     <div class="left-sidebar">
                 <jsp:include page="/View/Common/sidebar.jsp">
                     <jsp:param name="page" value="tags"/>
@@ -202,9 +224,46 @@
             <c:choose>
                 <c:when test="${not empty tagList}">
                     <c:forEach var="tag" items="${tagList}">
-                        <div class="tag-card">
-                            <a href="${pageContext.request.contextPath}/tagsdetail?id=${tag.tagId}"
-                               class="tag-badge">${tag.tagName}</a>
+                        <div class="tag-card${tag.followed ? 'followed' : ''}">
+                            <div class="tag-card-header">
+                                <a href="${pageContext.request.contextPath}/tagsdetail?id=${tag.tagId}"
+                               class="tag-badge ${tag.followed ? 'followed-badge' : ''}">
+                                            ${tag.tagName}</a>
+                                <c:if test="${isLoggedIn}">
+                                            <c:choose>
+                                                <c:when test="${tag.followed}">
+                                                    
+                                                    <form method="post"
+                                                          action="${pageContext.request.contextPath}/follow-tags"
+                                                          style="margin:0;">
+                                                        <input type="hidden" name="tagId"  value="${tag.tagId}" />
+                                                        <input type="hidden" name="action" value="unfollow" />
+                                                        <input type="hidden" name="sort"   value="${sort}" />
+                                                        <input type="hidden" name="search" value="${param.search}" />
+                                                        <button type="submit"
+                                                                class="btn-follow btn-minus"
+                                                                title="Unfollow">✕</button>
+                                                    </form>
+                                                </c:when>
+                                                <c:otherwise>
+                                                    
+                                                    <form method="post"
+                                                          action="${pageContext.request.contextPath}/follow-tags"
+                                                          style="margin:0;">
+                                                        <input type="hidden" name="tagId"  value="${tag.tagId}" />
+                                                        <input type="hidden" name="action" value="follow" />
+                                                        <input type="hidden" name="sort"   value="${sort}" />
+                                                        <input type="hidden" name="search" value="${param.search}" />
+                                                        <button type="submit"
+                                                                class="btn-follow btn-plus"
+                                                                title="Follow">+</button>
+                                                    </form>
+                                                </c:otherwise>
+                                            </c:choose>
+                                        </c:if>
+
+                                
+                            </div>
 
                             <p class="tag-desc">
                                 <c:choose>
@@ -247,7 +306,7 @@
         clearTimeout(timer);
         timer = setTimeout(() => {
             this.form.submit();
-        }, 100);
+        }, 500);
     });
 
     
@@ -260,8 +319,9 @@
     });
 
     
-    const keyword = '${param.search}';
+    const keyword = new URLSearchParams(window.location.search).get('search');
     if (keyword && keyword.trim() !== '') {
+        const safeKeyword = keyword.replace(/[.*+$?^{}()|[\]\\]/g, '\\$&');
         document.querySelectorAll('.tag-badge').forEach(badge => {
             const text = badge.textContent;
             const regex = new RegExp('(' + keyword + ')', 'gi');
