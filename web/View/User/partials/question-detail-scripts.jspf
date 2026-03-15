@@ -6,26 +6,12 @@
     }
 
     function openFlagModal(postType, postId, questionId, answerId) {
-        const modal = document.getElementById('flag-modal');
-        if (!modal) return;
-
-        const postTypeInput = document.getElementById('flag-post-type');
-        const postIdInput = document.getElementById('flag-post-id');
-        const questionIdInput = document.getElementById('flag-question-id');
-        const answerIdInput = document.getElementById('flag-answer-id');
-        const reasonInput = document.getElementById('flag-reason');
-        const noteInput = document.getElementById('flag-note');
-
-        if (postTypeInput) postTypeInput.value = postType || '';
-        if (postIdInput) postIdInput.value = postId || '';
-        if (questionIdInput) questionIdInput.value = questionId || '';
-        if (answerIdInput) answerIdInput.value = answerId || '';
-        if (reasonInput) reasonInput.value = '';
-        if (noteInput) noteInput.value = '';
-
-        modal.classList.add('active');
-        modal.setAttribute('aria-hidden', 'false');
-        document.body.style.overflow = 'hidden';
+        const params = new URLSearchParams();
+        if (postType) params.append('postType', postType);
+        if (postId) params.append('postId', postId);
+        if (questionId) params.append('questionId', questionId);
+        if (answerId) params.append('answerId', answerId);
+        window.location.href = '${pageContext.request.contextPath}/flag/report?' + params.toString();
     }
 
     function closeFlagModal() {
@@ -165,6 +151,9 @@
             let data;
             try { data = JSON.parse(text); } catch (e) { return; }
             if (data && data.success) {
+                if (typeof data.questionOwnerReputation === 'number') {
+                    updateHeaderReputation(data.questionOwnerReputation);
+                }
                 const box = document.getElementById('answer-' + answerId);
                 const btn = button;
                 const allBoxes = document.querySelectorAll('.answer-box.accepted');
@@ -228,14 +217,18 @@
             let data;
             try { data = JSON.parse(text); } catch (e) { alert('Lỗi phản hồi từ server'); return; }
             if (data && data.success) {
+                if (typeof data.voterReputation === 'number') {
+                    updateHeaderReputation(data.voterReputation);
+                }
                 const isQuestion = questionId != null && questionId !== '' && !isNaN(questionId);
+                const currentVote = Object.prototype.hasOwnProperty.call(data, 'currentVote') ? data.currentVote : voteType;
                 let upvoteBtn, downvoteBtn, voteCountEl;
                 if (isQuestion) {
                     upvoteBtn = document.getElementById('question-upvote');
                     downvoteBtn = document.getElementById('question-downvote');
                     voteCountEl = upvoteBtn && upvoteBtn.parentElement ? upvoteBtn.parentElement.querySelector('.vote-count') : null;
                 } else {
-                    const btn = document.querySelector('button[data-answer-id="' + answerId + '"]');
+                    const btn = document.querySelector('.upvote-btn[data-answer-id="' + answerId + '"]');
                     if (btn) {
                         const box = btn.closest('.vote-box');
                         upvoteBtn = box ? box.querySelector('.upvote-btn') : null;
@@ -244,12 +237,15 @@
                     }
                 }
                 if (upvoteBtn && downvoteBtn) {
-                    if (voteType === 'upvote') {
+                    if (currentVote === 'upvote') {
                         upvoteBtn.classList.add('voted-up');
                         downvoteBtn.classList.remove('voted-down');
-                    } else if (voteType === 'downvote') {
+                    } else if (currentVote === 'downvote') {
                         downvoteBtn.classList.add('voted-down');
                         upvoteBtn.classList.remove('voted-up');
+                    } else {
+                        upvoteBtn.classList.remove('voted-up');
+                        downvoteBtn.classList.remove('voted-down');
                     }
                 }
                 if (voteCountEl) voteCountEl.textContent = data.score;
@@ -261,6 +257,13 @@
             console.error('Error:', error);
             alert('Có lỗi xảy ra khi vote');
         });
+    }
+
+    function updateHeaderReputation(newReputation) {
+        const repEl = document.getElementById('user-reputation-display');
+        if (repEl) {
+            repEl.textContent = newReputation;
+        }
     }
 
     function handleBookmarkClick(ev, button) {

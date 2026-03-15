@@ -47,11 +47,15 @@ CREATE TABLE [dbo].[Questions](
 	[closed_by] [bigint] NULL,
 	[closed_reason] [nvarchar](255) NULL,
 	[closed_at] [datetime] NULL,
+	[is_deleted] [bit] NOT NULL DEFAULT 0,
+	[deleted_at] [datetime] NULL,
+	[deleted_by] [bigint] NULL,
 	[created_at] [datetime] DEFAULT GETDATE(),
 	[updated_at] [datetime] DEFAULT GETDATE(),
 	[Score] [int] DEFAULT 0,
     FOREIGN KEY (user_id) REFERENCES Users(user_id),
-    FOREIGN KEY (closed_by) REFERENCES Users(user_id)
+    FOREIGN KEY (closed_by) REFERENCES Users(user_id),
+    FOREIGN KEY (deleted_by) REFERENCES Users(user_id)
 )
 GO
 

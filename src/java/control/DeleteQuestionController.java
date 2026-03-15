@@ -58,7 +58,7 @@ public class DeleteQuestionController extends HttpServlet {
                 return;
             }
 
-            boolean deleted = questionDao.deleteQuestion(questionId);
+            boolean deleted = questionDao.softDeleteQuestion(questionId, sessionUser.userId);
             if (!deleted) {
                 response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Cannot delete question.");
                 return;

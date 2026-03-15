@@ -3,6 +3,7 @@ package control;
 import dal.VoteDAO;
 import dal.QuestionDAO;
 import dal.AnswerDAO;
+import dto.UserDTO;
 import model.User;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -33,8 +34,17 @@ public class VoteController extends HttpServlet {
                 return;
             }
 
-            User user = (User) session.getAttribute("user");
-            long userId = user.getUserId();
+            Object principal = session.getAttribute("user");
+            long userId;
+            if (principal instanceof UserDTO) {
+                userId = ((UserDTO) principal).getUserId();
+            } else if (principal instanceof User) {
+                userId = ((User) principal).getUserId();
+            } else {
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                out.println("{\"error\": \"Invalid user session\"}");
+                return;
+            }
 
             // Get parameters
             String questionIdParam = request.getParameter("questionId");
@@ -112,19 +122,14 @@ public class VoteController extends HttpServlet {
                 return;
             }
 
-            boolean success = voteDao.addVote(userId, questionId, answerId, voteType);
+            VoteDAO.VoteActionResult voteResult = voteDao.submitVote(userId, questionId, answerId, voteType);
 
-            if (success) {
-                // Get updated score
-                int score;
-                if (questionId != null) {
-                    score = voteDao.getVoteScore(questionId, null);
-                } else {
-                    score = voteDao.getVoteScore(null, answerId);
-                }
-
+            if (voteResult.isSuccess()) {
+                refreshSessionReputation(session, voteResult.getVoterReputation());
                 response.setStatus(HttpServletResponse.SC_OK);
-                out.println("{\"success\": true, \"score\": " + score + "}");
+                out.println("{\"success\": true, \"score\": " + voteResult.getScore()
+                        + ", \"currentVote\": " + jsonString(voteResult.getCurrentVoteType())
+                        + ", \"voterReputation\": " + voteResult.getVoterReputation() + "}");
             } else {
                 response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
                 out.println("{\"error\": \"Failed to save vote\"}");
@@ -137,5 +142,25 @@ public class VoteController extends HttpServlet {
             msg = msg.replace("\\", "\\\\").replace("\"", "\\\"");
             out.println("{\"error\": \"" + msg + "\"}");
         }
+    }
+
+    private void refreshSessionReputation(HttpSession session, int newReputation) {
+        if (session == null) {
+            return;
+        }
+
+        Object principal = session.getAttribute("user");
+        if (principal instanceof UserDTO) {
+            ((UserDTO) principal).setReputation(newReputation);
+        } else if (principal instanceof User) {
+            ((User) principal).setReputation(newReputation);
+        }
+    }
+
+    private String jsonString(String value) {
+        if (value == null) {
+            return "null";
+        }
+        return "\"" + value.replace("\\", "\\\\").replace("\"", "\\\"") + "\"";
     }
 }

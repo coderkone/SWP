@@ -161,7 +161,7 @@
                             <img src="${sessionScope.user.avatarUrl != null ? sessionScope.user.avatarUrl : 'https://via.placeholder.com/32'}" 
                                  alt="Avatar" width="32" height="32" class="rounded bg-light border avatar-img">
                             
-                            <span class="ms-2 fw-bold text-dark small">${sessionScope.user.reputation != null ? sessionScope.user.reputation : 0}</span>
+                            <span id="user-reputation-display" class="ms-2 fw-bold text-dark small">${sessionScope.user.reputation != null ? sessionScope.user.reputation : 0}</span>
                         </a>
                     </li>
 

@@ -2,6 +2,8 @@ package control;
 
 import dal.AnswerDAO;
 import dal.QuestionDAO;
+import dal.UserDAO;
+import dto.UserDTO;
 import model.User;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -14,6 +16,7 @@ public class AcceptAnswerController extends HttpServlet {
 
     private final QuestionDAO questionDao = new QuestionDAO();
     private final AnswerDAO answerDao = new AnswerDAO();
+    private final UserDAO userDao = new UserDAO();
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
@@ -30,8 +33,16 @@ public class AcceptAnswerController extends HttpServlet {
                 return;
             }
 
-                User user = (User) session.getAttribute("user");
-            if (user == null) {
+            Object principal = session.getAttribute("user");
+            long currentUserId;
+            int currentUserReputation;
+            if (principal instanceof UserDTO) {
+                currentUserId = ((UserDTO) principal).getUserId();
+                currentUserReputation = ((UserDTO) principal).getReputation();
+            } else if (principal instanceof User) {
+                currentUserId = ((User) principal).getUserId();
+                currentUserReputation = ((User) principal).getReputation();
+            } else {
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 out.print("{\"success\": false, \"error\": \"Invalid user\"}");
                 return;
@@ -63,7 +74,7 @@ public class AcceptAnswerController extends HttpServlet {
                 return;
             }
 
-            if (question.getUserId() != user.getUserId()) {
+            if (question.getUserId() != currentUserId) {
                 response.setStatus(HttpServletResponse.SC_FORBIDDEN);
                 out.print("{\"success\": false, \"error\": \"Only the question owner can accept answers\"}");
                 return;
@@ -76,7 +87,7 @@ public class AcceptAnswerController extends HttpServlet {
                 return;
             }
 
-            boolean ok = questionDao.toggleAcceptAnswer(questionId, answerId, user.getUserId());
+            boolean ok = questionDao.toggleAcceptAnswer(questionId, answerId, currentUserId);
             if (!ok) {
                 response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
                 out.print("{\"success\": false, \"error\": \"Failed to update\"}");
@@ -85,7 +96,15 @@ public class AcceptAnswerController extends HttpServlet {
 
             Long newAccepted = questionDao.getQuestionById(questionId).getAcceptedAnswerId();
             boolean isNowAccepted = newAccepted != null && newAccepted == answerId;
-            out.print("{\"success\": true, \"accepted\": " + isNowAccepted + "}");
+            int latestReputation = currentUserReputation;
+            UserDTO latestUser = userDao.getUserProfileById(currentUserId);
+            if (latestUser != null) {
+                latestReputation = latestUser.getReputation();
+                refreshSessionReputation(session, latestReputation);
+            }
+
+            out.print("{\"success\": true, \"accepted\": " + isNowAccepted
+                    + ", \"questionOwnerReputation\": " + latestReputation + "}");
 
         } catch (NumberFormatException e) {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
@@ -96,6 +115,18 @@ public class AcceptAnswerController extends HttpServlet {
             String msg = e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName();
             msg = msg.replace("\\", "\\\\").replace("\"", "\\\"");
             out.print("{\"success\": false, \"error\": \"" + msg + "\"}");
+        }
+    }
+
+    private void refreshSessionReputation(HttpSession session, int newReputation) {
+        if (session == null) {
+            return;
+        }
+        Object principal = session.getAttribute("user");
+        if (principal instanceof UserDTO) {
+            ((UserDTO) principal).setReputation(newReputation);
+        } else if (principal instanceof User) {
+            ((User) principal).setReputation(newReputation);
         }
     }
 }

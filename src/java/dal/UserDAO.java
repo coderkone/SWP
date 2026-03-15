@@ -6,6 +6,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 import model.GithubUser;
 import model.GoogleUser;
@@ -190,5 +192,30 @@ public class UserDAO {
             ps.setString(2, email);
             ps.executeUpdate();
         }
+    }
+
+    public List<String> getReputationChanges(long userId, int limit) {
+        List<String> changes = new ArrayList<>();
+        String sql = "SELECT TOP (?) delta, reason FROM Reputation_History WHERE user_id = ? ORDER BY created_at DESC, history_id DESC";
+
+        try (Connection con = db.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, Math.max(1, limit));
+            ps.setLong(2, userId);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    int delta = rs.getInt("delta");
+                    String reason = rs.getString("reason");
+                    String formatted = (delta >= 0 ? "+" : "") + delta + " reputation"
+                            + (reason != null && !reason.trim().isEmpty() ? " (" + reason + ")" : "");
+                    changes.add(formatted);
+                }
+            }
+        } catch (Exception e) {
+            // If the history table is not deployed yet, return empty list to keep profile functional.
+        }
+
+        return changes;
     }
 }

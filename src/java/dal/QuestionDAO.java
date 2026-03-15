@@ -24,7 +24,7 @@ public class QuestionDAO extends DBContext {
            .append("FROM Questions q ")
            .append("JOIN Users u ON q.user_id = u.user_id ")
            .append("LEFT JOIN User_Profile up ON u.user_id = up.user_id ")
-           .append("WHERE 1=1 ");
+              .append("WHERE ISNULL(q.is_deleted, 0) = 0 ");
 
         // Xử lý từ khóa tìm kiếm (Search)
         if (keyword != null && !keyword.trim().isEmpty()) {
@@ -110,7 +110,7 @@ public class QuestionDAO extends DBContext {
 
     // 3. Hàm đếm tổng số câu hỏi (Dùng cho phân trang)
     public int getTotalQuestions(String keyword, String filterType) {
-        StringBuilder sql = new StringBuilder("SELECT COUNT(*) FROM Questions q WHERE 1=1 ");
+        StringBuilder sql = new StringBuilder("SELECT COUNT(*) FROM Questions q WHERE ISNULL(q.is_deleted, 0) = 0 ");
         
         if (keyword != null && !keyword.trim().isEmpty()) {
             sql.append(" AND (q.title LIKE ? OR q.body LIKE ?) ");
@@ -300,7 +300,7 @@ public class QuestionDAO extends DBContext {
     // 6. Lấy câu hỏi theo ID
     public QuestionDTO getQuestionById(long questionId) throws Exception {      
         String sql = "SELECT q.*, u.username, u.Reputation AS author_reputation FROM Questions q " +
-                "JOIN Users u ON q.user_id = u.user_id WHERE q.question_id = ?";
+            "JOIN Users u ON q.user_id = u.user_id WHERE q.question_id = ? AND ISNULL(q.is_deleted, 0) = 0";
 
         try (Connection con = getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
@@ -322,28 +322,97 @@ public class QuestionDAO extends DBContext {
     public void incrementViewCount(long questionId) throws Exception {
         try (Connection con = getConnection();
              PreparedStatement ps = con.prepareStatement(
-                     "UPDATE Questions SET view_count = view_count + 1 WHERE question_id = ?")) {
+                     "UPDATE Questions SET view_count = view_count + 1 WHERE question_id = ? AND ISNULL(is_deleted, 0) = 0")) {
             ps.setLong(1, questionId);
             ps.executeUpdate();
         }
     }
 
-    public boolean deleteQuestion(long questionId) throws Exception {
-        String sql = "DELETE FROM Questions WHERE question_id = ?";
+    public boolean softDeleteQuestion(long questionId, long deletedBy) throws Exception {
+        String sql = "UPDATE Questions SET is_deleted = 1, deleted_at = GETDATE(), deleted_by = ? WHERE question_id = ? AND ISNULL(is_deleted, 0) = 0";
         try (Connection con = getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
-            ps.setLong(1, questionId);
+            ps.setLong(1, deletedBy);
+            ps.setLong(2, questionId);
             return ps.executeUpdate() > 0;
         }
     }
     
     // 8. Toggle accept answer (chuyển đổi câu trả lời được chấp nhận)
     public boolean toggleAcceptAnswer(long questionId, long answerId, long questionOwnerId) throws Exception {
-        QuestionDTO q = getQuestionById(questionId);
-        if (q == null || q.getUserId() != questionOwnerId) return false;        
-        Long current = q.getAcceptedAnswerId();
-        Long newValue = (current != null && current == answerId) ? null : answerId;
-        return setAcceptedAnswer(questionId, newValue);
+        Connection con = null;
+        try {
+            con = getConnection();
+            con.setAutoCommit(false);
+
+            QuestionAcceptState state = getQuestionAcceptState(con, questionId);
+            if (state == null || state.questionOwnerId != questionOwnerId) {
+                con.rollback();
+                return false;
+            }
+
+            AnswerOwner target = getAnswerOwner(con, answerId, questionId);
+            if (target == null) {
+                con.rollback();
+                return false;
+            }
+
+            Long currentAccepted = state.acceptedAnswerId;
+            Long newAccepted = (currentAccepted != null && currentAccepted == answerId) ? null : answerId;
+
+            if (currentAccepted != null) {
+                setAnswerAccepted(con, currentAccepted, false);
+            }
+
+            if (!setAcceptedAnswer(con, questionId, newAccepted)) {
+                con.rollback();
+                return false;
+            }
+
+            if (newAccepted != null) {
+                setAnswerAccepted(con, newAccepted, true);
+            }
+
+            if (currentAccepted != null) {
+                AnswerOwner currentOwner = getAnswerOwner(con, currentAccepted, questionId);
+                if (currentOwner != null && currentOwner.userId != state.questionOwnerId) {
+                    changeReputation(con, currentOwner.userId, -15,
+                            "Accepted answer removed", "accept_removed_answer_owner",
+                            "answer", currentAccepted, state.questionOwnerId);
+                    changeReputation(con, state.questionOwnerId, -2,
+                            "Acceptance reward removed", "accept_removed_question_owner",
+                            "question", questionId, state.questionOwnerId);
+                }
+            }
+
+            if (newAccepted != null && target.userId != state.questionOwnerId) {
+                changeReputation(con, target.userId, 15,
+                        "Answer accepted", "accept_answer_owner",
+                        "answer", newAccepted, state.questionOwnerId);
+                changeReputation(con, state.questionOwnerId, 2,
+                        "Accepted an answer", "accept_question_owner",
+                        "question", questionId, state.questionOwnerId);
+            }
+
+            con.commit();
+            return true;
+        } catch (Exception e) {
+            if (con != null) {
+                try {
+                    con.rollback();
+                } catch (SQLException ignored) {
+                }
+            }
+            throw e;
+        } finally {
+            if (con != null) {
+                try {
+                    con.setAutoCommit(true);
+                    con.close();
+                } catch (SQLException ignored) {
+                }
+            }
+        }
     }
     
     // 9. Lấy các câu hỏi liên quan (cùng tags)
@@ -351,12 +420,12 @@ public class QuestionDAO extends DBContext {
         List<QuestionDTO> relatedQuestions = new ArrayList<>();
         String sql = "SELECT TOP (?) q.*, u.username, u.Reputation AS author_reputation FROM Questions q " +       
                 "JOIN Users u ON q.user_id = u.user_id " +
-                "WHERE q.question_id IN (" +
+            "WHERE ISNULL(q.is_deleted, 0) = 0 AND q.question_id IN (" +
                 "  SELECT DISTINCT q2.question_id FROM Questions q2 " +
                 "  JOIN Question_Tags qt2 ON q2.question_id = qt2.question_id " +
                 "  WHERE qt2.tag_id IN (" +
                 "    SELECT qt.tag_id FROM Question_Tags qt WHERE qt.question_id = ?" +
-                "  ) AND q2.question_id != ?" +
+            "  ) AND q2.question_id != ? AND ISNULL(q2.is_deleted, 0) = 0" +
                 ") ORDER BY q.created_at DESC";
 
         try (Connection con = getConnection();
@@ -408,10 +477,9 @@ public class QuestionDAO extends DBContext {
     }
     
     // Helper: Set accepted answer (helper cho toggleAcceptAnswer)
-    private boolean setAcceptedAnswer(long questionId, Long answerId) throws Exception {
+    private boolean setAcceptedAnswer(Connection con, long questionId, Long answerId) throws Exception {
         String sql = "UPDATE Questions SET accepted_answer_id = ? WHERE question_id = ?";
-        try (Connection con = getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
+        try (PreparedStatement ps = con.prepareStatement(sql)) {
             if (answerId == null) {
                 ps.setNull(1, java.sql.Types.BIGINT);
             } else {
@@ -419,6 +487,96 @@ public class QuestionDAO extends DBContext {
             }
             ps.setLong(2, questionId);
             return ps.executeUpdate() > 0;
+        }
+    }
+
+    private void setAnswerAccepted(Connection con, long answerId, boolean accepted) throws SQLException {
+        String sql = "UPDATE Answers SET is_accepted = ? WHERE answer_id = ?";
+        try (PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setBoolean(1, accepted);
+            ps.setLong(2, answerId);
+            ps.executeUpdate();
+        }
+    }
+
+    private QuestionAcceptState getQuestionAcceptState(Connection con, long questionId) throws SQLException {
+        String sql = "SELECT user_id, accepted_answer_id FROM Questions WHERE question_id = ? AND ISNULL(is_deleted, 0) = 0";
+        try (PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setLong(1, questionId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    Long acceptedAnswerId = rs.getObject("accepted_answer_id") != null
+                            ? rs.getLong("accepted_answer_id") : null;
+                    return new QuestionAcceptState(rs.getLong("user_id"), acceptedAnswerId);
+                }
+            }
+        }
+        return null;
+    }
+
+    private AnswerOwner getAnswerOwner(Connection con, long answerId, long questionId) throws SQLException {
+        String sql = "SELECT user_id FROM Answers WHERE answer_id = ? AND question_id = ?";
+        try (PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setLong(1, answerId);
+            ps.setLong(2, questionId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return new AnswerOwner(rs.getLong("user_id"));
+                }
+            }
+        }
+        return null;
+    }
+
+    private void changeReputation(Connection con,
+                                  long userId,
+                                  int delta,
+                                  String reason,
+                                  String eventType,
+                                  String relatedPostType,
+                                  Long relatedPostId,
+                                  Long actorUserId) throws SQLException {
+        if (delta == 0) {
+            return;
+        }
+
+        String updateSql = "UPDATE Users SET Reputation = Reputation + ? WHERE user_id = ?";
+        try (PreparedStatement ps = con.prepareStatement(updateSql)) {
+            ps.setInt(1, delta);
+            ps.setLong(2, userId);
+            ps.executeUpdate();
+        }
+
+        String logSql = "INSERT INTO Reputation_History (user_id, delta, reason, event_type, related_post_type, related_post_id, actor_user_id, created_at) "
+                + "VALUES (?, ?, ?, ?, ?, ?, ?, GETDATE())";
+        try (PreparedStatement ps = con.prepareStatement(logSql)) {
+            ps.setLong(1, userId);
+            ps.setInt(2, delta);
+            ps.setString(3, reason);
+            ps.setString(4, eventType);
+            ps.setString(5, relatedPostType);
+            ps.setObject(6, relatedPostId);
+            ps.setObject(7, actorUserId);
+            ps.executeUpdate();
+        } catch (SQLException ignored) {
+        }
+    }
+
+    private static final class QuestionAcceptState {
+        private final long questionOwnerId;
+        private final Long acceptedAnswerId;
+
+        private QuestionAcceptState(long questionOwnerId, Long acceptedAnswerId) {
+            this.questionOwnerId = questionOwnerId;
+            this.acceptedAnswerId = acceptedAnswerId;
+        }
+    }
+
+    private static final class AnswerOwner {
+        private final long userId;
+
+        private AnswerOwner(long userId) {
+            this.userId = userId;
         }
     }
 
@@ -434,7 +592,7 @@ public class QuestionDAO extends DBContext {
             String oldBody = null;
             String oldCodeSnippet = null;
 
-            String loadSql = "SELECT title, body, code_snippet FROM Questions WHERE question_id = ?";
+            String loadSql = "SELECT title, body, code_snippet FROM Questions WHERE question_id = ? AND ISNULL(is_deleted, 0) = 0";
             try (PreparedStatement ps = conn.prepareStatement(loadSql)) {
                 ps.setLong(1, questionId);
                 try (ResultSet rs = ps.executeQuery()) {
@@ -451,7 +609,7 @@ public class QuestionDAO extends DBContext {
             String oldTags = getTagsCsvByQuestionId(conn, questionId);
             insertEditHistory(conn, "question", questionId, oldTitle, oldBody, oldCodeSnippet, oldTags, editorId);
 
-            String updateSql = "UPDATE Questions SET title = ?, body = ?, code_snippet = ?, updated_at = GETDATE() WHERE question_id = ?";
+            String updateSql = "UPDATE Questions SET title = ?, body = ?, code_snippet = ?, updated_at = GETDATE() WHERE question_id = ? AND ISNULL(is_deleted, 0) = 0";
             try (PreparedStatement ps = conn.prepareStatement(updateSql)) {
                 ps.setString(1, title);
                 ps.setString(2, body);
