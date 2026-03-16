@@ -330,16 +330,37 @@
                     if (answerTotalPages == null || answerTotalPages < 1) answerTotalPages = 1;
                     if (answerTotalCount == null || answerTotalCount < 0) answerTotalCount = 0;
                         if (answerPageSize == null || answerPageSize < 1) answerPageSize = 5;
+                          String sort = (String) request.getAttribute("sort");
+                        String answerFilterQuery = (String) request.getAttribute("answerFilterQuery");
+                        if (sort == null || sort.trim().isEmpty()) sort = "score_desc";
+                        if (answerFilterQuery == null) answerFilterQuery = "";
                         if (answerVotes == null) answerVotes = new java.util.HashMap<>();
                         if (isQuestionOwner == null) isQuestionOwner = false;
+                    %>
 
-                        if (answers != null && !answers.isEmpty()) {
-                            for (Object answerObj : answers) {
-                                dto.AnswerDTO answer = (dto.AnswerDTO) answerObj;
-                                String answerUserVote = answerVotes.get(answer.getAnswerId());
-                                String answerUpvoteClass = "upvote".equals(answerUserVote) ? " voted-up" : "";
-                                String answerDownvoteClass = "downvote".equals(answerUserVote) ? " voted-down" : "";
-                                boolean accepted = answer.isIsAccepted();
+                    <form method="get" action="${pageContext.request.contextPath}/question/detail" class="answers-filter-form">
+                        <input type="hidden" name="id" value="<%= question.getQuestionId() %>">
+                        <div class="answers-filter-row">
+                            <label for="answer-sort">Sort by</label>
+                            <select id="answer-sort" name="sort">
+                                <option value="score_desc" <%= "score_desc".equals(sort) ? "selected" : "" %>>Highest score</option>
+                                <option value="score_asc" <%= "score_asc".equals(sort) ? "selected" : "" %>>Lowest score</option>
+                                <option value="newest" <%= "newest".equals(sort) ? "selected" : "" %>>Newest</option>
+                                <option value="oldest" <%= "oldest".equals(sort) ? "selected" : "" %>>Oldest</option>
+                            </select>
+                            <button type="submit" class="btn">Apply</button>
+                        </div>
+                    </form>
+
+                    <%
+                    
+                    if (answers != null && !answers.isEmpty()) {
+                    for (Object answerObj : answers) {
+                    dto.AnswerDTO answer = (dto.AnswerDTO) answerObj;
+                    String answerUserVote = answerVotes.get(answer.getAnswerId());
+                    String answerUpvoteClass = "upvote".equals(answerUserVote) ? " voted-up" : "";
+                    String answerDownvoteClass = "downvote".equals(answerUserVote) ? " voted-down" : "";
+                    boolean accepted = answer.isIsAccepted();
                     %>
                     <div class="answer-box<%= accepted ? " accepted" : "" %>" id="answer-<%= answer.getAnswerId() %>">
                         <div class="vote-box">
@@ -350,6 +371,7 @@
                             </button>
                             <% } %>
                             <div class="vote-count"><%= answer.getScore() %></div>
+
                             <% if (!isQuestionClosed) { %>
                             <button type="button" id="answer-downvote-<%= answer.getAnswerId() %>" class="vote-btn downvote-btn<%= answerDownvoteClass %>" title="Downvote" 
                                     data-answer-id="<%= answer.getAnswerId() %>" data-vote-type="downvote" onclick="handleVoteClick(event, this)">
@@ -544,19 +566,16 @@
                         </div>
                         <div class="answers-pagination-links">
                             <% if (answerCurrentPage > 1) { %>
-                            <a href="<%= detailPath %>?id=<%= question.getQuestionId() %>&page=<%= answerCurrentPage - 1 %>#answers-section" aria-label="Previous page">&laquo;</a>
-                            <% } else { %>
+                            <a href="<%= detailPath %>?id=<%= question.getQuestionId() %>&page=<%= answerCurrentPage - 1 %><%= answerFilterQuery %>#answers-section" aria-label="Previous page">&laquo;</a>                            <% } else { %>
                             <span class="disabled" aria-disabled="true">&laquo;</span>
                             <% } %>
 
                             <% for (int pageIndex = 1; pageIndex <= answerTotalPages; pageIndex++) { %>
-                            <a href="<%= detailPath %>?id=<%= question.getQuestionId() %>&page=<%= pageIndex %>#answers-section"
-                               class="<%= answerCurrentPage == pageIndex ? "active" : "" %>"><%= pageIndex %></a>
+                            <a href="<%= detailPath %>?id=<%= question.getQuestionId() %>&page=<%= pageIndex %><%= answerFilterQuery %>#answers-section"                               class="<%= answerCurrentPage == pageIndex ? "active" : "" %>"><%= pageIndex %></a>
                             <% } %>
 
                             <% if (answerCurrentPage < answerTotalPages) { %>
-                            <a href="<%= detailPath %>?id=<%= question.getQuestionId() %>&page=<%= answerCurrentPage + 1 %>#answers-section" aria-label="Next page">&raquo;</a>
-                            <% } else { %>
+                            <a href="<%= detailPath %>?id=<%= question.getQuestionId() %>&page=<%= answerCurrentPage + 1 %><%= answerFilterQuery %>#answers-section" aria-label="Next page">&raquo;</a>                            <% } else { %>
                             <span class="disabled" aria-disabled="true">&raquo;</span>
                             <% } %>
                         </div>

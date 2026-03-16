@@ -1,6 +1,5 @@
 package control;
 
-
 import dal.AnswerDAO;
 import dal.BookmarkDAO;
 import dal.QuestionDAO;
@@ -11,6 +10,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
 import java.io.IOException;
+import java.net.URLEncoder;
 import java.util.List;
 import java.util.ArrayList;
 import model.User;
@@ -29,10 +29,10 @@ public class QuestionDetailController extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        
+
         // 1. Lấy ID từ URL
         String idParam = request.getParameter("id");
-        
+
         // Validate ID
         if (idParam == null || !idParam.matches("\\d+")) {
             // Nếu không có ID hoặc ID không phải số -> Về trang chủ hoặc báo lỗi
@@ -65,7 +65,14 @@ public class QuestionDetailController extends HttpServlet {
                         answerCurrentPage = 1;
                     }
                 }
-                
+
+                String sort = request.getParameter("sort");
+                if (!"score_desc".equalsIgnoreCase(sort)
+                        && !"score_asc".equalsIgnoreCase(sort)
+                        && !"newest".equalsIgnoreCase(sort)
+                        && !"oldest".equalsIgnoreCase(sort)) {
+                    sort = "score_desc";
+                }
                 // Try to load answers
                 List answers = new ArrayList();
                 int totalAnswers = 0;
@@ -79,8 +86,8 @@ public class QuestionDetailController extends HttpServlet {
                         answerCurrentPage = answerTotalPages;
                     }
 
-                    answers = answerDao.getAnswersByQuestionId(questionId, answerCurrentPage, ANSWERS_PER_PAGE);
-                    
+                    answers = answerDao.getAnswersByQuestionId(questionId, answerCurrentPage, ANSWERS_PER_PAGE, sort);
+
                     // Set vote scores and accepted status for answers
                     Long acceptedId = question.getAcceptedAnswerId();
                     for (Object answerObj : answers) {
@@ -96,7 +103,7 @@ public class QuestionDetailController extends HttpServlet {
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
-                
+
                 // 3. Đẩy dữ liệu sang JSP
                 request.setAttribute("question", question);
                 request.setAttribute("answers", answers);
@@ -105,7 +112,9 @@ public class QuestionDetailController extends HttpServlet {
                 request.setAttribute("answerTotalCount", totalAnswers);
                 request.setAttribute("answerPageSize", ANSWERS_PER_PAGE);
                 request.setAttribute("answerPaginationPath", request.getContextPath() + request.getServletPath());
-                
+                request.setAttribute("sort", sort);
+                request.setAttribute("answerFilterQuery", buildAnswerFilterQuery(sort));
+
                 // Load comments for question
                 try {
                     java.util.List<dto.CommentDTO> questionComments = commentDao.getCommentsByQuestionId(question.getQuestionId());
@@ -113,7 +122,7 @@ public class QuestionDetailController extends HttpServlet {
                 } catch (Exception e) {
                     request.setAttribute("questionComments", new java.util.ArrayList<>());
                 }
-                
+
                 // Load comments for each answer
                 try {
                     java.util.Map<Long, java.util.List<dto.CommentDTO>> answerComments = new java.util.HashMap<>();
@@ -152,7 +161,7 @@ public class QuestionDetailController extends HttpServlet {
                     request.setAttribute("answerComments", new java.util.HashMap<>());
                     request.setAttribute("answerCommentTrees", new java.util.HashMap<>());
                 }
-                
+
                 try {
                     HttpSession s = request.getSession(false);
                     if (s != null && s.getAttribute("user") != null) {
@@ -164,18 +173,18 @@ public class QuestionDetailController extends HttpServlet {
                 } catch (Exception e) {
                     request.setAttribute("isQuestionOwner", false);
                 }
-                
+
                 // Load user's vote (if logged in)
                 try {
                     HttpSession session = request.getSession(false);
                     if (session != null && session.getAttribute("user") != null) {
                         User user = (User) session.getAttribute("user");
                         long userId = user.getUserId();
-                        
+
                         // Get user's vote for question
                         String questionUserVote = voteDao.getUserVote(userId, questionId, null);
                         request.setAttribute("questionUserVote", questionUserVote);
-                        
+
                         // Get user's votes for answers
                         java.util.Map<Long, String> answerVotes = new java.util.HashMap<>();
                         for (Object answerObj : answers) {
@@ -186,7 +195,7 @@ public class QuestionDetailController extends HttpServlet {
                             }
                         }
                         request.setAttribute("answerVotes", answerVotes);
-                        
+
                         // Check if question is bookmarked
                         try {
                             boolean isBookmarked = bookmarkDao.checkIfBookmarked(userId, questionId);
@@ -194,7 +203,7 @@ public class QuestionDetailController extends HttpServlet {
                         } catch (Exception e) {
                             request.setAttribute("isBookmarked", false);
                         }
-                        
+
                         // Check if answers are bookmarked
                         try {
                             java.util.Map<Long, Boolean> answerBookmarks = new java.util.HashMap<>();
@@ -211,7 +220,7 @@ public class QuestionDetailController extends HttpServlet {
                 } catch (Exception e) {
                     // Continue on error
                 }
-                
+
                 // Load related questions (4 questions max)
                 try {
                     List<QuestionDTO> relatedQuestions = questionDao.getRelatedQuestions(questionId, 4);
@@ -219,7 +228,7 @@ public class QuestionDetailController extends HttpServlet {
                 } catch (Exception e) {
                     request.setAttribute("relatedQuestions", new ArrayList<>());
                 }
-                
+
                 // Chuyển hướng đến file JSP giao diện chi tiết
                 request.getRequestDispatcher("/View/User/question-detail.jsp").forward(request, response);
             } else {
@@ -232,5 +241,17 @@ public class QuestionDetailController extends HttpServlet {
             e.printStackTrace();
             response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error: " + e.getClass().getSimpleName() + ": " + e.getMessage());
         }
+    }
+
+    private String buildAnswerFilterQuery(String sort) {
+        StringBuilder query = new StringBuilder();
+        try {
+            if (sort != null && !sort.trim().isEmpty()) {
+                query.append("&sort=").append(URLEncoder.encode(sort, "UTF-8"));
+            }
+        } catch (Exception ex) {
+            return "";
+        }
+        return query.toString();
     }
 }
