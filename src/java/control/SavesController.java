@@ -41,48 +41,57 @@ public class SavesController extends HttpServlet {
             response.sendRedirect(request.getContextPath() + "/View/User/login.jsp");
             return;
         }
-        UserDAO userDao = new UserDAO();
-        UserDTO userProfile = userDao.getUserProfileById(user.getUserId());
-        request.setAttribute("userProfile", userProfile);
+
         try {
-            CollectionDAO colDao = new CollectionDAO();
             BookmarkDAO bmDao = new BookmarkDAO();
+            CollectionDAO colDao = new CollectionDAO();
+            UserDAO userDao = new UserDAO();
 
-            // 1. Lấy toàn bộ danh sách Collection đưa ra Sidebar trước
-            List<Collection> myCollections = colDao.getCollectionsByUserId(user.getUserId());
-            if (myCollections == null) {
-                myCollections = java.util.Collections.emptyList();
-            }
-            request.setAttribute("myCollections", myCollections);
+            // 1. Lấy thông tin Profile người dùng
+            UserDTO userProfile = userDao.getUserProfileById(user.getUserId());
+            request.setAttribute("userProfile", userProfile);
 
-            // 2. Kiểm tra xem người dùng đang click vào List nào (Lấy listId từ URL)
+            // 2. Nhận tham số phân trang từ URL
+            int page = request.getParameter("page") != null ? Integer.parseInt(request.getParameter("page")) : 1;
+            int colPage = request.getParameter("colPage") != null ? Integer.parseInt(request.getParameter("colPage")) : 1;
             String listIdStr = request.getParameter("listId");
-            List<BookmarkDTO> savedList;
-            String currentListName = "All saves"; // Mặc định tiêu đề là All saves
 
-            if (listIdStr != null && !listIdStr.isEmpty()) {
+            // 3. Xử lý phân trang cho Sidebar Collections (10 cái/trang)
+            int totalCols = colDao.countTotalCollections(user.getUserId());
+            int totalColPages = (int) Math.ceil((double) totalCols / 10);
+            List<model.Collection> myCollections = colDao.getCollectionsByPage(user.getUserId(), colPage);
+
+            // 4. Xử lý phân trang cho Bookmarks (10 bài/trang)
+            int totalItems = bmDao.countTotalBookmarks(user.getUserId(), listIdStr);
+            int totalItemPages = (int) Math.ceil((double) totalItems / 10);
+            List<BookmarkDTO> savedList = bmDao.getBookmarksByPage(user.getUserId(), listIdStr, page);
+
+            // 5. Xác định tiêu đề hiện tại (All saves hoặc tên Collection)
+            String currentListName = "All saves";
+            if (listIdStr != null && !listIdStr.isEmpty() && !listIdStr.equals("null")) {
                 int listId = Integer.parseInt(listIdStr);
-                // Lọc bài viết theo Collection
-                savedList = bmDao.getBookmarksByCollection(user.getUserId(), listId);
-                request.setAttribute("activeListId", listId); // Đánh dấu ID đang chọn để tô đậm ở Sidebar
-
-                // Tìm tên của List đang chọn để in ra làm Tiêu đề
-                for (Collection c : myCollections) {
+                request.setAttribute("activeListId", listId);
+                // Lấy tên của collection đang chọn từ danh sách đã load
+                for (model.Collection c : myCollections) {
                     if (c.getCollectionId() == listId) {
                         currentListName = c.getName();
                         break;
                     }
                 }
             } else {
-                // Nếu không có listId, lấy TẤT CẢ
-                savedList = bmDao.getBookmarksByUserId(user.getUserId());
                 request.setAttribute("activeListId", "");
             }
 
-            // 3. Gửi dữ liệu ra giao diện
+            // 6. Gửi TẤT CẢ các biến cần thiết ra JSP
+            request.setAttribute("myCollections", myCollections);
             request.setAttribute("savedList", savedList);
-            request.setAttribute("savedCount", savedList.size());
-            request.setAttribute("currentListName", currentListName); // Truyền tiêu đề ra JSP
+            request.setAttribute("savedCount", totalItems);
+            request.setAttribute("currentListName", currentListName);
+
+            request.setAttribute("currentPage", page);
+            request.setAttribute("totalItemPages", totalItemPages == 0 ? 1 : totalItemPages);
+            request.setAttribute("currentColPage", colPage);
+            request.setAttribute("totalColPages", totalColPages == 0 ? 1 : totalColPages);
 
             request.getRequestDispatcher("/View/User/saves.jsp").forward(request, response);
 
