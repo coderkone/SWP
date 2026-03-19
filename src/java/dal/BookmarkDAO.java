@@ -231,4 +231,88 @@ public class BookmarkDAO extends DBContext {
         }
         return list;
     }
+
+    // 1. Hàm lấy TẤT CẢ bài viết đã lưu (Dành cho nút "All saves")
+    public List<Question> getAllBookmarks(long userId) {
+        List<Question> list = new ArrayList<>();
+        // Bỏ qua điều kiện collection_id, chỉ cần đúng user_id là lấy hết
+        String sql = "SELECT q.* FROM Questions q "
+                + "INNER JOIN Bookmarks b ON q.question_id = b.question_id "
+                + "WHERE b.user_id = ? "
+                + "ORDER BY b.created_at DESC";
+        try {
+            Connection conn = getConnection();
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setLong(1, userId);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                // Map dữ liệu vào Question entity
+            }
+            // ... đóng kết nối
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+    // 1. Hàm chống trùng lặp: Kiểm tra xem user đã lưu câu hỏi này chưa
+
+    public boolean isBookmarked(long userId, int questionId) {
+        String sql = "SELECT 1 FROM Bookmarks WHERE user_id = ? AND question_id = ?";
+        try {
+            Connection conn = getConnection();
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setLong(1, userId);
+            ps.setInt(2, questionId);
+            ResultSet rs = ps.executeQuery();
+            boolean exists = rs.next();
+
+            rs.close();
+            ps.close();
+            conn.close();
+            return exists;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+// 2. Hàm di chuyển bài viết (Move)
+    public void moveBookmark(long userId, int questionId, String collectionIdStr) {
+        String sql = "UPDATE Bookmarks SET collection_id = ? WHERE user_id = ? AND question_id = ?";
+        try {
+            Connection conn = getConnection();
+            PreparedStatement ps = conn.prepareStatement(sql);
+
+            // Nếu chuyển ra "All saves" (thư mục gốc), collection_id sẽ là NULL
+            if (collectionIdStr == null || collectionIdStr.trim().isEmpty() || collectionIdStr.equals("0")) {
+                ps.setNull(1, java.sql.Types.INTEGER);
+            } else {
+                ps.setInt(1, Integer.parseInt(collectionIdStr));
+            }
+
+            ps.setLong(2, userId);
+            ps.setInt(3, questionId);
+            ps.executeUpdate();
+
+            ps.close();
+            conn.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    public boolean removeFromCollection(long userId, long questionId) {
+        String sql = "UPDATE Bookmarks SET collection_id = NULL WHERE user_id = ? AND question_id = ?";
+        try {
+            Connection conn = getConnection();
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setLong(1, userId);
+            ps.setLong(2, questionId);
+            int row = ps.executeUpdate();
+            conn.close();
+            return row > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
 }

@@ -420,7 +420,13 @@
                                 <div class="tags">
                                     <c:if test="${not empty q.tags}">
                                         <c:forEach items="${q.tags}" var="t">
-                                            <a href="${pageContext.request.contextPath}/home?q=[${t}]" class="tag">${t}</a>
+                                            <div class="tags">
+                                                <c:if test="${not empty q.tags}">
+                                                    <c:forEach items="${q.tags}" var="t">
+                                                        <a href="${pageContext.request.contextPath}/home?tag=${t}" class="tag">${t}</a>
+                                                    </c:forEach>
+                                                </c:if>
+                                            </div>
                                         </c:forEach>
                                     </c:if>
                                     <c:if test="${empty q.tags}">
@@ -459,8 +465,8 @@
                 <c:if test="${totalPage > 1}">
                     <div class="pagination">
                         <c:forEach begin="1" end="${totalPage}" var="i">
-                            <a href="${pageContext.request.contextPath}/home?page=${i}&tab=${currentSort}&q=${currentKeyword}" 
-                               class="${currentPage == i ? 'active' : ''}">${i}</a>
+                            <a href="${pageContext.request.contextPath}/home?page=${i}&tab=${currentSort}&q=${currentKeyword}&tag=${currentTag}" 
+                                accesskey=""class="${currentPage == i ? 'active' : ''}">${i}</a>
                         </c:forEach>
                     </div>
                 </c:if>
@@ -479,9 +485,11 @@
                 <div class="popular-tags">
                     <h3>Popular tags</h3>
                     <div class="tags" style="flex-wrap: wrap;">
-                        <a href="#" class="tag">javascript</a>
-                        <a href="#" class="tag">python</a>
-                        <a href="#" class="tag">java</a>
+                        <c:if test="${not empty popularTags}">
+                            <c:forEach items="${popularTags}" var="popTag">
+                                <a href="${pageContext.request.contextPath}/home?tag=${popTag}" class="tag">${popTag}</a>
+                            </c:forEach>
+                        </c:if>
                     </div>
                 </div>
             </aside>

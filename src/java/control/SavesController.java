@@ -97,6 +97,7 @@ public class SavesController extends HttpServlet {
 
         } catch (Exception e) {
             e.printStackTrace();
+            // Ném lỗi ra trình duyệt để không bị trắng trang
             throw new ServletException("Lỗi hệ thống khi tải trang Saves: " + e.getMessage(), e);
         }
     }

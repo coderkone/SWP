@@ -86,6 +86,20 @@
                 color: #ffffff;
                 font-weight: 500;
                 border-bottom-color: #f48024; /* Đổi màu viền dưới thành cam luôn cho đồng bộ */
+                padding: 6px 12px;
+                color: #525960;
+                text-decoration: none;
+                border-radius: 100px;
+                margin-bottom: 2px;
+            }
+            .inner-nav-item:hover {
+                background-color: #f8f9f9;
+                color: #0c0d0e;
+            }
+            .inner-nav-item.active {
+                font-weight: bold;
+                background-color: #f1f2f3;
+                color: #0c0d0e;
             }
 
             /* Content Boxes */

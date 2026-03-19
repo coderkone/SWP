@@ -20,6 +20,7 @@ public class HomeController extends HttpServlet {
         String sort = request.getParameter("tab"); // new, active, hot...
         String filter = request.getParameter("filter"); // unanswered...
         String pageStr = request.getParameter("page");
+        String tag = request.getParameter("tag");
 
         // 2. Xử lý phân trang
         int pageIndex = 1;
@@ -32,20 +33,24 @@ public class HomeController extends HttpServlet {
 
         // 3. Gọi DAO lấy dữ liệu
         QuestionDAO dao = new QuestionDAO();
-        List<QuestionDTO> list = dao.getQuestions(pageIndex, pageSize, sort, keyword, filter);
-        int totalRecords = dao.getTotalQuestions(keyword, filter);
+        List<QuestionDTO> list = dao.getQuestions(pageIndex, pageSize, sort, keyword, filter, tag);
+        int totalRecords = dao.getTotalQuestions(keyword, filter, tag);
         int totalPage = (totalRecords % pageSize == 0) ? (totalRecords / pageSize) : (totalRecords / pageSize + 1);
 
+        List<String> popularTags = dao.getPopularTags(10);
+        
         // 4. Gửi dữ liệu sang trang JSP
         request.setAttribute("questions", list);       // Danh sách câu hỏi
         request.setAttribute("totalPage", totalPage);  // Tổng số trang
         request.setAttribute("currentPage", pageIndex);// Trang hiện tại
-        request.setAttribute("totalQuestions", totalRecords); // Tổng số câu hỏi (để hiện con số 24,178,555)
+        request.setAttribute("totalQuestions", totalRecords); // Tổng số câu hỏi 
+        request.setAttribute("popularTags", popularTags); // Gửi top tags xuống view
         
         // Gửi lại các tham số lọc để giữ trạng thái active cho nút bấm
         request.setAttribute("currentSort", sort);
         request.setAttribute("currentKeyword", keyword);
         request.setAttribute("currentFilter", filter);
+        request.setAttribute("currentTag", tag); 
 
         request.getRequestDispatcher("/View/User/home.jsp").forward(request, response);
     }

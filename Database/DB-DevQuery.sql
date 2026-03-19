@@ -296,3 +296,4 @@ CREATE TABLE [dbo].[BlogComments] (
 );
 GO
 
+select * from [dbo].[Users];

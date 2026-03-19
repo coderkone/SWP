@@ -287,6 +287,7 @@
                                                     <a href="javascript:void(0)" class="text-secondary small ms-3" onclick="openMoveModal(${item.questionId})"><i class="fa-solid fa-folder-tree"></i> Move</a>
                                                     <a href="${pageContext.request.contextPath}/saves/remove?questionId=${item.questionId}&fromCollectionId=${activeListId}" class="text-danger small ms-3" onclick="return confirm('Remove bookmark?');"><i class="fa-solid fa-bookmark-slash"></i> Unsave</a>
                                                 </div>
+
                                             </div>
                                         </c:forEach>
                                     </div>
