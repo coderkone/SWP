@@ -1,4 +1,4 @@
-package dto;
+ package dto;
 
 import java.sql.Timestamp;
 
@@ -7,7 +7,8 @@ public class UserDTO {
     private String username;
     private String email;
     private String role;
-    
+    private String status; // active/inactive
+
     private int reputation;
     private Timestamp createdAt; // Ngày tham gia
     private String bio;
@@ -22,6 +23,7 @@ public class UserDTO {
         this.username = username;
         this.email = email;
         this.role = role;
+        this.status = "active"; // default
     }
 
     public long getUserId() { return userId; }
@@ -35,6 +37,10 @@ public class UserDTO {
 
     public String getRole() { return role; }
     public void setRole(String role) { this.role = role; }
+
+    public String getStatus() { return status; }
+    public void setStatus(String status) { this.status = status; }
+
 
     public int getReputation() { return reputation; }
     public void setReputation(int reputation) { this.reputation = reputation; }

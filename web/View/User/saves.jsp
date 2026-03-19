@@ -4,158 +4,50 @@
 
 <!DOCTYPE html>
 <html>
-    <head>
-        <meta charset="UTF-8">
-        <title>Saves - DevQuery</title>
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<head>
+    <meta charset="UTF-8">
+    <title>Saves - DevQuery</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        body { background-color: #fff; padding-top: 60px}
+        .user-avatar-lg { width: 128px; height: 128px; border-radius: 5px; object-fit: cover; border: 4px solid white; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .user-name { font-size: 34px; font-weight: bold; margin-bottom: 4px; }
+        .user-meta { font-size: 13px; color: #6a737c; }
+        
+        /* Tabs */
+        .profile-tabs .nav-link { color: #525960; border-radius: 20px; padding: 6px 12px; margin-right: 5px; border: none; }
+        .profile-tabs .nav-link:hover { background-color: #e3e6e8; }
+        .profile-tabs .nav-link.active { background-color: #f48024; color: white; }
 
-        <style>
-            body {
-                background-color: #fff;
-                padding-top: 60px
-            }
-            .user-avatar-lg {
-                width: 128px;
-                height: 128px;
-                border-radius: 5px;
-                object-fit: cover;
-                box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            }
-            .user-name {
-                font-size: 34px;
-                font-weight: normal;
-                margin-bottom: 4px;
-            }
-            .user-meta {
-                font-size: 13px;
-                color: #6a737c;
-            }
+        /* Sidebar Saves */
+        .saves-sidebar-item { display: block; padding: 8px 12px; color: #525960; text-decoration: none; font-size: 14px; border-radius: 100px; margin-bottom: 2px;}
+        .saves-sidebar-item:hover { background-color: #f8f9f9; color: #000; }
+        .saves-sidebar-item.active { font-weight: bold; color: #ffffff; background-color: #f48024 !important; }
+        .saves-sidebar-header { font-size: 11px; font-weight: bold; color: #000; text-transform: uppercase; margin-top: 20px; margin-bottom: 10px;}
 
-            /* Tabs */
-            .profile-tabs {
-                border-bottom: none;
-                margin-bottom: 20px;
-            }
-            .profile-tabs .nav-link {
-                color: #525960;
-                border-radius: 20px;
-                padding: 6px 12px;
-                margin-right: 5px;
-                border: none;
-                font-size: 13px;
-            }
-            .profile-tabs .nav-link:hover {
-                background-color: #e3e6e8;
-                color: #0c0d0e;
-            }
-            .profile-tabs .nav-link.active {
-                background-color: #f48024;
-                color: white;
-            }
+        /* Item List */
+        .saved-item-card { padding: 16px; border-bottom: 1px solid #e3e6e8; }
+        .saved-item-title { font-size: 1.1rem; color: #0074cc; text-decoration: none; font-weight: 400; display: block; margin-bottom: 5px; }
+        .saved-item-title:hover { color: #0a95ff; }
+        .saved-meta { font-size: 12px; color: #6a737c; }
 
-            /* Sidebar Saves */
-            .saves-sidebar-item {
-                display: block;
-                padding: 6px 12px;
-                color: #525960;
-                text-decoration: none;
-                font-size: 13px;
-                border-radius: 100px;
-                margin-bottom: 2px;
-            }
-            .saves-sidebar-item:hover {
-                background-color: #f8f9f9;
-                color: #0c0d0e;
-            }
-            /* Đổi màu active thành xám nhạt thay vì cam */
-            .saves-sidebar-item.active {
-                font-weight: bold;
-                background-color: #f1f2f3;
-                color: #0c0d0e;
-            }
-            .saves-sidebar-header {
-                font-size: 11px;
-                font-weight: bold;
-                color: #6a737c;
-                text-transform: uppercase;
-                margin-top: 20px;
-                margin-bottom: 5px;
-            }
+        /* Empty State */
+        .empty-state-box { background-color: #f8f9f9; border: 1px dashed #d6d9dc; border-radius: 5px; padding: 40px; text-align: center; margin-top: 30px; color: #6a737c; }
+    </style>
+</head>
+<body>
 
-            /* Item List */
-            .saved-item-card {
-                padding: 16px;
-                border-bottom: 1px solid #e3e6e8;
-            }
-            .saved-item-title {
-                font-size: 1.1rem;
-                color: #0074cc;
-                text-decoration: none;
-                font-weight: 400;
-                display: block;
-                margin-bottom: 5px;
-            }
-            .saved-item-title:hover {
-                color: #0a95ff;
-            }
-            .saved-meta {
-                font-size: 12px;
-                color: #6a737c;
-            }
+    <jsp:include page="../Common/header.jsp" />
 
-            /* Empty State */
-            .empty-state-box {
-                background-color: #f8f9f9;
-                border: 1px dashed #d6d9dc;
-                border-radius: 5px;
-                padding: 40px;
-                text-align: center;
-                margin-top: 30px;
-                color: #6a737c;
-            }
-
-            /*Model create list*/
-            .modal-custom {
-                display: none;
-                position: fixed;
-                z-index: 1050;
-                left: 0;
-                top: 0;
-                width: 100%;
-                height: 100%;
-                overflow: auto;
-                background-color: rgba(0,0,0,0.4);
-            }
-            .modal-content-custom {
-                background-color: #fefefe;
-                margin: 15% auto;
-                padding: 20px;
-                border: 1px solid #888;
-                width: 400px;
-                border-radius: 5px;
-            }
-            .close-custom {
-                color: #aaa;
-                float: right;
-                font-size: 28px;
-                font-weight: bold;
-                cursor: pointer;
-            }
-            .close-custom:hover {
-                color: black;
-            }
-        </style>
-    </head>
-    <body>
-
-        <jsp:include page="../Common/header.jsp" />
-
-        <div class="container-fluid" style="max-width: 1264px; margin: 0 auto;">
-            <div class="row">
-                <nav class="col-md-2 d-none d-md-block bg-light sidebar p-0 pt-4" style="border-right: 1px solid #d6d9dc; min-height: 100vh;">
-                    <jsp:include page="../Common/sidebar.jsp" />
-                </nav>
+    <div class="container-fluid">
+        <div class="row">
+            <nav class="col-md-2 d-none d-md-block bg-light sidebar p-0">
+                <jsp:include page="../Common/sidebar.jsp">
+                    <jsp:param name="page" value="bookmarks"/>
+                </jsp:include>
+            </nav>
 
                 <main class="col-md-10 ms-sm-auto px-md-4 pt-4">
 

@@ -14,6 +14,7 @@ public class Report {
     private String targetType; // "question", "answer", "comment"
     private long targetId;
     private String reason;
+    private String note;
     private String status; // "open", "resolved"
     private Timestamp createdAt;
 
@@ -28,6 +29,14 @@ public class Report {
         this.reason = reason;
         this.status = status;
         this.createdAt = createdAt;
+    }
+
+    public Report(long reporterId, String targetType, long targetId, String reason, String note) {
+        this.reporterId = reporterId;
+        this.targetType = targetType;
+        this.targetId = targetId;
+        this.reason = reason;
+        this.note = note;
     }
 
     public long getReportId() {
@@ -68,6 +77,14 @@ public class Report {
 
     public void setReason(String reason) {
         this.reason = reason;
+    }
+
+    public String getNote() {
+        return note;
+    }
+
+    public void setNote(String note) {
+        this.note = note;
     }
 
     public String getStatus() {
