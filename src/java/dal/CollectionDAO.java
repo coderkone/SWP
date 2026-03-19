@@ -1,6 +1,7 @@
 package dal;
 
 import config.DBContext;
+import dto.BookmarkDTO;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -12,7 +13,6 @@ public class CollectionDAO extends DBContext {
 
     // 1. Tạo Collection mới
     public void createCollection(long userId, String name) {
-        // Dựa trên diagram: bảng Collections có cột user_id, Name, CreatedAt
         String sql = "INSERT INTO Collections (user_id, Name, CreatedAt) VALUES (?, ?, GETDATE())";
         try {
             Connection conn = getConnection();
@@ -65,11 +65,11 @@ public class CollectionDAO extends DBContext {
             st1.executeUpdate();
             st1.close();
 
-            // 2. Sau đó mới xóa chính cái List đó
+            // 2. Xóa list
             String sqlDeleteCollection = "DELETE FROM Collections WHERE collection_id = ? AND user_id = ?";
             PreparedStatement st2 = conn.prepareStatement(sqlDeleteCollection);
             st2.setInt(1, collectionId);
-            st2.setLong(2, userId); // Thêm userId để chắc chắn không xóa nhầm của người khác
+            st2.setLong(2, userId); // Thêm userId để chắc chắn xóa đúng collection
             st2.executeUpdate();
             st2.close();
 
@@ -77,5 +77,61 @@ public class CollectionDAO extends DBContext {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    // Rename 
+    public void renameCollection(int collectionId, long userId, String newName) {
+        String sql = "UPDATE Collections SET Name = ? WHERE collection_id = ? AND user_id = ?";
+        try {
+            Connection conn = getConnection();
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setString(1, newName);
+            ps.setInt(2, collectionId);
+            ps.setLong(3, userId);
+            ps.executeUpdate();
+            ps.close();
+            conn.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+// 1. Đếm tổng số Collection
+
+    public int countTotalCollections(long userId) {
+        String sql = "SELECT COUNT(*) FROM Collections WHERE user_id = ?";
+        try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setLong(1, userId);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+
+// 2. Lấy danh sách Collection theo trang (10 cái/trang)
+    public List<model.Collection> getCollectionsByPage(long userId, int page) {
+        List<model.Collection> list = new ArrayList<>();
+        int offset = (page - 1) * 10;
+        // Chú ý tên cột CreatedAt trong ResultSet
+        String sql = "SELECT * FROM Collections WHERE user_id = ? ORDER BY name OFFSET ? ROWS FETCH NEXT 10 ROWS ONLY";
+        try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setLong(1, userId);
+            ps.setInt(2, offset);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                list.add(new model.Collection(
+                        rs.getInt("collection_id"),
+                        rs.getLong("user_id"),
+                        rs.getString("name"),
+                        rs.getTimestamp("CreatedAt") // Sửa từ created_at thành CreatedAt
+                ));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return list;
     }
 }

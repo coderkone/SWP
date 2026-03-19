@@ -1,0 +1,38 @@
+﻿USE [devquery]
+GO
+
+-- ========================================================
+-- BƠM DỮ LIỆU ẢO CHO TÀI KHOẢN CỦA BẠN (USER_ID = 18)
+-- ========================================================
+
+-- 1. Cập nhật điểm uy tín (Reputation) cho ngầu (Ví dụ: 1550 điểm)
+UPDATE [dbo].[Users] 
+SET [Reputation] = 1550 
+WHERE [user_id] = 18;
+
+-- 2. Bơm 2 Câu hỏi do chính bạn (ID = 18) đặt ra
+-- Câu 1 có 1250 view, Câu 2 có 340 view -> Tổng Reached sẽ là 1590
+INSERT INTO [dbo].[Questions] ([user_id], [title], [body], [view_count], [Score]) 
+VALUES 
+(18, N'Làm sao để code trang Profile chuẩn MVC?', N'Mình đang làm UI cho trang Profile của DevQuery mà chưa biết thiết kế DAO sao cho chuẩn.', 1250, 15),
+(18, N'Lỗi gạch đỏ chữ Connection trong Java', N'Mọi người cho mình hỏi fix lỗi này như thế nào với?', 340, 5);
+
+-- 3. Bơm 3 Câu trả lời do bạn (ID = 18) đi giải đáp cho người khác
+-- Giả sử bạn vào trả lời cho các câu hỏi có question_id = 1, 2, 3 đang có sẵn trong DB
+INSERT INTO [dbo].[Answers] ([question_id], [user_id], [body], [is_accepted], [Score]) 
+VALUES 
+(1, 18, N'Lỗi NullPointerException này là do biến chưa được khởi tạo. Bạn check lại kỹ nhé.', 1, 10),
+(2, 18, N'Bạn thử dùng JDBC chuẩn bằng hàm getConnection() xem sao.', 0, 2),
+(3, 18, N'Lỗi vô hạn loop này thường do quên truyền dependency array vào useEffect trong React.', 1, 25);
+
+-- 4. Cấp phát 5 Danh hiệu (Badges) cho bạn
+-- Theo record cũ: ID 3 là Vàng, ID 2 & 4 là Bạc, ID 1 & 5 là Đồng
+INSERT INTO [dbo].[User_Badges] ([user_id], [badge_id]) 
+VALUES 
+(18, 3), -- Tặng 1 huy hiệu Vàng (Famous Question)
+(18, 2), -- Tặng 1 huy hiệu Bạc (Good Answer)
+(18, 4), -- Tặng 1 huy hiệu Bạc (Bug Hunter)
+(18, 1), -- Tặng 1 huy hiệu Đồng (First Question)
+(18, 5); -- Tặng 1 huy hiệu Đồng (Helper)
+
+GO

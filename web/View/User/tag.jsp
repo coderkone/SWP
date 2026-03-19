@@ -148,7 +148,7 @@
 
             .tag-desc {
                 font-size: 12px; color: #3b4045; line-height: 1.5; flex: 1;
-                display: -webkit-box; -webkit-line-clamp: 4;
+                display: -webkit-box; -webkit-line-clamp: 1;
                 -webkit-box-orient: vertical; overflow: hidden;
             }
             .tag-desc em { color: #9fa6ad; }
