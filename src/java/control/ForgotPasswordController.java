@@ -47,7 +47,9 @@ public class ForgotPasswordController extends HttpServlet {
                 EmailUtils.sendEmail(email, resetLink, email);
                 request.setAttribute("message", "Successfully send reset link password to your email. Pleas check it!");
             }else{
+                //gg
                     request.setAttribute("error", "Something's was wrong. Please check your email correctly");
+
                 }
                 
         }catch(Exception e){
