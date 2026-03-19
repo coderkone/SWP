@@ -1,55 +1,82 @@
 package control;
 
-import jakarta.servlet.ServletException;
-import jakarta.servlet.annotation.WebServlet;
-import jakarta.servlet.http.*;
-import java.io.IOException;
-import java.util.List;
 import dal.QuestionDAO;
 import dto.QuestionDTO;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
 
-@WebServlet(name="HomeController", urlPatterns={"/home"})
+@WebServlet(name = "HomeController", urlPatterns = {"/home"})
 public class HomeController extends HttpServlet {
+
+    private static final int PAGE_SIZE = 10;
+
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        
-        // 1. Lấy các tham số từ URL (ví dụ: home?page=2&q=java&tab=views)
         String keyword = request.getParameter("q");
-        String sort = request.getParameter("tab"); // new, active, hot...
-        String filter = request.getParameter("filter"); // unanswered...
-        String pageStr = request.getParameter("page");
-        String tag = request.getParameter("tag");
+        String tab = request.getParameter("tab");
+        String filter = request.getParameter("filter");
+        String pageParam = request.getParameter("page");
 
-        // 2. Xử lý phân trang
-        int pageIndex = 1;
-        int pageSize = 10; // Hiển thị 10 bài/trang
-        try {
-            if (pageStr != null) pageIndex = Integer.parseInt(pageStr);
-        } catch (NumberFormatException e) {
-            pageIndex = 1;
+        if ("unanswered".equals(filter)) {
+            tab = "newest";
+        } else if ("active".equals(tab) || "newest".equals(tab) || "voted".equals(tab)) {
+            filter = "all";
         }
 
-        // 3. Gọi DAO lấy dữ liệu
-        QuestionDAO dao = new QuestionDAO();
-        List<QuestionDTO> list = dao.getQuestions(pageIndex, pageSize, sort, keyword, filter, tag);
-        int totalRecords = dao.getTotalQuestions(keyword, filter, tag);
-        int totalPage = (totalRecords % pageSize == 0) ? (totalRecords / pageSize) : (totalRecords / pageSize + 1);
+        if (keyword == null) {
+            keyword = "";
+        }
+        if (tab == null || tab.isBlank()) {
+            tab = "newest";
+        }
+        if (filter == null || filter.isBlank()) {
+            filter = "all";
+        }
 
-        List<String> popularTags = dao.getPopularTags(10);
-        
-        // 4. Gửi dữ liệu sang trang JSP
-        request.setAttribute("questions", list);       // Danh sách câu hỏi
-        request.setAttribute("totalPage", totalPage);  // Tổng số trang
-        request.setAttribute("currentPage", pageIndex);// Trang hiện tại
-        request.setAttribute("totalQuestions", totalRecords); // Tổng số câu hỏi 
-        request.setAttribute("popularTags", popularTags); // Gửi top tags xuống view
-        
-        // Gửi lại các tham số lọc để giữ trạng thái active cho nút bấm
-        request.setAttribute("currentSort", sort);
-        request.setAttribute("currentKeyword", keyword);
-        request.setAttribute("currentFilter", filter);
-        request.setAttribute("currentTag", tag); 
+        int page = 1;
+        if (pageParam != null && !pageParam.isBlank()) {
+            try {
+                page = Integer.parseInt(pageParam);
+                if (page < 1) {
+                    page = 1;
+                }
+            } catch (NumberFormatException ignored) {
+                page = 1;
+            }
+        }
+
+        try {
+            QuestionDAO questionDAO = new QuestionDAO();
+            List<QuestionDTO> questions = questionDAO.getQuestions(page, PAGE_SIZE, tab, keyword, filter);
+            int totalQuestions = questionDAO.getTotalQuestions(keyword, filter);
+            int totalPage = (int) Math.ceil((double) totalQuestions / PAGE_SIZE);
+
+            request.setAttribute("questions", questions);
+            request.setAttribute("totalQuestions", totalQuestions);
+            request.setAttribute("currentKeyword", keyword);
+            request.setAttribute("currentSort", tab);
+            request.setAttribute("currentFilter", filter);
+            request.setAttribute("currentPage", page);
+            request.setAttribute("totalPage", totalPage);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            request.setAttribute("error", "Error loading questions: " + e.getMessage());
+            request.setAttribute("questions", Collections.emptyList());
+            request.setAttribute("totalQuestions", 0);
+            request.setAttribute("currentKeyword", keyword);
+            request.setAttribute("currentSort", tab);
+            request.setAttribute("currentFilter", filter);
+            request.setAttribute("currentPage", 1);
+            request.setAttribute("totalPage", 0);
+        }
 
         request.getRequestDispatcher("/View/User/home.jsp").forward(request, response);
     }
