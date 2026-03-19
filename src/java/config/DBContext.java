@@ -8,6 +8,8 @@ import java.sql.DriverManager;
 import java.util.Properties;
 
 public class DBContext {
+    private static final String USER = "sa";
+    private static final String PASS = "123456";
 
     private static final String USER;
     private static final String PASS;

@@ -1,6 +1,7 @@
 package dal;
 
 import config.DBContext;
+import dto.BookmarkDTO;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -93,5 +94,44 @@ public class CollectionDAO extends DBContext {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+// 1. Đếm tổng số Collection
+
+    public int countTotalCollections(long userId) {
+        String sql = "SELECT COUNT(*) FROM Collections WHERE user_id = ?";
+        try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setLong(1, userId);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+
+// 2. Lấy danh sách Collection theo trang (10 cái/trang)
+    public List<model.Collection> getCollectionsByPage(long userId, int page) {
+        List<model.Collection> list = new ArrayList<>();
+        int offset = (page - 1) * 10;
+        // Chú ý tên cột CreatedAt trong ResultSet
+        String sql = "SELECT * FROM Collections WHERE user_id = ? ORDER BY name OFFSET ? ROWS FETCH NEXT 10 ROWS ONLY";
+        try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setLong(1, userId);
+            ps.setInt(2, offset);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                list.add(new model.Collection(
+                        rs.getInt("collection_id"),
+                        rs.getLong("user_id"),
+                        rs.getString("name"),
+                        rs.getTimestamp("CreatedAt") // Sửa từ created_at thành CreatedAt
+                ));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return list;
     }
 }

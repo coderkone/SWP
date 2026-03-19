@@ -34,14 +34,13 @@ CREATE TABLE [dbo].[User_Profile](
 )
 GO
 
--- 3. QUESTIONS (Đã xóa accepted_answer_id để tránh vòng lặp)
+-- 3. QUESTIONS 
 CREATE TABLE [dbo].[Questions](
 	[question_id] [bigint] IDENTITY(1,1) PRIMARY KEY,
 	[user_id] [bigint] NOT NULL,
 	[title] [nvarchar](255) NOT NULL,
 	[body] [nvarchar](max) NOT NULL,
 	[code_snippet] [nvarchar](max) NULL,
-	-- [accepted_answer_id] ĐÃ XÓA
 	[view_count] [int] DEFAULT 0,
 	[is_closed] [bit] DEFAULT 0,
 	[closed_by] [bigint] NULL,
@@ -59,7 +58,7 @@ CREATE TABLE [dbo].[Questions](
 )
 GO
 
--- 4. ANSWERS (Thêm is_accepted)
+-- 4. ANSWERS 
 CREATE TABLE [dbo].[Answers](
 	[answer_id] [bigint] IDENTITY(1,1) PRIMARY KEY,
 	[question_id] [bigint] NOT NULL,
@@ -67,7 +66,7 @@ CREATE TABLE [dbo].[Answers](
 	[body] [nvarchar](max) NOT NULL,
 	[code_snippet] [nvarchar](max) NULL,
 	[is_edited] [bit] DEFAULT 0,
-    [is_accepted] [bit] DEFAULT 0, -- THÊM DÒNG NÀY
+    [is_accepted] [bit] DEFAULT 0, 
 	[created_at] [datetime] DEFAULT GETDATE(),
 	[updated_at] [datetime] DEFAULT GETDATE(),
 	[Score] [int] DEFAULT 0,
@@ -278,18 +277,34 @@ CREATE TABLE [dbo].[Privileges](
 )
 GO
 
+-- 1. BLOGS TABLE (Stores articles posted by the Admin)
+CREATE TABLE [dbo].[Blogs] (
+    [blog_id] INT IDENTITY(1,1) PRIMARY KEY,
+    [title] NVARCHAR(MAX) NOT NULL,
+    [content] NVARCHAR(MAX) NOT NULL,
+    [thumbnail_url] VARCHAR(500) NULL,
+    [author_id] BIGINT NOT NULL,
+    [created_at] DATETIME DEFAULT GETDATE(),
+    [updated_at] DATETIME DEFAULT GETDATE(),
+    [view_count] INT DEFAULT 0,
+    [comment_count] INT DEFAULT 0,
+    [status] INT DEFAULT 1,
+    FOREIGN KEY ([author_id]) REFERENCES [dbo].[Users]([user_id])
+);
+GO
+-- 2. BLOG COMMENTS TABLE (Stores user discussions and replies)
+CREATE TABLE [dbo].[BlogComments] (
+    [comment_id] INT IDENTITY(1,1) PRIMARY KEY,
+    -- Which blog post this comment belongs to
+    [blog_id] INT NOT NULL,
+    [user_id] BIGINT NOT NULL,
+    [parent_id] INT NULL,
+    [content] NVARCHAR(MAX) NOT NULL,
+    [created_at] DATETIME DEFAULT GETDATE(),  
+    FOREIGN KEY ([blog_id]) REFERENCES [dbo].[Blogs]([blog_id]) ON DELETE CASCADE,
+    FOREIGN KEY ([user_id]) REFERENCES [dbo].[Users]([user_id]),
+    FOREIGN KEY ([parent_id]) REFERENCES [dbo].[BlogComments]([comment_id])
+);
+GO
+
 select * from [dbo].[Users];
-
--- Add accepted_answer_id to Questions (Option A - recommended)
--- When accepted answer is deleted, ON DELETE SET NULL clears it automatically.
-
-USE [devquery]
-GO
-
-IF NOT EXISTS (SELECT 1 FROM sys.columns WHERE object_id = OBJECT_ID('dbo.Questions') AND name = 'accepted_answer_id')
-BEGIN
-    ALTER TABLE [dbo].[Questions] ADD [accepted_answer_id] [bigint] NULL;
-    ALTER TABLE [dbo].[Questions] ADD CONSTRAINT [FK_Questions_AcceptedAnswer] 
-        FOREIGN KEY ([accepted_answer_id]) REFERENCES [dbo].[Answers]([answer_id]) ON DELETE SET NULL;
-END
-GO

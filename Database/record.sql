@@ -49,18 +49,18 @@ GO
 -- 3. TẠO TAGS (~12 tags)
 -- =============================================
 INSERT INTO [dbo].[Tags] ([tag_name], [description]) VALUES
-('java', N'Ngôn ngữ lập trình hướng đối tượng phổ biến.'),
-('spring-boot', N'Framework Java giúp xây dựng ứng dụng nhanh chóng.'),
-('sql-server', N'Hệ quản trị cơ sở dữ liệu của Microsoft.'),
-('reactjs', N'Thư viện JavaScript để xây dựng giao diện người dùng.'),
-('javascript', N'Ngôn ngữ kịch bản cho Web.'),
-('html-css', N'Cấu trúc và định kiểu cho trang web.'),
-('python', N'Ngôn ngữ lập trình đa năng.'),
-('docker', N'Nền tảng container hóa ứng dụng.'),
-('android', N'Hệ điều hành di động của Google.'),
-('git', N'Hệ thống quản lý phiên bản phân tán.'),
-('algorithm', N'Các thuật toán và cấu trúc dữ liệu.'),
-('c#', N'Ngôn ngữ lập trình của Microsoft.');
+('java', N'Java là một ngôn ngữ lập trình hướng đối tượng, đa nền tảng phổ biến nhất thế giới. Nó tuân theo nguyên tắc "viết một lần, chạy mọi nơi" (WORA). Java được sử dụng rộng rãi trong phát triển ứng dụng doanh nghiệp, web backend và ứng dụng di động.'),
+('spring-boot', N'Spring Boot là framework giúp xây dựng các ứng dụng Java (dựa trên Spring) một cách nhanh chóng. Nó loại bỏ các cấu hình XML phức tạp, cung cấp các server nhúng như Tomcat để bạn có thể chạy ứng dụng ngay lập tức.'),
+('sql-server', N'SQL Server là hệ quản trị cơ sở dữ liệu quan hệ (RDBMS) do Microsoft phát triển. Nó hỗ trợ xử lý giao dịch, ứng dụng phân tích kinh doanh (BI) và có tính bảo mật, hiệu năng cực kỳ cao.'),
+('reactjs', N'React là một thư viện JavaScript mã nguồn mở dùng để xây dựng giao diện người dùng (UI). Được duy trì bởi Meta (Facebook), nó dựa trên kiến trúc component giúp tái sử dụng mã hiệu quả thông qua Virtual DOM.'),
+('javascript', N'JavaScript (JS) là ngôn ngữ lập trình kịch bản chủ yếu được sử dụng để tạo ra các trang web tương tác. Cùng với HTML và CSS, nó là một trong ba công nghệ cốt lõi của Web. Hiện nay JS có thể chạy ở cả phía server thông qua Node.js.'),
+('html-css', N'HTML cấu trúc nội dung trang web, còn CSS định dạng kiểu dáng cho nội dung đó. Đây là hai công nghệ nền tảng không thể thiếu để xây dựng bất kỳ giao diện web tĩnh hay động nào trên trình duyệt.'),
+('python', N'Python là ngôn ngữ lập trình bậc cao, đa mục đích với cú pháp cực kỳ dễ đọc. Nó đang thống trị trong các lĩnh vực Trí tuệ nhân tạo (AI), Khoa học dữ liệu (Data Science) và kịch bản tự động hóa.'),
+('docker', N'Docker là nền tảng phần mềm cho phép xây dựng, kiểm thử và triển khai ứng dụng dưới dạng các container. Các container này chứa sẵn mọi thư viện cần thiết, đảm bảo code chạy đồng nhất trên mọi môi trường.'),
+('android', N'Android là hệ điều hành mã nguồn mở dựa trên nhân Linux, được thiết kế cho các thiết bị di động màn hình cảm ứng. Nó cung cấp một framework mạnh mẽ để các lập trình viên Java và Kotlin xây dựng ứng dụng.'),
+('git', N'Git là hệ thống quản lý phiên bản phân tán (VCS) phổ biến nhất hiện nay. Nó giúp các nhóm lập trình viên theo dõi sự thay đổi của mã nguồn, rẽ nhánh (branch) và hợp nhất (merge) code một cách an toàn.'),
+('algorithm', N'Thuật toán (Algorithm) là một tập hợp các hướng dẫn từng bước để giải quyết một bài toán cụ thể. Việc nắm vững thuật toán và cấu trúc dữ liệu là cốt lõi để viết ra code tối ưu về cả bộ nhớ lẫn thời gian chạy.'),
+('c#', N'C# là một ngôn ngữ lập trình hướng đối tượng mạnh mẽ do Microsoft phát triển trong hệ sinh thái .NET. Nó có cú pháp khá giống Java và được ứng dụng mạnh trong việc làm game (Unity), ứng dụng Windows và web.');
 GO
 
 -- =============================================

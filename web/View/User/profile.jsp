@@ -289,7 +289,16 @@
                             <div class="pt-1">
                                 <h1 class="user-name" style="margin-bottom: 8px;">${uPro.username}</h1>
                                 <div class="user-meta mb-3">
-                                    <i class="fa-solid fa-cake-candles me-1"></i> Member since <fmt:formatDate value="${uPro.createdAt}" pattern="MMM dd, yyyy"/>
+                                    <c:choose>
+                                        <c:when test="${not empty uPro.bio}">
+                                            ${uPro.bio}
+                                        </c:when>
+                                        <c:otherwise>
+                                            <span class="text-muted fst-italic">No bio yet.</span>
+                                        </c:otherwise>
+                                    </c:choose>
+                                    <span class="mx-2">|</span>      
+                                    <i class="fa-solid fa-cake-candles"></i> Member since <fmt:formatDate value="${userProfile.createdAt}" pattern="dd/MM/yyyy" />
                                     <span class="mx-2">|</span> 
                                     <i class="fa-solid fa-star text-warning me-1"></i> ${uPro.reputation} reputation
 

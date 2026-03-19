@@ -61,6 +61,31 @@
             /* Inner Left Sidebar */
             .inner-nav-item {
                 display: block;
+                padding: 10px 12px;
+                color: #525960;
+                text-decoration: none;
+                font-size: 14px;
+                border-bottom: 1px solid #e3e6e8; /* Đây chính là đường gạch ngang màu xám nhạt bên dưới mỗi option */
+                transition: background-color 0.2s ease-in-out;
+            }
+
+            /* Bỏ đường gạch ngang ở mục cuối cùng cùng để menu trông gọn gàng hơn */
+            .inner-nav-item:last-child {
+                border-bottom: none;
+            }
+
+            /* Khi người dùng di chuột qua (Hover) */
+            .inner-nav-item:hover {
+                background-color: #f8f9fa; /* Màu nền xám thật nhạt khi lướt qua */
+                color: #0c0d0e;
+            }
+
+            /* Khi mục đó đang được chọn (Active) */
+            .inner-nav-item.active {
+                background-color: #f48024; /* Màu cam đặc trưng */
+                color: #ffffff;
+                font-weight: 500;
+                border-bottom-color: #f48024; /* Đổi màu viền dưới thành cam luôn cho đồng bộ */
                 padding: 6px 12px;
                 color: #525960;
                 text-decoration: none;
@@ -131,6 +156,107 @@
             .rep-score.negative {
                 color: #dc3545;
             }
+            .badge-title-group {
+                border-bottom: 2px solid #f1f2f3;
+                padding-bottom: 10px;
+                margin-bottom: 20px;
+            }
+
+            /* Chỉnh lại Card cho nhỏ gọn và căn giữa */
+            .badge-item-card {
+                border: 1px solid #e3e6e8;
+                border-radius: 8px;
+                padding: 12px 16px;
+                background-color: #fff;
+                display: flex;
+                align-items: center;
+                justify-content: center; /* Căn giữa nội dung */
+                height: 100%;
+                cursor: pointer;
+                position: relative; /* Rất quan trọng để định vị Tooltip */
+            }
+
+            .badge-dot {
+                display: inline-block;
+                width: 10px;
+                height: 10px;
+                border-radius: 50%;
+                margin-right: 8px;
+            }
+            .badge-dot.gold {
+                background-color: #ffcc01;
+                box-shadow: 0 0 4px rgba(255, 204, 1, 0.4);
+            }
+            .badge-dot.silver {
+                background-color: #b4b8bc;
+            }
+            .badge-dot.bronze {
+                background-color: #d1a684;
+            }
+
+            /* ---------------------------------- */
+            /* CSS CHO CUSTOM TOOLTIP HIỆN ĐẠI   */
+            /* ---------------------------------- */
+            .badge-custom-tooltip {
+                visibility: hidden;
+                opacity: 0;
+                position: absolute;
+                z-index: 1000;
+                bottom: 120%; /* Đẩy tooltip lên phía trên card */
+                left: 50%;
+                transform: translateX(-50%);
+                width: 250px;
+                background-color: #242729; /* Màu nền tối ngầu ngầu */
+                color: #fff;
+                text-align: left;
+                border-radius: 6px;
+                padding: 12px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+
+                /* Logic thời gian: Biến mất thì ngay lập tức (delay 0s) */
+                transition: opacity 0.2s, visibility 0.2s;
+                transition-delay: 0s;
+                pointer-events: none; /* Tránh cản trở click chuột */
+            }
+
+            .badge-custom-tooltip {
+                visibility: hidden;
+                opacity: 0;
+                position: absolute;
+                z-index: 1000;
+                bottom: 120%;
+                left: 50%;
+                transform: translateX(-50%);
+                width: 250px;
+                background-color: #ffffff;
+                color: #242729;
+                text-align: left;
+                border-radius: 8px;
+                padding: 12px;
+                border: 1px solid #d6d9dc;
+                box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+
+                transition: opacity 0.2s, visibility 0.2s;
+                transition-delay: 0s;
+                pointer-events: none;
+            }
+
+            .badge-custom-tooltip::after {
+                content: "";
+                position: absolute;
+                top: 100%;
+                left: 50%;
+                margin-left: -7px;
+                border-width: 7px;
+                border-style: solid;
+                border-color: #ffffff transparent transparent transparent;
+            }
+
+            .badge-item-card:hover .badge-custom-tooltip {
+                visibility: visible;
+                opacity: 1;
+                transition-delay: 1s;
+            }
         </style>
     </head>
     <body>
@@ -153,7 +279,7 @@
                         <div class="flex-grow-1">
                             <h1 class="user-name">${userProfile.username != null ? userProfile.username : 'Developer'}</h1>
                             <div class="user-meta mb-3">
-                                <i class="fa-solid fa-cake-candles"></i> Member since ${userProfile.createdAt}
+                                <i class="fa-solid fa-cake-candles"></i> Member since <fmt:formatDate value="${userProfile.createdAt}" pattern="dd/MM/yyyy" />
                                 <span class="mx-2">|</span> 
                                 <i class="fa-solid fa-star text-warning"></i> ${userProfile.reputation} reputation
                             </div>
@@ -170,8 +296,7 @@
                     <div class="row mt-4">
 
                         <div class="col-md-2">
-                            <nav class="nav flex-column">
-                                <a class="inner-nav-item ${currentTab == 'summary' ? 'active' : ''}" href="?tab=summary">Summary</a>
+                            <nav class="nav flex-column mt-2"> <a class="inner-nav-item ${currentTab == 'summary' ? 'active' : ''}" href="?tab=summary">Summary</a>
                                 <a class="inner-nav-item ${currentTab == 'reputation' ? 'active' : ''}" href="?tab=reputation">Reputation</a>
                                 <a class="inner-nav-item ${currentTab == 'badges' ? 'active' : ''}" href="?tab=badges">Badges</a>
                                 <a class="inner-nav-item ${currentTab == 'privileges' ? 'active' : ''}" href="?tab=privileges">Privileges</a>
@@ -205,59 +330,216 @@
                                     </div>
                                 </c:when>
 
-                                <%-- 2. TAB REPUTATION --%>
+                                <%-- 2. TAB REPUTATION HISTORY --%>
                                 <c:when test="${currentTab == 'reputation'}">
-                                    <h3 style="font-size: 21px; margin-bottom: 20px;">Reputation History</h3>
-                                    <table class="table activity-table table-borderless">
-                                        <tbody>
-                                            <c:forEach items="${repList}" var="rep">
-                                                <tr>
-                                                    <td style="width: 80px;">
-                                                        <span class="rep-score ${rep.value < 0 ? 'negative' : ''}">
-                                                            ${rep.value > 0 ? '+' : ''}${rep.value}
-                                                        </span>
-                                                    </td>
-                                                    <td>${rep.actionType}</td>
-                                                    <td class="text-end text-muted">
-                                                        <fmt:formatDate value="${rep.createdAt}" pattern="MMM dd, yyyy" />
-                                                    </td>
-                                                </tr>
-                                            </c:forEach>
 
+                                    <div class="d-flex justify-content-between align-items-center mb-4 mt-2">
+                                        <h3 class="fw-bold" style="font-size: 24px; margin-bottom: 0;">Reputation History</h3>
+                                        <div class="text-muted">
+                                            Total Reputation: <span class="fw-bold text-dark fs-5 ml-1"><i class="fa-solid fa-star text-warning"></i> ${userProfile.reputation}</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="card shadow-sm border-0" style="border-radius: 8px; overflow: hidden;">
+                                        <div class="card-body p-0">
                                             <c:if test="${empty repList}">
-                                                <tr>
-                                                    <td colspan="3" class="text-center text-muted py-4">You have no reputation changes yet.</td>
-                                                </tr>
+                                                <div class="text-center text-muted py-5" style="background-color: #f8f9fa;">
+                                                    <i class="fa-solid fa-clock-rotate-left fa-2x mb-2 d-block text-secondary"></i>
+                                                    You have no reputation history yet. Keep contributing!
+                                                </div>
                                             </c:if>
-                                        </tbody>
-                                    </table>
+
+                                            <c:if test="${not empty repList}">
+                                                <div class="list-group list-group-flush">
+                                                    <c:forEach items="${repList}" var="rep">
+                                                        <div class="list-group-item d-flex justify-content-between align-items-center py-3" style="transition: background-color 0.2s;">
+
+                                                            <div class="d-flex align-items-center" style="flex: 1;">
+                                                                <div style="width: 60px; flex-shrink: 0;">
+                                                                    <c:choose>
+                                                                        <c:when test="${rep.value > 0}">
+                                                                            <span class="badge bg-success bg-opacity-10 text-success border border-success rounded-pill px-3 py-2 fw-bold" style="font-size: 14px;">
+                                                                                +${rep.value}
+                                                                            </span>
+                                                                        </c:when>
+                                                                        <c:otherwise>
+                                                                            <span class="badge bg-danger bg-opacity-10 text-danger border border-danger rounded-pill px-3 py-2 fw-bold" style="font-size: 14px;">
+                                                                                ${rep.value}
+                                                                            </span>
+                                                                        </c:otherwise>
+                                                                    </c:choose>
+                                                                </div>
+
+                                                                <div class="ms-3 text-dark fw-medium" style="font-size: 15px;">
+                                                                    <c:choose>
+                                                                        <c:when test="${rep.actionType == 'question_upvoted'}">
+                                                                            <i class="fa-solid fa-arrow-up text-secondary me-2"></i> Your question was upvoted
+                                                                        </c:when>
+                                                                        <c:when test="${rep.actionType == 'answer_upvoted'}">
+                                                                            <i class="fa-solid fa-arrow-up text-secondary me-2"></i> Your answer was upvoted
+                                                                        </c:when>
+                                                                        <c:when test="${rep.actionType == 'answer_accepted'}">
+                                                                            <i class="fa-solid fa-check text-success me-2"></i> Your answer was accepted
+                                                                        </c:when>
+                                                                        <c:when test="${rep.actionType == 'question_downvoted'}">
+                                                                            <i class="fa-solid fa-arrow-down text-danger me-2"></i> Your question was downvoted
+                                                                        </c:when>
+                                                                        <c:otherwise>
+                                                                            <i class="fa-solid fa-bolt text-warning me-2"></i> ${rep.actionType}
+                                                                        </c:otherwise>
+                                                                    </c:choose>
+                                                                </div>
+                                                            </div>
+
+                                                            <div class="text-muted small ms-3" style="white-space: nowrap;">
+                                                                <i class="fa-regular fa-calendar me-1"></i> 
+                                                                <fmt:formatDate value="${rep.createdAt}" pattern="MMM dd, yyyy"/>
+                                                            </div>
+
+                                                        </div>
+                                                    </c:forEach>
+                                                </div>
+                                            </c:if>
+                                        </div>
+                                    </div>
                                 </c:when>
 
                                 <%-- 3. TAB BADGES --%>
                                 <c:when test="${currentTab == 'badges'}">
-                                    <h3 style="font-size: 21px; margin-bottom: 20px;">Earned Badges</h3>
-                                    <div class="row">
-                                        <c:forEach items="${myBadges}" var="badge">
-                                            <div class="col-md-3 mb-3">
-                                                <div style="border: 1px solid #e3e6e8; padding: 15px; border-radius: 5px; text-align: center;">
-                                                    <div style="font-size: 40px; margin-bottom: 10px;
-                                                         color: ${badge.type == 'Gold' ? '#ffcc01' : (badge.type == 'Silver' ? '#b4b8bc' : '#d1a684')};">
-                                                        <i class="fa-solid fa-medal"></i>
-                                                    </div>
+                                    <div class="d-flex justify-content-between align-items-center mb-4 mt-2">
+                                        <h3 class="fw-bold" style="font-size: 24px; margin-bottom: 0;">Earned Badges</h3>
 
-                                                    <span style="background: #f1f2f3; border: 1px solid #d6d9dc; padding: 3px 8px; border-radius: 3px; font-size: 12px; font-weight: bold;" title="${badge.description}">
-                                                        <span class="badge-dot ${badge.type.toLowerCase()}"></span> ${badge.name}
-                                                    </span>
-                                                </div>
-                                            </div>
-                                        </c:forEach>
-
-                                        <c:if test="${empty myBadges}">
-                                            <div class="col-12">
-                                                <p class="text-muted">You haven't earned any badges yet. Keep participating!</p>
-                                            </div>
-                                        </c:if>
+                                        <form action="${pageContext.request.contextPath}/badge" method="get" class="d-flex align-items-center">
+                                            <input type="hidden" name="tab" value="badges">
+                                            <label for="sortBadges" class="me-2 text-muted small mb-0 text-nowrap">Sort by:</label>
+                                            <select name="sort" id="sortBadges" class="form-select form-select-sm shadow-sm" onchange="this.form.submit()" style="width: auto; border-radius: 6px;">
+                                                <option value="newest" ${currentSort == 'newest' ? 'selected' : ''}>Newest</option>
+                                                <option value="name" ${currentSort == 'name' ? 'selected' : ''}>Name</option>
+                                            </select>
+                                        </form>
                                     </div>
+
+                                    <c:if test="${empty myBadges}">
+                                        <div class="empty-badge-box mt-4">
+                                            <i class="fa-solid fa-medal fa-2x text-muted mb-2 d-block"></i>
+                                            You haven't earned any badges yet. Keep participating to unlock them!
+                                        </div>
+                                    </c:if>
+
+                                    <c:if test="${not empty myBadges}">
+
+                                        <div class="badge-title-group mt-4">
+                                            <h5 class="mb-0 fw-bold" style="color: #ab825f;">
+                                                <i class="fa-solid fa-medal" style="color: #d1a684;"></i> Bronze Badges
+                                            </h5>
+                                        </div>
+                                        <div class="row mb-4">
+                                            <c:set var="hasBronze" value="false" />
+                                            <c:forEach items="${myBadges}" var="badge">
+                                                <c:if test="${badge.type.toLowerCase() == 'bronze'}">
+                                                    <c:set var="hasBronze" value="true" />
+                                                    <div class="col-md-3 col-sm-6 mb-3">
+                                                        <div class="badge-item-card">
+                                                            <span class="badge-dot bronze"></span>
+                                                            <span class="fw-bold text-dark" style="font-size: 15px;">${badge.name}</span>
+
+                                                            <div class="badge-custom-tooltip">
+                                                                <div class="fw-bold mb-2 pb-1" style="font-size: 15px; border-bottom: 1px solid #4a4e51;">
+                                                                    ${badge.name}
+                                                                </div>
+                                                                <div style="font-size: 13px; margin-bottom: 4px;">
+                                                                    <span class="text-muted">Level:</span> <span class="text-capitalize fw-bold" style="color: #d1a684;">${badge.type}</span>
+                                                                </div>
+                                                                <div style="font-size: 13px; margin-bottom: 8px;">
+                                                                    <span class="text-muted">Earned:</span> <fmt:formatDate value="${badge.earnedAt}" pattern="dd/MM/yyyy" />                                                                                                                                </div>
+                                                                <div style="font-size: 13px; line-height: 1.4;">
+                                                                    ${badge.description}
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </c:if>
+                                            </c:forEach>
+                                            <c:if test="${!hasBronze}">
+                                                <div class="col-12"><div class="empty-badge-box">No bronze badges earned yet.</div></div>
+                                            </c:if>
+                                        </div>
+
+                                        <div class="badge-title-group mt-4">
+                                            <h5 class="mb-0 fw-bold" style="color: #838c95;">
+                                                <i class="fa-solid fa-medal" style="color: #b4b8bc;"></i> Silver Badges
+                                            </h5>
+                                        </div>
+                                        <div class="row mb-4">
+                                            <c:set var="hasSilver" value="false" />
+                                            <c:forEach items="${myBadges}" var="badge">
+                                                <c:if test="${badge.type.toLowerCase() == 'silver'}">
+                                                    <c:set var="hasSilver" value="true" />
+                                                    <div class="col-md-3 col-sm-6 mb-3">
+                                                        <div class="badge-item-card">
+                                                            <span class="badge-dot silver"></span>
+                                                            <span class="fw-bold text-dark" style="font-size: 15px;">${badge.name}</span>
+
+                                                            <div class="badge-custom-tooltip">
+                                                                <div class="fw-bold mb-2 pb-1" style="font-size: 15px; border-bottom: 1px solid #4a4e51;">
+                                                                    ${badge.name}
+                                                                </div>
+                                                                <div style="font-size: 13px; margin-bottom: 4px;">
+                                                                    <span class="text-muted">Level:</span> <span class="text-capitalize fw-bold" style="color: #b4b8bc;">${badge.type}</span>
+                                                                </div>
+                                                                <div style="font-size: 13px; margin-bottom: 8px;">
+                                                                    <span class="text-muted">Earned:</span> <fmt:formatDate value="${badge.earnedAt}" pattern="dd/MM/yyyy" />                                                                                                                            </div>
+                                                                <div style="font-size: 13px; line-height: 1.4;">
+                                                                    ${badge.description}
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </c:if>
+                                            </c:forEach>
+                                            <c:if test="${!hasSilver}">
+                                                <div class="col-12"><div class="empty-badge-box">No silver badges earned yet.</div></div>
+                                            </c:if>
+                                        </div>
+
+                                        <div class="badge-title-group mt-4">
+                                            <h5 class="mb-0 fw-bold" style="color: #d4a81e;">
+                                                <i class="fa-solid fa-medal" style="color: #ffcc01;"></i> Gold Badges
+                                            </h5>
+                                        </div>
+                                        <div class="row mb-4">
+                                            <c:set var="hasGold" value="false" />
+                                            <c:forEach items="${myBadges}" var="badge">
+                                                <c:if test="${badge.type.toLowerCase() == 'gold'}">
+                                                    <c:set var="hasGold" value="true" />
+                                                    <div class="col-md-3 col-sm-6 mb-3">
+                                                        <div class="badge-item-card">
+                                                            <span class="badge-dot gold"></span>
+                                                            <span class="fw-bold text-dark" style="font-size: 15px;">${badge.name}</span>
+
+                                                            <div class="badge-custom-tooltip">
+                                                                <div class="fw-bold mb-2 pb-1" style="font-size: 15px; border-bottom: 1px solid #4a4e51;">
+                                                                    ${badge.name}
+                                                                </div>
+                                                                <div style="font-size: 13px; margin-bottom: 4px;">
+                                                                    <span class="text-muted">Level:</span> <span class="text-capitalize fw-bold" style="color: #ffcc01;">${badge.type}</span>
+                                                                </div>
+                                                                <div style="font-size: 13px; margin-bottom: 8px;">
+                                                                    <span class="text-muted">Earned:</span> <fmt:formatDate value="${badge.earnedAt}" pattern="dd/MM/yyyy" />                                                                </div>
+                                                                <div style="font-size: 13px; line-height: 1.4;">
+                                                                    ${badge.description}
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </c:if>
+                                            </c:forEach>
+                                            <c:if test="${!hasGold}">
+                                                <div class="col-12"><div class="empty-badge-box">No gold badges earned yet.</div></div>
+                                            </c:if>
+                                        </div>
+
+                                    </c:if>
                                 </c:when>
 
                                 <%-- 4. TAB PRIVILEGES (Dữ liệu lấy từ bảng Privileges) --%>
