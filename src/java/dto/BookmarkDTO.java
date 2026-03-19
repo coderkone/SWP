@@ -25,6 +25,12 @@ public class BookmarkDTO {
         this.title=title;
     }
 
+    public BookmarkDTO(long aLong, String string, Timestamp timestamp) {
+        this.questionId = aLong;
+        this.questionTitle=string;
+        this.createdAt=timestamp;
+    }
+
     // Getters and Setters
     public long getQuestionId() { return questionId; }
     public void setQuestionId(long questionId) { this.questionId = questionId; }

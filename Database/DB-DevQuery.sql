@@ -265,4 +265,34 @@ CREATE TABLE [dbo].[Privileges](
 )
 GO
 
+-- 1. BLOGS TABLE (Stores articles posted by the Admin)
+CREATE TABLE [dbo].[Blogs] (
+    [blog_id] INT IDENTITY(1,1) PRIMARY KEY,
+    [title] NVARCHAR(MAX) NOT NULL,
+    [content] NVARCHAR(MAX) NOT NULL,
+    [thumbnail_url] VARCHAR(500) NULL,
+    [author_id] BIGINT NOT NULL,
+    [created_at] DATETIME DEFAULT GETDATE(),
+    [updated_at] DATETIME DEFAULT GETDATE(),
+    [view_count] INT DEFAULT 0,
+    [comment_count] INT DEFAULT 0,
+    [status] INT DEFAULT 1,
+    FOREIGN KEY ([author_id]) REFERENCES [dbo].[Users]([user_id])
+);
+GO
+-- 2. BLOG COMMENTS TABLE (Stores user discussions and replies)
+CREATE TABLE [dbo].[BlogComments] (
+    [comment_id] INT IDENTITY(1,1) PRIMARY KEY,
+    -- Which blog post this comment belongs to
+    [blog_id] INT NOT NULL,
+    [user_id] BIGINT NOT NULL,
+    [parent_id] INT NULL,
+    [content] NVARCHAR(MAX) NOT NULL,
+    [created_at] DATETIME DEFAULT GETDATE(),  
+    FOREIGN KEY ([blog_id]) REFERENCES [dbo].[Blogs]([blog_id]) ON DELETE CASCADE,
+    FOREIGN KEY ([user_id]) REFERENCES [dbo].[Users]([user_id]),
+    FOREIGN KEY ([parent_id]) REFERENCES [dbo].[BlogComments]([comment_id])
+);
+GO
+
 select * from [dbo].[Users];
