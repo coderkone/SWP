@@ -4,19 +4,15 @@
  */
 package model;
 import java.sql.Timestamp;
-/**
- *
- * @author nguye
- */
-public class UserFọllow {
+public class UserFollow {
     private long followerId;
     private long followingId;
     private Timestamp followedAt;
 
-    public UserFọllow() {
+    public UserFollow() {
     }
 
-    public UserFọllow(long followerId, long followingId, Timestamp followedAt) {
+    public UserFollow(long followerId, long followingId, Timestamp followedAt) {
         this.followerId = followerId;
         this.followingId = followingId;
         this.followedAt = followedAt;

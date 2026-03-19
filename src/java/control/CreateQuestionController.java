@@ -56,8 +56,8 @@ public class CreateQuestionController extends HttpServlet {
             String tags = request.getParameter("tags");
             
             // validate độ dài tối thiểu
-            if (title == null || title.trim().length() < 15) {
-                request.setAttribute("errorMessage", "Title must be at least 15 characters.");
+            if (title == null || title.trim().length() < 10) {
+                request.setAttribute("errorMessage", "Title must be at least 10 characters.");
                 request.setAttribute("oldTitle", title);
                 request.setAttribute("oldBody", body);
                 request.setAttribute("oldTags", tags);
@@ -65,8 +65,8 @@ public class CreateQuestionController extends HttpServlet {
                 return;
             }
 
-            if (body == null || body.trim().length() < 50) {
-                request.setAttribute("errorMessage", "Body must be at least 50 characters.");
+            if (body == null || body.trim().length() < 30) {
+                request.setAttribute("errorMessage", "Body must be at least 30 characters.");
                 request.setAttribute("oldTitle", title);
                 request.setAttribute("oldBody", body);
                 request.setAttribute("oldTags", tags);

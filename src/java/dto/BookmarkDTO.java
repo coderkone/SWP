@@ -14,11 +14,21 @@ public class BookmarkDTO {
     private Timestamp createdAt;
     private Integer collectionId;
 
-    public BookmarkDTO(long questionId, String questionTitle, Timestamp createdAt, Integer collectionId) {
+    public BookmarkDTO() {
+    }
+    
+    public BookmarkDTO(long questionId, String questionTitle, Timestamp createdAt, Integer collectionId, String title) {
         this.questionId = questionId;
         this.questionTitle = questionTitle;
         this.createdAt = createdAt;
         this.collectionId = collectionId;
+        this.title=title;
+    }
+
+    public BookmarkDTO(long aLong, String string, Timestamp timestamp) {
+        this.questionId = aLong;
+        this.questionTitle=string;
+        this.createdAt=timestamp;
     }
 
     // Getters and Setters
@@ -33,4 +43,7 @@ public class BookmarkDTO {
 
     public Integer getCollectionId() { return collectionId; }
     public void setCollectionId(Integer collectionId) { this.collectionId = collectionId; }
+    private String title;
+    public String getTitle() { return title; }
+    public void setTitle(String title) { this.title = title; }
 }

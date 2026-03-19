@@ -4,8 +4,9 @@
  */
 package control;
 
-import model.User;
+import dal.ProfileDAO;
 import dal.UserDAO;
+import model.User;
 import dto.UserDTO;
 import java.io.IOException;
 import jakarta.servlet.ServletException;
@@ -14,6 +15,12 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import java.util.List;
+import model.Badge;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+import java.lang.reflect.Type;
+import java.util.Map;
 
 /**
  *
@@ -33,30 +40,52 @@ public class ProfileController extends HttpServlet {
      */
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        
+
         String idParam = request.getParameter("id");
-    
+
         // Lấy ID từ session
         if (idParam == null || idParam.trim().isEmpty()) {
             HttpSession session = request.getSession();
-            
+
             // ép kiểu về model.User
-            User currentUser = (User) session.getAttribute("user"); 
-            
+            User currentUser = (User) session.getAttribute("user");
+
             if (currentUser != null) {
                 idParam = String.valueOf(currentUser.getUserId());
             }
         }
-        
+
         if (idParam != null && !idParam.isEmpty()) {
             try {
                 long userId = Long.parseLong(idParam);
                 UserDAO userDAO = new UserDAO();
 
                 // Gọi hàm lấy thông tin User                
-                UserDTO userProfile = userDAO.getUserProfileById(userId);
+                ProfileDAO profileDAO = new ProfileDAO();
+                UserDTO userProfile = profileDAO.getUserFullProfile(userId);
                 if (userProfile != null) {
                     request.setAttribute("uPro", userProfile);
+
+                    // Sử dụng Gson để parse chuỗi JSON website
+                    String jsonLinks = userProfile.getWebsite();
+                    if (jsonLinks != null && !jsonLinks.isEmpty()) {
+                        Gson gson = new Gson();
+                        Type type = new TypeToken<Map<String, String>>() {
+                        }.getType();
+                        Map<String, String> linksMap = gson.fromJson(jsonLinks, type);
+                        request.setAttribute("userLinks", linksMap);
+                    }
+
+                    // Lấy số liệu thống kê
+                    request.setAttribute("questionsCount", profileDAO.countQuestionsByUser(userId));
+                    request.setAttribute("answersCount", profileDAO.countAnswersByUser(userId));
+                    request.setAttribute("viewCount", profileDAO.countTotalViewByUser(userId));
+
+                    // Lấy danh sách huy hiệu
+                    request.setAttribute("goldBadges", profileDAO.getBadgesByUserAndType(userId, "gold"));
+                    request.setAttribute("silverBadges", profileDAO.getBadgesByUserAndType(userId, "silver"));
+                    request.setAttribute("bronzeBadges", profileDAO.getBadgesByUserAndType(userId, "bronze"));
+
                     request.getRequestDispatcher("View/User/profile.jsp").forward(request, response);
                 } else {
                     response.sendRedirect("home");
@@ -65,7 +94,7 @@ public class ProfileController extends HttpServlet {
                 response.sendRedirect("home");
             }
         } else {
-            response.sendRedirect("View/User/login.jsp");  
+            response.sendRedirect("View/User/login.jsp");
         }
     }
 
