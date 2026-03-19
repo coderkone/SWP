@@ -1,9 +1,12 @@
 <%
-    Object u = session.getAttribute("USER");
+<<<<<<< HEAD
+=======
+    Object u = session.getAttribute("user");
     if (u == null) {
         response.sendRedirect(request.getContextPath() + "/auth");
         return;
     }
-    // Có session thì ??a v? /home (controller s? x? lý ti?p)
+    // Cï¿½ session thï¿½ ??a v? /home (controller s? x? l? ti?p)
+>>>>>>> Mai
     response.sendRedirect(request.getContextPath() + "/home");
 %>

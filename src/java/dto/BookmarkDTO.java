@@ -1,8 +1,9 @@
+package dto;
 /*
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package dto;
+
 import java.sql.Timestamp;
 /**
  *
@@ -23,6 +24,12 @@ public class BookmarkDTO {
         this.createdAt = createdAt;
         this.collectionId = collectionId;
         this.title=title;
+    }
+
+    public BookmarkDTO(long aLong, String string, Timestamp timestamp) {
+        this.questionId = aLong;
+        this.questionTitle=string;
+        this.createdAt=timestamp;
     }
 
     // Getters and Setters
