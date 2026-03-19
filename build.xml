@@ -10,6 +10,18 @@
 <project name="DevQuery" default="default" basedir=".">
     <description>Builds, tests, and runs the project DevQuery.</description>
     <import file="nbproject/build-impl.xml"/>
+
+    <target name="-pre-run-deploy">
+        <!-- Remove stale compiled classes that no longer exist in source. -->
+        <delete failonerror="false">
+            <fileset dir="${build.classes.dir}">
+                <include name="control/TagController.class"/>
+                <include name="control/TagController$*.class"/>
+                <include name="control/RootController.class"/>
+                <include name="control/RootController$*.class"/>
+            </fileset>
+        </delete>
+    </target>
     <!--
 
     There exist several targets which are by default empty and which can be 

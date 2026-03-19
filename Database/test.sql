@@ -35,6 +35,8 @@ VALUES
 (18, 1), -- Tặng 1 huy hiệu Đồng (First Question)
 (18, 5); -- Tặng 1 huy hiệu Đồng (Helper)
 
+<<<<<<< HEAD
+=======
 GO
 
 INSERT INTO [dbo].[Questions] ([user_id], [title], [body], [created_at], [Score]) 
@@ -65,4 +67,5 @@ SELECT question_id, 1 FROM [dbo].[Questions] WHERE user_id = 18 AND title LIKE N
 
 INSERT INTO [dbo].[Question_Tags] ([question_id], [tag_id])
 SELECT question_id, 2 FROM [dbo].[Questions] WHERE user_id = 18 AND title LIKE N'%MVC%'; -- tag 2 là spring-boot
+>>>>>>> sub
 GO

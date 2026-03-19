@@ -43,6 +43,23 @@ public class ProfileController extends HttpServlet {
 
         String idParam = request.getParameter("id");
 
+<<<<<<< HEAD
+        // Lấy ID từ session nếu chưa truyền query param
+        if (idParam == null || idParam.trim().isEmpty()) {
+            HttpSession session = request.getSession(false);
+            if (session != null) {
+                Object userObj = session.getAttribute("USER");
+                if (userObj instanceof UserDTO) {
+                    UserDTO currentUserDto = (UserDTO) userObj;
+                    idParam = String.valueOf(currentUserDto.getUserId());
+                } else {
+                    Object legacyUserObj = session.getAttribute("user");
+                    if (legacyUserObj instanceof User) {
+                        User currentUser = (User) legacyUserObj;
+                        idParam = String.valueOf(currentUser.getUserId());
+                    }
+                }
+=======
         // Lấy ID từ session
         if (idParam == null || idParam.trim().isEmpty()) {
             HttpSession session = request.getSession();
@@ -52,6 +69,7 @@ public class ProfileController extends HttpServlet {
 
             if (currentUser != null) {
                 idParam = String.valueOf(currentUser.getUserId());
+>>>>>>> Mai
             }
         }
 

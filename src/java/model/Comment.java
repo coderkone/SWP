@@ -13,17 +13,19 @@ public class Comment {
     private long userId;
     private Long questionId;
     private Long answerId;   
+    private Long parentCommentId;
     private String body;
     private Timestamp createdAt;
 
     public Comment() {
     }
 
-    public Comment(long commentId, long userId, Long questionId, Long answerId, String body, Timestamp createdAt) {
+    public Comment(long commentId, long userId, Long questionId, Long answerId, Long parentCommentId, String body, Timestamp createdAt) {
         this.commentId = commentId;
         this.userId = userId;
         this.questionId = questionId;
         this.answerId = answerId;
+        this.parentCommentId = parentCommentId;
         this.body = body;
         this.createdAt = createdAt;
     }
@@ -58,6 +60,14 @@ public class Comment {
 
     public void setAnswerId(Long answerId) {
         this.answerId = answerId;
+    }
+
+    public Long getParentCommentId() {
+        return parentCommentId;
+    }
+
+    public void setParentCommentId(Long parentCommentId) {
+        this.parentCommentId = parentCommentId;
     }
 
     public String getBody() {
