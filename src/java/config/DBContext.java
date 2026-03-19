@@ -3,6 +3,7 @@ package config;
 import java.sql.Connection;
 import java.sql.DriverManager;
 
+//test thui
 public class DBContext {
     private static final String USER = "sa";
     private static final String PASS = "123";
