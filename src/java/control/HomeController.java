@@ -1,16 +1,15 @@
 package control;
 
-import dal.QuestionDAO;
-import dto.QuestionDTO;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
 import java.io.IOException;
-import java.util.*;
+import java.util.List;
+import dal.QuestionDAO;
+import dto.QuestionDTO;
 
 @WebServlet(name="HomeController", urlPatterns={"/home"})
 public class HomeController extends HttpServlet {
-    
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {

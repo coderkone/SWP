@@ -1,4 +1,4 @@
-package dto;
+ package dto;
 
 import java.sql.Timestamp;
 
@@ -35,6 +35,7 @@ public class UserDTO {
 
     public String getRole() { return role; }
     public void setRole(String role) { this.role = role; }
+
 
     public int getReputation() { return reputation; }
     public void setReputation(int reputation) { this.reputation = reputation; }

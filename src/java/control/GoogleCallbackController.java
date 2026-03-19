@@ -3,7 +3,7 @@ package control;
 import util.GoogleUtils;
 import model.GoogleUser;
 import dal.UserDAO;
-import model.User; // Đảm bảo bạn import đúng model User của bạn
+import model.User;
 import java.io.IOException;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;

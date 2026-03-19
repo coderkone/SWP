@@ -49,7 +49,7 @@ public class UserDAO {
     }
 
     public UserDTO login(String email, String rawPassword) throws Exception {
-        String sql = "SELECT user_id, username, email, role FROM Users WHERE email = ? AND password_hash = ?";
+        String sql = "SELECT user_id, username, email, role, Reputation FROM Users WHERE email = ? AND password_hash = ?";
         String hash = PasswordUtil.sha256(rawPassword);
 
         try (Connection con = db.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
@@ -58,12 +58,14 @@ public class UserDAO {
 
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    return new UserDTO(
+                        UserDTO user = new UserDTO(
                             rs.getLong("user_id"),
                             rs.getString("username"),
                             rs.getString("email"),
                             rs.getString("role")
                     );
+                        user.setReputation(rs.getInt("Reputation"));
+                        return user;
                 }
             }
         }
@@ -92,6 +94,7 @@ public class UserDAO {
                     u.setUsername(rs.getString("username"));
                     u.setEmail(rs.getString("email"));
                     u.setRole(rs.getString("role"));
+                    u.setReputation(rs.getInt("Reputation"));
                     return u;
                 } else {
                     return createNewUser(providerId, email, name, providerType);
@@ -128,6 +131,7 @@ public class UserDAO {
                     newUser.setUsername(safeName);
                     newUser.setEmail(email);
                     newUser.setRole("member");
+                    newUser.setReputation(0);
                     return newUser;
                 }
             }
@@ -172,5 +176,30 @@ public class UserDAO {
             e.printStackTrace();
         }
         return user;
+    }
+
+    public List<String> getReputationChanges(long userId, int limit) {
+        List<String> changes = new ArrayList<>();
+        String sql = "SELECT TOP (?) delta, reason FROM Reputation_History WHERE user_id = ? ORDER BY created_at DESC, history_id DESC";
+
+        try (Connection con = db.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, Math.max(1, limit));
+            ps.setLong(2, userId);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    int delta = rs.getInt("delta");
+                    String reason = rs.getString("reason");
+                    String formatted = (delta >= 0 ? "+" : "") + delta + " reputation"
+                            + (reason != null && !reason.trim().isEmpty() ? " (" + reason + ")" : "");
+                    changes.add(formatted);
+                }
+            }
+        } catch (Exception e) {
+            // If the history table is not deployed yet, return empty list to keep profile functional.
+        }
+
+        return changes;
     }
 }

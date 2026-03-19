@@ -1,12 +1,15 @@
 <%-- 
     Document   : sidebar.jsp
+    Created on : Jan 29, 2026, 10:56:23 PM
     Author     : ADMIN
 --%>
-<%@page contentType="text/html" pageEncoding="UTF-8"%>
+
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
 <style>
+    /* CSS SIDEBAR */
     .sidebar-sticky {
+        position: -webkit-sticky;
         position: sticky;
         top: 70px;
         height: calc(100vh - 70px);
@@ -15,22 +18,26 @@
         padding-top: 1rem;
         border-right: 1px solid #dee2e6;
     }
+
     .nav-link {
         color: #525960;
         font-size: 14px;
         padding: 8px 10px;
         margin-bottom: 4px;
     }
+
     .nav-link:hover {
         color: #0c0d0e;
         background-color: #f8f9fa;
     }
+
     .nav-link.active {
         font-weight: bold;
         color: #0c0d0e;
         background-color: #f1f2f3;
         border-right: 3px solid #f48024;
     }
+
     .sidebar-heading {
         font-size: 11px;
         font-weight: bold;

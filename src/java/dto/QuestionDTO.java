@@ -1,11 +1,12 @@
+package dto;
 /*
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package dto;
-import java.util.List;
-import java.util.ArrayList;
+
 import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
 import model.Question;
 
 /**
@@ -15,7 +16,9 @@ import model.Question;
 public class QuestionDTO extends Question {
     private String authorName;
     private String authorAvatar;
+    private int authorReputation;
     private int answerCount;
+    private boolean hasAcceptedAnswer;
 
     public QuestionDTO() {
     }
@@ -25,6 +28,7 @@ public class QuestionDTO extends Question {
         this.authorName = authorName;
         this.authorAvatar = authorAvatar;
         this.answerCount = answerCount;
+        this.hasAcceptedAnswer = false;
     }
     private List<String> tags = new ArrayList<>(); // Khởi tạo luôn để không bị Null
 
@@ -49,10 +53,26 @@ public class QuestionDTO extends Question {
         this.authorAvatar = authorAvatar; 
     }
 
+    public int getAuthorReputation() {
+        return authorReputation;
+    }
+
+    public void setAuthorReputation(int authorReputation) {
+        this.authorReputation = authorReputation;
+    }
+
     public int getAnswerCount() { 
         return answerCount; 
     }
     public void setAnswerCount(int answerCount) { 
         this.answerCount = answerCount; 
+    }
+
+    public boolean isHasAcceptedAnswer() {
+        return hasAcceptedAnswer;
+    }
+
+    public void setHasAcceptedAnswer(boolean hasAcceptedAnswer) {
+        this.hasAcceptedAnswer = hasAcceptedAnswer;
     }
 }

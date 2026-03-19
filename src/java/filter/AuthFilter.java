@@ -1,12 +1,12 @@
 package filter;
 
-import dto.UserDTO;
+import model.User;
 import jakarta.servlet.*;
 import jakarta.servlet.annotation.WebFilter;
 import jakarta.servlet.http.*;
 import java.io.IOException;
-import model.User;
-@WebFilter(filterName="Authfilter", urlPatterns={"/home", "/dashboard"})
+
+@WebFilter(filterName="Authfilter", urlPatterns={"/dashboard"})
 public class AuthFilter implements Filter {
 
     @Override
