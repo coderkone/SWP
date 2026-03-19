@@ -187,25 +187,50 @@ public class BlogCommentDAO extends DBContext {
 
     // XÓA BÌNH LUẬN (Bản An Toàn)
     public void deleteComment(int commentId, long userId) {
-        String sqlChild = "DELETE FROM BlogComments WHERE parent_id = ?";
-        String sqlParent = "DELETE FROM BlogComments WHERE comment_id = ? AND user_id = ?";
         try (Connection conn = getConnection()) {
-            // Xóa comment con
-            try (PreparedStatement psChild = conn.prepareStatement(sqlChild)) {
-                psChild.setInt(1, commentId);
-                psChild.executeUpdate();
-            }
-            // Xóa comment gốc
-            try (PreparedStatement psParent = conn.prepareStatement(sqlParent)) {
-                psParent.setInt(1, commentId);
-                psParent.setLong(2, userId);
-                psParent.executeUpdate();
+            // Gọi hàm đệ quy để xóa sạch con cháu trước
+            deleteRecursive(conn, commentId);
+
+            // Cuối cùng mới xóa chính nó (cha) kèm theo check userId
+            String sql = "DELETE FROM BlogComments WHERE comment_id = ? AND user_id = ?";
+            try (PreparedStatement ps = conn.prepareStatement(sql)) {
+                ps.setInt(1, commentId);
+                ps.setLong(2, userId);
+                ps.executeUpdate();
             }
         } catch (Exception e) {
-            System.out.println("LỖI DELETE COMMENT TRONG DAO: " + e.getMessage());
             e.printStackTrace();
         }
     }
+
+// Hàm phụ thực hiện đệ quy xóa tầng sâu
+    private void deleteRecursive(Connection conn, int parentId) throws Exception {
+        // 1. Tìm tất cả các con của parentId này
+        String findChildren = "SELECT comment_id FROM BlogComments WHERE parent_id = ?";
+        List<Integer> children = new ArrayList<>();
+
+        try (PreparedStatement ps = conn.prepareStatement(findChildren)) {
+            ps.setInt(1, parentId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    children.add(rs.getInt("comment_id"));
+                }
+            }
+        }
+
+        // 2. Với mỗi đứa con, gọi đệ quy để xóa con của nó (cháu) trước khi xóa nó
+        for (Integer childId : children) {
+            deleteRecursive(conn, childId); // Đệ quy xuống sâu hơn
+
+            // Sau khi các tầng sâu hơn đã sạch, xóa đứa con này
+            String deleteSql = "DELETE FROM BlogComments WHERE comment_id = ?";
+            try (PreparedStatement ps = conn.prepareStatement(deleteSql)) {
+                ps.setInt(1, childId);
+                ps.executeUpdate();
+            }
+        }
+    }
+
     // ĐỒNG BỘ LẠI SỐ LƯỢNG BÌNH LUẬN (Dùng sau khi Xóa)
     public void syncCommentCount(int blogId) {
         // Đếm số lượng thực tế trong bảng BlogComments và đè vào bảng Blogs

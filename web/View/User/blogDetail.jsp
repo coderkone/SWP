@@ -57,7 +57,7 @@
     </head>
     <body>
 
-        <jsp:include page="../Common/header.jsp" />
+        <jsp:include page="../Common/blogHeader.jsp" />
 
         <div class="container mt-4 mb-5">
             <div class="blog-container">
@@ -112,111 +112,9 @@
                         </c:when>
                         <c:otherwise>
                             <c:forEach items="${rootComments}" var="cmt">
-                                <div class="comment-item mb-4">
-                                    <div class="d-flex">
-                                        <img src="${not empty cmt.userAvatar ? cmt.userAvatar : 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}" 
-                                             onerror="this.onerror=null; this.src='https://cdn-icons-png.flaticon.com/512/149/149071.png';" 
-                                             class="comment-avatar me-3" alt="Avatar">
-                                        <div class="flex-grow-1">
-                                            <div class="bg-light p-3 rounded">
-                                                <h6 class="fw-bold mb-1">${cmt.username != null ? cmt.username : 'Unknown User'} 
-                                                    <span class="text-muted fw-normal small ms-2"><fmt:formatDate value="${cmt.createdAt}" pattern="dd/MM/yyyy HH:mm" /></span>
-                                                </h6>
-
-                                                <div id="commentText${cmt.commentId}" class="mb-0 text-dark">
-                                                    ${cmt.content.replaceAll("(@\\w+)", "<span class='text-primary fw-bold'>$1</span>")}
-                                                </div>
-
-                                                <form id="editForm${cmt.commentId}" action="${pageContext.request.contextPath}/blog/comment" method="post" class="d-none mt-2">
-                                                    <input type="hidden" name="action" value="edit">
-                                                    <input type="hidden" name="commentId" value="${cmt.commentId}">
-                                                    <input type="hidden" name="blogId" value="${blog.blogId}">
-                                                    <textarea name="content" class="form-control mb-2" rows="2" required>${cmt.content}</textarea>
-                                                    <div class="text-end">
-                                                        <button type="button" class="btn btn-link btn-sm text-muted" onclick="toggleEditForm('${cmt.commentId}')">Cancel</button>
-                                                        <button type="submit" class="btn btn-primary btn-sm">Save Changes</button>
-                                                    </div>
-                                                </form>
-                                            </div>
-
-                                            <div class="mt-1 ms-2">
-                                                <a href="javascript:void(0)" class="text-muted small fw-bold text-decoration-none" onclick="toggleReplyForm('replyForm${cmt.commentId}')">
-                                                    <i class="fa-solid fa-reply"></i> Reply
-                                                </a>
-
-                                                <c:if test="${sessionScope.user.userId == cmt.userId}">
-                                                    <a href="javascript:void(0)" class="text-primary small fw-bold text-decoration-none ms-3" onclick="toggleEditForm('${cmt.commentId}')">
-                                                        <i class="fa-solid fa-pen"></i> Edit
-                                                    </a>
-                                                    <a href="${pageContext.request.contextPath}/blog/comment?action=delete&commentId=${cmt.commentId}&blogId=${blog.blogId}" 
-                                                       class="text-danger small fw-bold text-decoration-none ms-3" 
-                                                       onclick="return confirm('Delete this comment and all its replies?');">
-                                                        <i class="fa-solid fa-trash"></i> Delete
-                                                    </a>
-                                                </c:if>
-                                            </div>
-
-                                            <form id="replyForm${cmt.commentId}" action="${pageContext.request.contextPath}/blog/comment" method="post" class="d-none mt-2">
-                                                <input type="hidden" name="action" value="add">
-                                                <input type="hidden" name="blogId" value="${blog.blogId}">
-                                                <input type="hidden" name="parentId" value="${cmt.commentId}"> 
-                                                <div class="d-flex">
-                                                    <textarea name="content" class="form-control form-control-sm me-2" rows="1" placeholder="Write a reply..." required></textarea>
-                                                    <button type="submit" class="btn btn-secondary btn-sm text-nowrap">Reply</button>
-                                                </div>
-                                            </form>
-
-                                            <c:if test="${not empty cmt.replies}">
-                                                <div class="reply-box">
-                                                    <c:forEach items="${cmt.replies}" var="reply">
-                                                        <div class="d-flex mb-3">
-                                                            <img src="${not empty reply.userAvatar ? reply.userAvatar : 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}" 
-                                                                 onerror="this.onerror=null; this.src='https://cdn-icons-png.flaticon.com/512/149/149071.png';" 
-                                                                 class="reply-avatar me-2" alt="Avatar">
-                                                            <div class="flex-grow-1">
-                                                                <div class="bg-light p-2 rounded w-100">
-                                                                    <div class="d-flex justify-content-between align-items-center">
-                                                                        <span class="fw-bold" style="font-size: 14px;">${reply.username != null ? reply.username : 'Unknown User'}</span>
-                                                                        <div class="text-muted small"><fmt:formatDate value="${reply.createdAt}" pattern="dd/MM/yyyy HH:mm" /></div>
-                                                                    </div>
-
-                                                                    <div id="commentText${reply.commentId}" class="text-dark mt-1" style="font-size: 14px;">
-                                                                        ${reply.content.replaceAll("(@\\w+)", "<span class='text-primary fw-bold'>$1</span>")}
-                                                                    </div>
-
-                                                                    <form id="editForm${reply.commentId}" action="${pageContext.request.contextPath}/blog/comment" method="post" class="d-none mt-2">
-                                                                        <input type="hidden" name="action" value="edit">
-                                                                        <input type="hidden" name="commentId" value="${reply.commentId}">
-                                                                        <input type="hidden" name="blogId" value="${blog.blogId}">
-                                                                        <textarea name="content" class="form-control form-control-sm mb-2" rows="2" required>${reply.content}</textarea>
-                                                                        <div class="text-end">
-                                                                            <button type="button" class="btn btn-link btn-sm text-muted py-0" onclick="toggleEditForm('${reply.commentId}')">Cancel</button>
-                                                                            <button type="submit" class="btn btn-primary btn-sm py-0">Save</button>
-                                                                        </div>
-                                                                    </form>
-                                                                </div>
-
-                                                                <c:if test="${sessionScope.user.userId == reply.userId}">
-                                                                    <div class="mt-1 ms-1">
-                                                                        <a href="javascript:void(0)" class="text-primary small fw-bold text-decoration-none" onclick="toggleEditForm('${reply.commentId}')">
-                                                                            <i class="fa-solid fa-pen"></i> Edit
-                                                                        </a>
-                                                                        <a href="${pageContext.request.contextPath}/blog/comment?action=delete&commentId=${reply.commentId}&blogId=${blog.blogId}" 
-                                                                           class="text-danger small fw-bold text-decoration-none ms-3" 
-                                                                           onclick="return confirm('Delete this reply?');">
-                                                                            <i class="fa-solid fa-trash"></i> Delete
-                                                                        </a>
-                                                                    </div>
-                                                                </c:if>
-                                                            </div>
-                                                        </div>
-                                                    </c:forEach>
-                                                </div>
-                                            </c:if>
-
-                                        </div>
-                                    </div>
-                                </div>
+                                <c:set var="depthLevel" value="0" scope="request" />
+                                <c:set var="node" value="${cmt}" scope="request" />
+                                <jsp:include page="commentItem.jsp" />
                             </c:forEach>
                         </c:otherwise>
                     </c:choose>
@@ -269,6 +167,23 @@
                             var textareas = document.querySelectorAll('textarea[name="content"]');
                             tribute.attach(textareas);
                         });
+        </script>
+        <script>
+            function toggleReplies(cmtId) {
+                const box = document.getElementById('repliesBox' + cmtId);
+                const btn = document.getElementById('toggleBtn' + cmtId);
+
+                // Nếu đang bị ẩn thì mở ra, đổi icon thành mũi tên lên
+                if (box.classList.contains('d-none')) {
+                    box.classList.remove('d-none');
+                    btn.innerHTML = '<i class="fa-solid fa-chevron-up"></i> Hide Replies';
+                }
+                // Nếu đang hiện thì ẩn đi, đổi icon thành mũi tên xuống
+                else {
+                    box.classList.add('d-none');
+                    btn.innerHTML = '<i class="fa-solid fa-chevron-down"></i> Show Replies';
+                }
+            }
         </script>
     </body>
 </html>
