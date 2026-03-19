@@ -102,6 +102,9 @@ public class QuestionDAO extends DBContext {
         
         return q;
     }
+<<<<<<< HEAD
+}
+=======
 
     // 3. Hàm đếm tổng số câu hỏi (Dùng cho phân trang)
     public int getTotalQuestions(String keyword, String filterType, String tag) {
@@ -329,3 +332,4 @@ public class QuestionDAO extends DBContext {
         return tags;
     }
 }
+>>>>>>> Mai

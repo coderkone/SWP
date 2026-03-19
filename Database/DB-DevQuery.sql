@@ -14,6 +14,7 @@ CREATE TABLE [dbo].[Users](
 	[email] [varchar](120) NOT NULL UNIQUE,
 	[password_hash] [varchar](255) NOT NULL,
 	[role] [varchar](20) DEFAULT 'member', -- Xử lý validate trong Java
+	[status] [varchar](20) DEFAULT 'active', -- active/inactive
 	[created_at] [datetime] DEFAULT GETDATE(),
 	[updated_at] [datetime] DEFAULT GETDATE(),
 	[Reputation] [int] DEFAULT 0,

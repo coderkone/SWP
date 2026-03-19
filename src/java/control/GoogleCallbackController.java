@@ -3,7 +3,8 @@ package control;
 import util.GoogleUtils;
 import model.GoogleUser;
 import dal.UserDAO;
-import model.User;
+import dto.UserDTO;
+import model.User; // Đảm bảo bạn import đúng model User của bạn
 import java.io.IOException;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -21,26 +22,28 @@ public class GoogleCallbackController extends HttpServlet {
         try {
             String code = request.getParameter("code");
             if (code == null || code.isEmpty()) {
-                response.sendRedirect("login.jsp");
+                response.sendRedirect(request.getContextPath() + "/auth/login");
                 return;
             }
 
             String accessToken = GoogleUtils.getToken(code);
             GoogleUser gUser = GoogleUtils.getUserInfo(accessToken);
-            
+
             UserDAO dao = new UserDAO();
             User user = dao.loginWithGoogle(gUser);
 
             if (user != null) {
+                UserDTO userDTO = new UserDTO(user.getUserId(), user.getUsername(), user.getEmail(), user.getRole());
+                request.getSession().setAttribute("USER", userDTO);
                 request.getSession().setAttribute("user", user);
                 response.sendRedirect(request.getContextPath() + "/home");
             } else {
-                response.sendRedirect(request.getContextPath() + "/View/User/login.jsp?error=GoogleLoginFailed");
+                response.sendRedirect(request.getContextPath() + "/auth/login?error=GoogleLoginFailed");
             }
 
         } catch (Exception e) {
             e.printStackTrace();
-            response.sendRedirect(request.getContextPath() + "/View/User/login.jsp");
+            response.sendRedirect(request.getContextPath() + "/auth/login");
         }
     }
 }
