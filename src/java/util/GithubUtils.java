@@ -20,7 +20,7 @@ public class GithubUtils {
     // 1. Lấy Access Token
     public static String getToken(String code) throws IOException {
         String response = Request.Post(Constants.GITHUB_LINK_GET_TOKEN)
-                .addHeader("Accept", "application/json") // Bắt buộc để nhận JSON
+                .addHeader("Accept", "application/json")
                 .bodyForm(Form.form()
                         .add("client_id", Constants.GITHUB_CLIENT_ID)
                         .add("client_secret", Constants.GITHUB_CLIENT_SECRET)

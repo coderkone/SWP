@@ -1,0 +1,516 @@
+<%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
+
+<script>
+    function confirmDeleteQuestion() {
+        return window.confirm('Are you sure you want to delete this question?');
+    }
+
+    function openFlagModal(postType, postId, questionId, answerId) {
+        const params = new URLSearchParams();
+        if (postType) params.append('postType', postType);
+        if (postId) params.append('postId', postId);
+        if (questionId) params.append('questionId', questionId);
+        if (answerId) params.append('answerId', answerId);
+        window.location.href = '${pageContext.request.contextPath}/flag/report?' + params.toString();
+    }
+
+    function closeFlagModal() {
+        const modal = document.getElementById('flag-modal');
+        if (!modal) return;
+
+        modal.classList.remove('active');
+        modal.setAttribute('aria-hidden', 'true');
+        document.body.style.overflow = '';
+    }
+
+    function openCloseModal(questionId) {
+        const modal = document.getElementById('close-modal');
+        if (!modal) return;
+
+        const questionIdInput = document.getElementById('close-question-id');
+        const reasonInput = document.getElementById('close-reason');
+
+        if (questionIdInput) questionIdInput.value = questionId || '';
+        if (reasonInput) reasonInput.value = '';
+
+        modal.classList.add('active');
+        modal.setAttribute('aria-hidden', 'false');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeCloseModal() {
+        const modal = document.getElementById('close-modal');
+        if (!modal) return;
+
+        modal.classList.remove('active');
+        modal.setAttribute('aria-hidden', 'true');
+        document.body.style.overflow = '';
+    }
+
+    function toggleMenu() {
+        var sidebar = document.getElementById('sidebar');
+        sidebar.classList.toggle('active');
+        document.body.classList.toggle('sidebar-open');
+    }
+
+    function toggleSharePopup(event) {
+        if (event) event.stopPropagation();
+        const popup = document.getElementById('share-popup');
+        const linkInput = document.getElementById('share-link-input');
+        const status = document.getElementById('copy-link-status');
+        if (!popup || !linkInput) return;
+
+        linkInput.value = window.location.href;
+        status.textContent = '';
+        popup.classList.toggle('active');
+    }
+
+    function closeSharePopup() {
+        const popup = document.getElementById('share-popup');
+        if (popup) popup.classList.remove('active');
+    }
+
+    function showCopyLinkStatus(message, isError) {
+        const status = document.getElementById('copy-link-status');
+        if (!status) return;
+        status.textContent = message;
+        status.style.color = isError ? '#d93025' : '#2e7d32';
+    }
+
+    function copyQuestionLink() {
+        const linkInput = document.getElementById('share-link-input');
+        if (!linkInput) return;
+
+        linkInput.value = window.location.href;
+
+        if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(linkInput.value)
+                .then(function() {
+                    showCopyLinkStatus('Link copied!', false);
+                })
+                .catch(function() {
+                    fallbackCopyLink(linkInput);
+                });
+            return;
+        }
+
+        fallbackCopyLink(linkInput);
+    }
+
+    function fallbackCopyLink(linkInput) {
+        linkInput.focus();
+        linkInput.select();
+        try {
+            const copied = document.execCommand('copy');
+            showCopyLinkStatus(copied ? 'Link copied!' : 'Cannot copy link', !copied);
+        } catch (error) {
+            showCopyLinkStatus('Cannot copy link', true);
+        }
+    }
+
+    document.addEventListener('click', function(event) {
+        const popup = document.getElementById('share-popup');
+        const wrapper = document.querySelector('.share-wrapper');
+        if (!popup || !wrapper) return;
+        if (!wrapper.contains(event.target)) {
+            popup.classList.remove('active');
+        }
+
+        const flagModal = document.getElementById('flag-modal');
+        if (flagModal && event.target === flagModal) {
+            closeFlagModal();
+        }
+
+        const closeModal = document.getElementById('close-modal');
+        if (closeModal && event.target === closeModal) {
+            closeCloseModal();
+        }
+    });
+
+    document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape') {
+            closeFlagModal();
+            closeCloseModal();
+        }
+    });
+
+    function handleAcceptClick(ev, button) {
+        if (ev) ev.preventDefault();
+        const questionId = button.getAttribute('data-question-id');
+        const answerId = button.getAttribute('data-answer-id');
+        if (!questionId || !answerId) return;
+        const params = new URLSearchParams();
+        params.append('questionId', questionId);
+        params.append('answerId', answerId);
+        fetch('${pageContext.request.contextPath}/answer/accept', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: params
+        })
+        .then(r => r.text()).then(text => {
+            let data;
+            try { data = JSON.parse(text); } catch (e) { return; }
+            if (data && data.success) {
+                if (typeof data.questionOwnerReputation === 'number') {
+                    updateHeaderReputation(data.questionOwnerReputation);
+                }
+                const box = document.getElementById('answer-' + answerId);
+                const btn = button;
+                const allBoxes = document.querySelectorAll('.answer-box.accepted');
+                const allBtns = document.querySelectorAll('.accept-btn.accepted');
+                allBoxes.forEach(b => b.classList.remove('accepted'));
+                allBtns.forEach(b => { b.classList.remove('accepted'); b.innerHTML = '<i class="fa-solid fa-check"></i> Accept'; });
+                if (data.accepted) {
+                    if (box) box.classList.add('accepted');
+                    btn.classList.add('accepted');
+                    btn.innerHTML = '<i class="fa-solid fa-check"></i> Accepted';
+                } else {
+                    btn.innerHTML = '<i class="fa-solid fa-check"></i> Accept';
+                }
+            } else if (data && data.error) {
+                alert('Lỗi: ' + data.error);
+            }
+        }).catch(err => alert('Có lỗi xảy ra'));
+    }
+
+    function handleVoteClick(ev, button) {
+        if (ev) ev.preventDefault();
+        // Extract data from button attributes
+        const questionId = button.getAttribute('data-question-id') || null;
+        const answerId = button.getAttribute('data-answer-id') || null;
+        const voteType = button.getAttribute('data-vote-type');
+        
+        if (!voteType) {
+            alert('Invalid vote type');
+            return;
+        }
+        
+        submitVote(questionId, answerId, voteType);
+    }
+
+    function submitVote(questionId, answerId, voteType) {
+        // Use URLSearchParams (application/x-www-form-urlencoded) so servlet getParameter() works.
+        // FormData sends multipart/form-data which requires @MultipartConfig to parse.
+        const params = new URLSearchParams();
+        if (questionId !== null && questionId !== undefined && questionId !== '' && !isNaN(questionId)) {
+            params.append('questionId', questionId);
+        }
+        if (answerId !== null && answerId !== undefined && answerId !== '' && !isNaN(answerId)) {
+            params.append('answerId', answerId);
+        }
+        if (voteType) {
+            params.append('voteType', voteType);
+        }
+
+        fetch('${pageContext.request.contextPath}/vote/submit', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: params
+        })
+        .then(response => response.text().then(text => ({ ok: response.ok, status: response.status, text: text })))
+        .then(({ ok, status, text }) => {
+            if (status === 401) {
+                alert('Vui long dang nhap de vote');
+                window.location.href = '${pageContext.request.contextPath}/auth/login';
+                return;
+            }
+            let data;
+            try { data = JSON.parse(text); } catch (e) { alert('Lỗi phản hồi từ server'); return; }
+            if (data && data.success) {
+                if (typeof data.voterReputation === 'number') {
+                    updateHeaderReputation(data.voterReputation);
+                }
+                const isQuestion = questionId != null && questionId !== '' && !isNaN(questionId);
+                const currentVote = Object.prototype.hasOwnProperty.call(data, 'currentVote') ? data.currentVote : voteType;
+                let upvoteBtn, downvoteBtn, voteCountEl;
+                if (isQuestion) {
+                    upvoteBtn = document.getElementById('question-upvote');
+                    downvoteBtn = document.getElementById('question-downvote');
+                    voteCountEl = upvoteBtn && upvoteBtn.parentElement ? upvoteBtn.parentElement.querySelector('.vote-count') : null;
+                } else {
+                    const btn = document.querySelector('.upvote-btn[data-answer-id="' + answerId + '"]');
+                    if (btn) {
+                        const box = btn.closest('.vote-box');
+                        upvoteBtn = box ? box.querySelector('.upvote-btn') : null;
+                        downvoteBtn = box ? box.querySelector('.downvote-btn') : null;
+                        voteCountEl = box ? box.querySelector('.vote-count') : null;
+                    }
+                }
+                if (upvoteBtn && downvoteBtn) {
+                    if (currentVote === 'upvote') {
+                        upvoteBtn.classList.add('voted-up');
+                        downvoteBtn.classList.remove('voted-down');
+                    } else if (currentVote === 'downvote') {
+                        downvoteBtn.classList.add('voted-down');
+                        upvoteBtn.classList.remove('voted-up');
+                    } else {
+                        upvoteBtn.classList.remove('voted-up');
+                        downvoteBtn.classList.remove('voted-down');
+                    }
+                }
+                if (voteCountEl) voteCountEl.textContent = data.score;
+            } else if (data && data.error) {
+                alert('Lá»i: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Có lỗi xảy ra khi vote');
+        });
+    }
+
+    function updateHeaderReputation(newReputation) {
+        const repEl = document.getElementById('user-reputation-display');
+        if (repEl) {
+            repEl.textContent = newReputation;
+        }
+    }
+
+    function handleBookmarkClick(ev, button) {
+        if (ev) ev.preventDefault();
+        const questionId = button.getAttribute('data-question-id');
+        
+        if (!questionId) {
+            alert('Invalid question ID');
+            return;
+        }
+
+        toggleBookmark(questionId, button);
+    }
+
+    function toggleBookmark(questionId, button) {
+        const params = new URLSearchParams();
+        params.append('questionId', questionId);
+
+        fetch('${pageContext.request.contextPath}/bookmark/toggle', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: params
+        })
+        .then(response => response.text().then(text => ({ ok: response.ok, status: response.status, text: text })))
+        .then(({ ok, status, text }) => {
+            if (status === 401) {
+                window.location.href = '${pageContext.request.contextPath}/auth/login';
+                return;
+            }
+            let data;
+            try { data = JSON.parse(text); } catch (e) { alert('Lỗi phản hồi từ server'); return; }
+            if (data && data.success) {
+                const isBookmarked = data.isBookmarked;
+                if (isBookmarked) {
+                    button.classList.add('bookmarked');
+                    button.setAttribute('title', 'Remove bookmark');
+                } else {
+                    button.classList.remove('bookmarked');
+                    button.setAttribute('title', 'Bookmark');
+                }
+            } else if (data && data.message) {
+                alert('Lá»i: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('CÃ³ lá»i xáº£y ra khi bookmark');
+        });
+    }
+
+    function handleAnswerBookmarkClick(ev, button) {
+        if (ev) ev.preventDefault();
+        const answerId = button.getAttribute('data-answer-id');
+        
+        if (!answerId) {
+            alert('Invalid answer ID');
+            return;
+        }
+
+        toggleAnswerBookmark(answerId, button);
+    }
+
+    function toggleAnswerBookmark(answerId, button) {
+        const params = new URLSearchParams();
+        params.append('answerId', answerId);
+
+        fetch('${pageContext.request.contextPath}/bookmark/toggle', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: params
+        })
+        .then(response => response.text().then(text => ({ ok: response.ok, status: response.status, text: text })))
+        .then(({ ok, status, text }) => {
+            if (status === 401) {
+                window.location.href = '${pageContext.request.contextPath}/auth/login';
+                return;
+            }
+            let data;
+            try { data = JSON.parse(text); } catch (e) { alert('Lỗi phản hồi từ server'); return; }
+            if (data && data.success) {
+                const isBookmarked = data.isBookmarked;
+                if (isBookmarked) {
+                    button.classList.add('bookmarked');
+                    button.setAttribute('title', 'Remove bookmark');
+                } else {
+                    button.classList.remove('bookmarked');
+                    button.setAttribute('title', 'Bookmark');
+                }
+            } else if (data && data.message) {
+                alert('Lá»i: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('CÃ³ lá»i xáº£y ra khi bookmark');
+        });
+    }
+
+    // Toggle Question Comments
+    function toggleQuestionComments() {
+        const container = document.getElementById('question-comments-container');
+        const btn = document.getElementById('question-comments-toggle-btn');
+        const textSpan = document.getElementById('question-comments-toggle-text');
+        const isHidden = container.style.display === 'none';
+        
+        if (isHidden) {
+            container.style.display = 'block';
+            const commentCount = container.querySelectorAll('.comment-item').length;
+            textSpan.textContent = 'Hide comments (' + commentCount + ')';
+        } else {
+            container.style.display = 'none';
+            const commentCount = container.querySelectorAll('.comment-item').length;
+            textSpan.textContent = 'Show comments (' + commentCount + ')';
+        }
+    }
+
+    // Toggle Answer Comments
+    function toggleAnswerComments(answerId) {
+        const container = document.getElementById('answer-comments-container-' + answerId);
+        const btn = document.getElementById('answer-comments-toggle-btn-' + answerId);
+        const textSpan = document.getElementById('answer-comments-toggle-text-' + answerId);
+        const isHidden = container.style.display === 'none';
+        
+        if (isHidden) {
+            container.style.display = 'block';
+            const commentCount = container.querySelectorAll('.comment-item').length;
+            textSpan.textContent = 'Hide comments (' + commentCount + ')';
+        } else {
+            container.style.display = 'none';
+            const commentCount = container.querySelectorAll('.comment-item').length;
+            textSpan.textContent = 'Show comments (' + commentCount + ')';
+        }
+    }
+
+    function showReplyForm(commentId) {
+        const form = document.getElementById('reply-form-comment-' + commentId);
+        const button = document.getElementById('reply-btn-comment-' + commentId);
+        if (form) {
+            form.style.display = 'block';
+        }
+        if (button) {
+            button.style.display = 'none';
+        }
+    }
+
+    function hideReplyForm(commentId) {
+        const form = document.getElementById('reply-form-comment-' + commentId);
+        const button = document.getElementById('reply-btn-comment-' + commentId);
+        if (form) {
+            form.style.display = 'none';
+        }
+        if (button) {
+            button.style.display = 'inline';
+        }
+    }
+
+    // ===== QUILL RICH TEXT EDITOR INITIALIZATION =====
+    let quillEditor;
+
+    // Define allowed HTML tags and attributes
+    const purifyConfig = {
+        ALLOWED_TAGS: ['p', 'br', 'strong', 'b', 'em', 'i', 'u', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 
+                      'ul', 'ol', 'li', 'code', 'pre', 'blockquote', 'hr', 'div', 'span'],
+        ALLOWED_ATTR: ['title'],
+        KEEP_CONTENT: true
+    };
+
+    // Initialize Quill editor when document is ready
+    document.addEventListener('DOMContentLoaded', function() {
+        quillEditor = new Quill('#answer-editor', {
+            theme: 'snow',
+            modules: {
+                toolbar: [
+                    ['bold', 'italic', 'underline', 'strike'],
+                    ['blockquote', 'code-block'],
+                    [{ 'header': 1 }, { 'header': 2 }],
+                    [{ 'list': 'ordered'}, { 'list': 'bullet' }]
+                ]
+            },
+            formats: ['bold', 'italic', 'underline', 'strike', 'blockquote', 'code-block', 'header', 'list']
+        });
+    });
+
+    // Handle answer form submission
+    function handleAnswerFormSubmit(event) {
+        // Get the HTML content from Quill
+        const html = quillEditor.root.innerHTML;
+        
+        // Check if content is empty or only contains empty tags
+        if (!html || html.trim() === '' || html.trim() === '<p><br></p>' || html.trim() === '<div><br></div>') {
+            alert('Vui lòng viết câu trả lời!');
+            event.preventDefault();
+            return false;
+        }
+        
+        // Sanitize the HTML to prevent XSS attacks
+        let sanitized;
+        if (typeof DOMPurify !== 'undefined') {
+            // Use DOMPurify if available
+            sanitized = DOMPurify.sanitize(html, purifyConfig);
+        } else {
+            // Fallback to basic sanitization
+            sanitized = sanitizeHTML(html);
+        }
+        
+        document.getElementById('answer-body-hidden').value = sanitized;
+        return true;
+    }
+
+    // Basic HTML sanitization function (fallback)
+    function sanitizeHTML(html) {
+        const allowedTags = ['p', 'br', 'strong', 'b', 'em', 'i', 'u', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+                           'ul', 'ol', 'li', 'code', 'pre', 'blockquote', 'hr', 'div', 'span'];
+        const allowedAttrs = ['title'];
+        
+        // Create a temporary div to parse the HTML
+        const temp = document.createElement('div');
+        temp.innerHTML = html;
+        
+        // Remove any script tags and dangerous elements
+        const dangerousElements = temp.querySelectorAll('script, iframe, object, embed, style');
+        dangerousElements.forEach(el => el.remove());
+        
+        // Clean up remaining elements
+        temp.querySelectorAll('*').forEach(el => {
+            if (!allowedTags.includes(el.tagName.toLowerCase())) {
+                // Replace with children or text content
+                while (el.firstChild) {
+                    el.parentNode.insertBefore(el.firstChild, el);
+                }
+                el.parentNode.removeChild(el);
+            } else {
+                // Remove disallowed attributes
+                Array.from(el.attributes).forEach(attr => {
+                    if (!allowedAttrs.includes(attr.name.toLowerCase())) {
+                        el.removeAttribute(attr.name);
+                    }
+                });
+            }
+        });
+        
+        return temp.innerHTML;
+    }
+</script>
+
+<!-- Quill Rich Text Editor Library -->
+<script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+
+<!-- DOMPurify Library for HTML Sanitization (Optional but Recommended) -->
+<script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.6/dist/purify.min.js"></script>

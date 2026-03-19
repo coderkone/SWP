@@ -1,738 +1,743 @@
-<%@ page contentType="text/html; charset=UTF-8" %>
 <%@ page import="dto.QuestionDTO" %>
 <%@ page import="dto.AnswerDTO" %>
+<%@ page import="dto.UserDTO" %>
+<%@ page import="model.User" %>
 <%@ page import="java.util.List" %>
+<%@ page import="java.util.Map" %>
+<%@ page import="java.util.ArrayList,java.util.HashMap" %>
+<%@ page import="java.text.SimpleDateFormat" %>
+<%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
+<%@ page import="util.CommentRenderUtil" %>
 <!DOCTYPE html>
 <html lang="vi">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Câu hỏi - DevQuery</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Liberation Sans", sans-serif;
-        }
-
-        body {
-            background-color: #f1f2f3;
-            color: #3b4045;
-        }
-
-        /* Header */
-        header {
-            background-color: white;
-            height: 53px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-            border-top: 3px solid #f48024;
-            position: fixed;
-            top: 0;
-            width: 100%;
-            z-index: 1000;
-            padding: 0 10px;
-        }
-
-        .header-left {
-            display: flex;
-            align-items: center;
-        }
-
-        .menu-btn {
-            background: none;
-            border: none;
-            cursor: pointer;
-            padding: 0 15px;
-            font-size: 18px;
-            color: #525960;
-            transition: color 0.2s;
-        }
-
-        .menu-btn:hover {
-            color: #232629;
-        }
-
-        .logo {
-            display: flex;
-            align-items: center;
-            margin-left: 5px;
-            text-decoration: none;
-            color: black;
-        }
-
-        .logo i {
-            color: #f48024;
-            font-size: 24px;
-            margin-right: 5px;
-        }
-
-        .logo span {
-            font-size: 18px;
-            font-weight: 400;
-        }
-
-        .logo span b {
-            font-weight: 700;
-        }
-
-        .search-box {
-            flex: 1;
-            max-width: 600px;
-            margin: 0 20px;
-        }
-
-        .search-input {
-            width: 100%;
-            padding: 8px 12px;
-            font-size: 13px;
-            border: 1px solid #c8ccd0;
-            border-radius: 4px;
-            background-color: #f8f9fa;
-        }
-
-        .search-input:focus {
-            background-color: white;
-            border-color: #0a95ff;
-            outline: none;
-        }
-
-        .header-right {
-            padding-right: 15px;
-        }
-
-        .header-right a {
-            text-decoration: none;
-            color: #525960;
-            padding: 8px 12px;
-            border-radius: 1000px;
-        }
-
-        .header-right a:hover {
-            background-color: #e3e6e8;
-        }
-
-        /* Sidebar */
-        .sidebar {
-            position: fixed;
-            top: 53px;
-            left: -240px;
-            width: 240px;
-            height: calc(100vh - 53px);
-            background-color: white;
-            box-shadow: 1px 0 3px rgba(0,0,0,0.05);
-            transition: left 0.3s ease;
-            padding-top: 20px;
-            overflow-y: auto;
-            border-right: 1px solid #e3e6e8;
-            z-index: 999;
-        }
-
-        .sidebar.active {
-            left: 0;
-        }
-
-        .nav-list {
-            list-style: none;
-            padding: 0;
-        }
-
-        .nav-link {
-            display: flex;
-            align-items: center;
-            padding: 10px 15px;
-            color: #525960;
-            text-decoration: none;
-            font-size: 14px;
-            transition: all 0.2s;
-        }
-
-        .nav-link:hover {
-            color: #232629;
-            background-color: #f1f2f3;
-            border-right: 3px solid #f48024;
-        }
-
-        .nav-link i {
-            width: 20px;
-            text-align: center;
-            margin-right: 10px;
-        }
-
-        /* Main Container */
-        .container {
-            max-width: 1264px;
-            margin: 53px auto 0;
-            padding: 24px 16px;
-            display: flex;
-            gap: 24px;
-            transition: margin-left 0.3s ease;
-        }
-
-        body.sidebar-open .container {
-            margin-left: 240px;
-        }
-
-        .main-content {
-            flex: 1;
-        }
-
-        .sidebar-right {
-            width: 300px;
-        }
-
-        /* Question Section */
-        .question-box {
-            background: white;
-            border: 1px solid #d6d9dc;
-            border-radius: 6px;
-            padding: 24px;
-            margin-bottom: 24px;
-            display: flex;
-            gap: 16px;
-        }
-
-        .vote-box {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 8px;
-            min-width: 60px;
-        }
-
-        .vote-btn {
-            width: 36px;
-            height: 36px;
-            border: 1px solid #c8ccd0;
-            background: white;
-            border-radius: 3px;
-            cursor: pointer;
-            font-size: 18px;
-            color: #525960;
-            transition: all 0.2s;
-        }
-
-        .vote-btn:hover {
-            background-color: #e3e6e8;
-        }
-
-        .vote-count {
-            font-size: 18px;
-            font-weight: bold;
-            color: #232629;
-        }
-
-        .question-content {
-            flex: 1;
-        }
-
-        .question-title {
-            font-size: 26px;
-            font-weight: bold;
-            color: #232629;
-            margin-bottom: 16px;
-            line-height: 1.3;
-        }
-
-        .question-body {
-            font-size: 14px;
-            line-height: 1.6;
-            color: #3b4045;
-            margin-bottom: 16px;
-        }
-
-        .code-block {
-            background: #f5f5f5;
-            border: 1px solid #d6d9dc;
-            border-radius: 4px;
-            padding: 12px;
-            overflow-x: auto;
-            margin: 10px 0;
-            font-family: Consolas, monospace;
-            font-size: 13px;
-        }
-
-        .tags-list {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            margin-bottom: 16px;
-        }
-
-        .tag-badge {
-            background: #e1ecf4;
-            border: 1px solid #bcd0e2;
-            color: #3b4045;
-            padding: 6px 8px;
-            border-radius: 3px;
-            font-size: 12px;
-            text-decoration: none;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .tag-badge:hover {
-            background-color: #d0e1f7;
-        }
-
-        .question-meta {
-            padding-top: 16px;
-            border-top: 1px solid #e2e3e4;
-            font-size: 12px;
-            color: #6a737c;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .user-card {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            background: #f8f9fa;
-            padding: 12px;
-            border-radius: 4px;
-            border-left: 3px solid #0a95ff;
-            margin-top: 16px;
-        }
-
-        .user-avatar {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 16px;
-        }
-
-        .user-info {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .user-name {
-            font-size: 12px;
-            color: #0a95ff;
-            font-weight: bold;
-            text-decoration: none;
-        }
-
-        .user-meta {
-            font-size: 11px;
-            color: #6a737c;
-        }
-
-        /* Answers Section */
-        .answers-section {
-            margin-top: 32px;
-        }
-
-        .section-header {
-            font-size: 20px;
-            font-weight: bold;
-            color: #232629;
-            margin-bottom: 16px;
-            padding-bottom: 12px;
-            border-bottom: 1px solid #d6d9dc;
-        }
-
-        .answer-box {
-            background: white;
-            border: 1px solid #d6d9dc;
-            border-radius: 6px;
-            padding: 24px;
-            margin-bottom: 24px;
-            display: flex;
-            gap: 16px;
-        }
-
-        .answer-content {
-            flex: 1;
-        }
-
-        .answer-body {
-            font-size: 14px;
-            line-height: 1.6;
-            color: #3b4045;
-            margin-bottom: 16px;
-        }
-
-        /* Add Answer Form */
-        .add-answer-section {
-            background: white;
-            border: 1px solid #d6d9dc;
-            border-radius: 6px;
-            padding: 24px;
-            margin-top: 32px;
-        }
-
-        .form-group {
-            margin-bottom: 16px;
-        }
-
-        .form-label {
-            font-size: 14px;
-            font-weight: bold;
-            margin-bottom: 8px;
-            display: block;
-        }
-
-        .form-input {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #c8ccd0;
-            border-radius: 4px;
-            font-size: 13px;
-            font-family: inherit;
-        }
-
-        .form-input:focus {
-            border-color: #0a95ff;
-            outline: none;
-            box-shadow: 0 0 0 3px rgba(10,149,255,0.15);
-        }
-
-        textarea.form-input {
-            resize: vertical;
-            min-height: 120px;
-            font-family: Consolas, monospace;
-        }
-
-        .btn {
-            padding: 10px 16px;
-            background: #0a95ff;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 500;
-            transition: all 0.2s;
-        }
-
-        .btn:hover {
-            background: #0074cc;
-        }
-
-        /* Sidebar Cards */
-        .card {
-            background: white;
-            border: 1px solid #d6d9dc;
-            border-radius: 6px;
-            padding: 16px;
-            margin-bottom: 16px;
-        }
-
-        .card-title {
-            font-size: 13px;
-            font-weight: bold;
-            color: #3b4045;
-            margin-bottom: 12px;
-        }
-
-        .linked-box {
-            border-left: 3px solid #0a95ff;
-            padding-left: 12px;
-        }
-
-        .linked-link {
-            display: block;
-            font-size: 13px;
-            color: #0a95ff;
-            text-decoration: none;
-            margin-bottom: 8px;
-            line-height: 1.4;
-        }
-
-        .linked-link:hover {
-            color: #0074cc;
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 40px 20px;
-            color: #6a737c;
-        }
-    </style>
-</head>
-<body>
-
-<header>
-    <div class="header-left">
-        <button class="menu-btn" onclick="toggleMenu()">
-            <i class="fa-solid fa-bars"></i>
-        </button>
-        <a href="${pageContext.request.contextPath}/home" class="logo">
-            <i class="fa-brands fa-stack-overflow"></i>
-            <span>Dev<b>Query</b></span>
-        </a>
-    </div>
-
-    <div class="search-box">
-        <form method="get" action="${pageContext.request.contextPath}/SearchController">
-            <input type="text" name="q" class="search-input" placeholder="Search...">
-        </form>
-    </div>
-
-    <div class="header-right">
-        <a href="<%=request.getContextPath()%>/logout">Log out</a>
-    </div>
-</header>
-
-<div class="sidebar" id="sidebar">
-    <ul class="nav-list">
-        <li><a href="${pageContext.request.contextPath}/home" class="nav-link"><i class="fa-solid fa-house"></i> Home</a></li>
-        <li><a href="${pageContext.request.contextPath}/home" class="nav-link"><i class="fa-solid fa-earth-americas"></i> Questions</a></li>
-        <li><a href="${pageContext.request.contextPath}/ask" class="nav-link"><i class="fa-solid fa-pen"></i> Ask</a></li>
-        <li><a href="${pageContext.request.contextPath}/View/User/tags-list.jsp" class="nav-link"><i class="fa-solid fa-tags"></i> Tags</a></li>
-        <li><a href="${pageContext.request.contextPath}/saves" class="nav-link"><i class="fa-solid fa-bookmark"></i> Saves</a></li>
-    </ul>
-</div>
-
-<div class="container">
-    <div class="main-content">
-        <% 
-            QuestionDTO question = (QuestionDTO) request.getAttribute("question");
-            if (question != null) {
-        %>
-
-        <!-- Question -->
-        <div class="question-box">
-            <div class="vote-box">
-                <button class="vote-btn upvote-btn" title="Upvote" onclick="submitVote(<%= question.getQuestionId() %>, null, 'upvote')">
-                    <i class="fa-solid fa-arrow-up"></i>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Câu hỏi - DevQuery</title>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+        <!-- Quill Rich Text Editor -->
+        <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+        <%@ include file="partials/question-detail-styles.jspf" %>
+    </head>
+    <body>
+
+        <header>
+            <div class="header-left">
+                <button class="menu-btn" onclick="toggleMenu()">
+                    <i class="fa-solid fa-bars"></i>
                 </button>
-                <div class="vote-count"><%= question.getScore() %></div>
-                <button class="vote-btn downvote-btn" title="Downvote" onclick="submitVote(<%= question.getQuestionId() %>, null, 'downvote')">
-                    <i class="fa-solid fa-arrow-down"></i>
-                </button>
-                <button class="vote-btn" title="Star">
-                    <i class="fa-solid fa-star"></i>
-                </button>
+                <a href="${pageContext.request.contextPath}/home" class="logo">
+                    <i class="fa-brands fa-stack-overflow"></i>
+                    <span>Dev<b>Query</b></span>
+                </a>
             </div>
 
-            <div class="question-content">
-                <div class="question-title"><%= question.getTitle() %></div>
-
-                <div class="question-body">
-                    <%= question.getBody() %>
-                </div>
-
-                <% if (question.getCodeSnippet() != null && !question.getCodeSnippet().isEmpty()) { %>
-                <div class="code-block">
-                    <code><%= question.getCodeSnippet().replace("<", "&lt;").replace(">", "&gt;") %></code>
-                </div>
-                <% } %>
-
-                <% if (question.getTags() != null && !question.getTags().isEmpty()) { %>
-                <div class="tags-list">
-                    <% for (String tag : question.getTags()) { %>
-                    <a href="<%=request.getContextPath()%>/SearchController?q=<%=java.net.URLEncoder.encode(tag,\"UTF-8\")%>&tab=newest" class="tag-badge"><%= tag %></a>
-                    <% } %>
-                </div>
-                <% } %>
-
-                <div class="question-meta">
-                    <div>
-                        <strong>asked</strong> <%= question.getCreatedAt() %>
-                    </div>
-                    <div>
-                        <strong>viewed</strong> <%= question.getViewCount() %> times
-                    </div>
-                </div>
-
-                <div class="user-card">
-                    <div class="user-avatar">
-                        <i class="fa-solid fa-user"></i>
-                    </div>
-                    <div class="user-info">
-                        <a href="<%=request.getContextPath()%>/profile?id=<%=question.getUserId()%>" class="user-name"><%= question.getAuthorName() %></a>
-                        <div class="user-meta">Member since today • reputation: 1</div>
-                    </div>
-                </div>
+            <div class="search-box">
+                <form method="get" action="${pageContext.request.contextPath}/home">
+                    <input type="text" name="q" class="search-input" placeholder="Search...">
+                </form>
             </div>
+
+            <div class="header-right">
+                <a href="<%=request.getContextPath()%>/logout">Log out</a>
+            </div>
+        </header>
+
+        <div class="sidebar" id="sidebar">
+            <ul class="nav-list">
+                <li><a href="${pageContext.request.contextPath}/home" class="nav-link"><i class="fa-solid fa-house"></i> Home</a></li>
+                <li><a href="#" class="nav-link"><i class="fa-solid fa-earth-americas"></i> Questions</a></li>
+                <li><a href="${pageContext.request.contextPath}/ask" class="nav-link"><i class="fa-solid fa-pen"></i> Ask</a></li>
+                <li><a href="${pageContext.request.contextPath}/tags" class="nav-link"><i class="fa-solid fa-tags"></i> Tags</a></li>
+                <li><a href="#" class="nav-link"><i class="fa-solid fa-bookmark"></i> Saves</a></li>
+            </ul>
         </div>
 
-        <!-- Answers Section -->
-        <div class="answers-section">
-            <div class="section-header">Answers</div>
+        <div class="container">
+            <div class="main-content">
+                <% 
+                    QuestionDTO question = (QuestionDTO) request.getAttribute("question");
+                    Object sessionPrincipal = session.getAttribute("user");
+                    Long currentUserId = null;
+                    String currentUserRole = null;
+                    int currentUserReputation = 0;
+                    if (sessionPrincipal instanceof UserDTO) {
+                        currentUserId = ((UserDTO) sessionPrincipal).getUserId();
+                        currentUserRole = ((UserDTO) sessionPrincipal).getRole();
+                        currentUserReputation = ((UserDTO) sessionPrincipal).getReputation();
+                    } else if (sessionPrincipal instanceof User) {
+                        currentUserId = ((User) sessionPrincipal).getUserId();
+                        currentUserRole = ((User) sessionPrincipal).getRole();
+                        currentUserReputation = ((User) sessionPrincipal).getReputation();
+                    }
+                    boolean isLoggedIn = (sessionPrincipal instanceof UserDTO) || (sessionPrincipal instanceof User);
+                    SimpleDateFormat editDateFormat = new SimpleDateFormat("MMM d, yyyy 'at' HH:mm");
+                    if (question != null) {
+                    boolean isQuestionClosed = question.isIsClosed();
+                %>
 
-            <%
-                java.util.List answers = (java.util.List) request.getAttribute("answers");
-                if (answers != null && !answers.isEmpty()) {
-                    for (Object answerObj : answers) {
-                        dto.AnswerDTO answer = (dto.AnswerDTO) answerObj;
-            %>
-            <div class="answer-box">
-                <div class="vote-box">
-                    <button class="vote-btn upvote-btn" title="Upvote" onclick="submitVote(null, <%= answer.getAnswerId() %>, 'upvote')">
-                        <i class="fa-solid fa-arrow-up"></i>
-                    </button>
-                    <div class="vote-count"><%= answer.getScore() %></div>
-                    <button class="vote-btn downvote-btn" title="Downvote" onclick="submitVote(null, <%= answer.getAnswerId() %>, 'downvote')">
-                        <i class="fa-solid fa-arrow-down"></i>
-                    </button>
-                    <button class="vote-btn" title="Star">
-                        <i class="fa-solid fa-star"></i>
-                    </button>
+                <% if ("success".equals(request.getParameter("flag"))) { %>
+                <div class="flag-notice success" role="status" aria-live="polite">
+                    Your report has been submitted. Thank you for helping keep the community safe.
                 </div>
+                <% } %>
+                <% if (request.getParameter("flagError") != null) { %>
+                <div class="flag-notice error" role="alert">
+                    <%= request.getParameter("flagError") %>
+                </div>
+                <% } %>
+                <% if ("success".equals(request.getParameter("close"))) { %>
+                <div class="flag-notice success" role="status" aria-live="polite">
+                    This question has been closed by a high-reputation user.
+                </div>
+                <% } %>
+                <% if (request.getParameter("closeError") != null) { %>
+                <div class="flag-notice error" role="alert">
+                    <%= request.getParameter("closeError") %>
+                </div>
+                <% } %>
 
-                <div class="answer-content">
-                    <div class="answer-body">
-                        <%= answer.getBody() %>
+                <!-- Question -->
+                <div class="question-box">
+                    <div class="vote-box">
+                        <%
+                            String questionUserVote = (String) request.getAttribute("questionUserVote");
+                            String upvoteClass = "upvote".equals(questionUserVote) ? " voted-up" : "";
+                            String downvoteClass = "downvote".equals(questionUserVote) ? " voted-down" : "";
+                            Boolean isBookmarked = (Boolean) request.getAttribute("isBookmarked");
+                            if (isBookmarked == null) isBookmarked = false;
+                            String bookmarkClass = isBookmarked ? " bookmarked" : "";
+                            long qid = question.getQuestionId();
+                        %>
+                        <% if (!isQuestionClosed) { %>
+                        <button type="button" id="question-upvote" class="vote-btn upvote-btn<%= upvoteClass %>" title="Upvote" 
+                                data-question-id="<%= qid %>" data-vote-type="upvote" onclick="handleVoteClick(event, this)">
+                            <i class="fa-solid fa-arrow-up"></i>
+                        </button>
+                        <% } %>
+                        <div class="vote-count"><%= question.getScore() %></div>
+                        <% if (!isQuestionClosed) { %>
+                        <button type="button" id="question-downvote" class="vote-btn downvote-btn<%= downvoteClass %>" title="Downvote" 
+                                data-question-id="<%= qid %>" data-vote-type="downvote" onclick="handleVoteClick(event, this)">
+                            <i class="fa-solid fa-arrow-down"></i>
+                        </button>
+                        <button type="button" id="bookmark-btn" class="vote-btn<%= bookmarkClass %>" title="<%= isBookmarked ? "Remove bookmark" : "Bookmark" %>" 
+                                data-question-id="<%= qid %>" onclick="handleBookmarkClick(event, this)">
+                            <i class="fa-solid fa-bookmark"></i>
+                        </button>
+                        <% } %>
                     </div>
 
-                    <% if (answer.getCodeSnippet() != null && !answer.getCodeSnippet().isEmpty()) { %>
-                    <div class="code-block">
-                        <code><%= answer.getCodeSnippet().replace("<", "&lt;").replace(">", "&gt;") %></code>
-                    </div>
-                    <% } %>
+                    <div class="question-content">
+                        <div class="question-title-row">
+                            <div>
+                                <div class="question-title"><%= question.getTitle() %></div>
+                                <% if (question.isIsClosed()) { %>
+                                <span class="closed-badge"><i class="fa-solid fa-lock"></i> Closed</span>
+                                <% } %>
+                            </div>
+                            <div class="post-actions-group">
+                                <div class="share-wrapper">
+                                    <% if (!isQuestionClosed) { %>
+                                    <button type="button" class="action-btn" onclick="toggleSharePopup(event)">
+                                        <i class="fa-solid fa-share-nodes"></i> Share
+                                    </button>
+                                    <div id="share-popup" class="share-popup">
+                                        <input type="text" id="share-link-input" class="share-input" readonly>
+                                        <button type="button" class="copy-link-btn" onclick="copyQuestionLink()">Copy link</button>
+                                        <span id="copy-link-status" class="copy-link-status"></span>
+                                    </div>
+                                    <% } %>
+                                </div>
+                                <% if (!isQuestionClosed) { %>
+                                <a class="action-btn" href="${pageContext.request.contextPath}/question/<%= question.getQuestionId() %>/revisions">
+                                    <i class="fa-solid fa-clock-rotate-left"></i> Revisions
+                                </a>
+                                <% } %>
+                                <% if (!isQuestionClosed && isLoggedIn && (currentUserId == null || currentUserId != question.getUserId())) { %>
+                                <button type="button"
+                                        class="action-btn"
+                                        onclick="openFlagModal('question', '<%= question.getQuestionId() %>', '<%= question.getQuestionId() %>', '')">
+                                    <i class="fa-solid fa-flag"></i> Flag
+                                </button>
+                                <% } %>
+                                <% if (!isQuestionClosed && isLoggedIn && currentUserReputation >= 3000 && !question.isIsClosed()) { %>
+                                <button type="button"
+                                        class="action-btn action-btn-warning"
+                                        onclick="openCloseModal('<%= question.getQuestionId() %>')">
+                                    <i class="fa-solid fa-lock"></i> Close Question
+                                </button>
+                                <% } %>
+                                <% if (!isQuestionClosed && currentUserId != null && currentUserId == question.getUserId()) { %>
+                                <a class="action-btn" href="${pageContext.request.contextPath}/post/edit?type=question&id=<%= question.getQuestionId() %>">
+                                    <i class="fa-solid fa-pen"></i> Edit
+                                </a>
+                                <% } %>
+                                <% if (!isQuestionClosed && currentUserId != null
+                                        && (currentUserId == question.getUserId()
+                                        || (currentUserRole != null && currentUserRole.equalsIgnoreCase("admin")))) { %>
+                                <form method="post"
+                                      action="${pageContext.request.contextPath}/question/delete?id=<%= question.getQuestionId() %>"
+                                      class="inline-action-form"
+                                      onsubmit="return confirmDeleteQuestion();">
+                                    <button type="submit" class="action-btn action-btn-danger">
+                                        <i class="fa-solid fa-trash"></i> Delete
+                                    </button>
+                                </form>
+                                <% } %>
+                            </div>
+                        </div>
 
-                    <div class="question-meta">
-                        <div>
-                            <strong>answered</strong> <%= answer.getCreatedAt() %>
-                            <% if (answer.isIsEdited()) { %>
-                            <span style="color: #6a737c;"> (edited)</span>
+                        <div class="question-body">
+                            <%= question.getBody() %>
+                        </div>
+
+                        <% if (question.isIsClosed()) { %>
+                        <div class="closed-question-message">
+                            <strong>This question has been closed by a high-reputation user.</strong>
+                            <% if (question.getClosedReason() != null && !question.getClosedReason().isEmpty()) { %>
+                            <div class="closed-question-reason">Reason: <%= question.getClosedReason() %></div>
+                            <% } %>
+                        </div>
+                        <% } %>
+
+                        <% if (question.getCodeSnippet() != null && !question.getCodeSnippet().isEmpty()) { %>
+                        <div class="code-block">
+                            <code><%= question.getCodeSnippet().replace("<", "&lt;").replace(">", "&gt;") %></code>
+                        </div>
+                        <% } %>
+
+                        <% if (question.getTags() != null && !question.getTags().isEmpty()) { %>
+                        <div class="tags-list">
+                            <% for (String tag : question.getTags()) { %>
+                            <a href="#" class="tag-badge"><%= tag %></a>
+                            <% } %>
+                        </div>
+                        <% } %>
+
+                        <div class="post-footer-row">
+                            <div class="question-meta question-meta-main">
+                                <div>
+                                    <strong>asked</strong> <%= question.getCreatedAt() %>
+                                    <% if (question.getUpdatedAt() != null && question.getCreatedAt() != null
+                                    && question.getUpdatedAt().after(question.getCreatedAt())) { %>
+                                    <span style="margin-left: 10px; color: #6a737c;">
+                                        edited <%= editDateFormat.format(question.getUpdatedAt()) %>
+                                    </span>
+                                    <% } %>
+                                </div>
+                                <div>
+                                    <strong>viewed</strong> <%= question.getViewCount() %> times
+                                </div>
+                            </div>
+
+                            <div class="user-card user-card-compact">
+                                <div class="user-avatar">
+                                    <i class="fa-solid fa-user"></i>
+                                </div>
+                                <div class="user-info">
+                                    <a href="#" class="user-name"><%= question.getAuthorName() %></a>
+                                    <div class="user-meta">asked at <%= question.getCreatedAt() %></div>
+                                    <div class="user-meta">reputation: <%= question.getAuthorReputation() %></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Question Comments Section -->
+                        <% 
+                            java.util.List<dto.CommentDTO> questionComments = 
+                                (java.util.List<dto.CommentDTO>) request.getAttribute("questionComments");
+                            if (questionComments == null) questionComments = new java.util.ArrayList<>();
+                    
+                            // Determine if should be collapsed by default
+                            boolean questionCommentsCollapsed = questionComments.size() > 3;
+                        %>
+
+                        <% if (!questionComments.isEmpty()) { %>
+                        <div class="question-comments" style="margin-top: 20px; padding-top: 15px; border-top: 1px solid #e3e6e8;">
+                            <!-- Toggle Button -->
+                            <button type="button" id="question-comments-toggle-btn" 
+                                    style="font-size: 13px; color: #0a95ff; background: none; border: none; cursor: pointer; padding: 0; margin-bottom: 12px;"
+                                    onclick="toggleQuestionComments()">
+                                <span id="question-comments-toggle-text">
+                                    <%= questionCommentsCollapsed ? 
+                                        "Show comments (" + questionComments.size() + ")" : 
+                                        "Hide comments (" + questionComments.size() + ")" %>
+                                </span>
+                            </button>
+
+                            <!-- Comments Container -->
+                            <div id="question-comments-container" 
+                                 style="<%= questionCommentsCollapsed ? "display: none;" : "display: block;" %>">
+                                <% for (dto.CommentDTO comment : questionComments) { %>
+                                <div class="comment-item" style="margin-bottom: 12px; font-size: 13px;">
+                                    <div style="color: #6a737c; margin-bottom: 4px;">
+                                        <span style="color: #0a95ff; font-weight: 500;"><%= comment.getAuthorName() %></span>
+                                        <span style="margin-left: 8px;"><%= comment.getCreatedAt() %></span>
+                                    </div>
+                                    <div style="color: #3b4045;"><%= comment.getBody() %></div>
+                                </div>
+                                <% } %>
+                            </div>
+                        </div>
+                        <% } %>
+
+                        <!-- Add Comment Section -->
+                        <div style="margin-top: 15px; padding-top: 10px; border-top: 1px solid #e3e6e8;">
+                            <% if (isLoggedIn && !isQuestionClosed) { %>
+                            <div id="add-question-comment-form" style="display: none; margin-top: 12px;">
+                                <form method="post" action="${pageContext.request.contextPath}/comment/add">
+                                    <input type="hidden" name="questionId" value="<%= question.getQuestionId() %>">
+                                    <div style="display: flex; gap: 8px;">
+                                        <textarea name="commentBody" class="form-input" placeholder="Add a comment..." 
+                                                  style="flex: 1; min-height: 60px; font-size: 13px; padding: 8px;" required></textarea>
+                                    </div>
+                                    <div style="display: flex; gap: 8px; margin-top: 8px;">
+                                        <button type="submit" class="btn" style="padding: 6px 12px; font-size: 13px;">Add Comment</button>
+                                        <button type="button" class="btn" style="padding: 6px 12px; font-size: 13px; background: #f1f2f3; color: #3b4045;" 
+                                                onclick="document.getElementById('add-question-comment-form').style.display = 'none'; document.getElementById('add-question-comment-btn').style.display = 'block';">Cancel</button>
+                                    </div>
+                                </form>
+                            </div>
+                            <button type="button" id="add-question-comment-btn" class="reply-btn" style="font-size: 13px; color: #0a95ff; background: none; border: none; cursor: pointer; padding: 0;"
+                                    onclick="document.getElementById('add-question-comment-form').style.display = 'block'; this.style.display = 'none';">
+                                Add a comment
+                            </button>
+                            <% } else if (!isLoggedIn) { %>
+                            <a href="${pageContext.request.contextPath}/auth/login" style="font-size: 13px; color: #0a95ff; text-decoration: none;">
+                                Sign in to add a comment
+                            </a>
+                            <% } else { %>
+                            <span style="font-size: 13px; color: #6a737c;">Comments are disabled because this question is closed</span>
                             <% } %>
                         </div>
                     </div>
+                </div>
 
-                    <div class="user-card">
-                        <div class="user-avatar">
-                            <i class="fa-solid fa-user"></i>
+                <!-- Answers Section -->
+                <div class="answers-section" id="answers-section">
+                    <div class="section-header">Answers</div>
+
+                    <%
+                        List answers = (java.util.List) request.getAttribute("answers");
+                        Map<Long, String> answerVotes = (java.util.Map<Long, String>) request.getAttribute("answerVotes");
+                        Boolean isQuestionOwner = (Boolean) request.getAttribute("isQuestionOwner");
+                    Integer answerCurrentPage = (Integer) request.getAttribute("answerCurrentPage");
+                    Integer answerTotalPages = (Integer) request.getAttribute("answerTotalPages");
+                    Integer answerTotalCount = (Integer) request.getAttribute("answerTotalCount");
+                        Integer answerPageSize = (Integer) request.getAttribute("answerPageSize");
+                    if (answerCurrentPage == null || answerCurrentPage < 1) answerCurrentPage = 1;
+                    if (answerTotalPages == null || answerTotalPages < 1) answerTotalPages = 1;
+                    if (answerTotalCount == null || answerTotalCount < 0) answerTotalCount = 0;
+                        if (answerPageSize == null || answerPageSize < 1) answerPageSize = 5;
+                          String sort = (String) request.getAttribute("sort");
+                        String answerFilterQuery = (String) request.getAttribute("answerFilterQuery");
+                        if (sort == null || sort.trim().isEmpty()) sort = "score_desc";
+                        if (answerFilterQuery == null) answerFilterQuery = "";
+                        if (answerVotes == null) answerVotes = new java.util.HashMap<>();
+                        if (isQuestionOwner == null) isQuestionOwner = false;
+                    %>
+
+                    <form method="get" action="${pageContext.request.contextPath}/question/detail" class="answers-filter-form">
+                        <input type="hidden" name="id" value="<%= question.getQuestionId() %>">
+                        <div class="answers-filter-row">
+                            <label for="answer-sort">Sort by</label>
+                            <select id="answer-sort" name="sort">
+                                <option value="score_desc" <%= "score_desc".equals(sort) ? "selected" : "" %>>Highest score</option>
+                                <option value="score_asc" <%= "score_asc".equals(sort) ? "selected" : "" %>>Lowest score</option>
+                                <option value="newest" <%= "newest".equals(sort) ? "selected" : "" %>>Newest</option>
+                                <option value="oldest" <%= "oldest".equals(sort) ? "selected" : "" %>>Oldest</option>
+                            </select>
+                            <button type="submit" class="btn">Apply</button>
                         </div>
-                        <div class="user-info">
-                                <a href="<%=request.getContextPath()%>/profile?id=<%=answer.getUserId()%>" class="user-name"><%= answer.getAuthorName() %></a>
-                            <div class="user-meta">Member since today • reputation: 1</div>
+                    </form>
+
+                    <%
+                    
+                    if (answers != null && !answers.isEmpty()) {
+                    for (Object answerObj : answers) {
+                    dto.AnswerDTO answer = (dto.AnswerDTO) answerObj;
+                    String answerUserVote = answerVotes.get(answer.getAnswerId());
+                    String answerUpvoteClass = "upvote".equals(answerUserVote) ? " voted-up" : "";
+                    String answerDownvoteClass = "downvote".equals(answerUserVote) ? " voted-down" : "";
+                    boolean accepted = answer.isIsAccepted();
+                    %>
+                    <div class="answer-box<%= accepted ? " accepted" : "" %>" id="answer-<%= answer.getAnswerId() %>">
+                        <div class="vote-box">
+                            <% if (!isQuestionClosed) { %>
+                            <button type="button" id="answer-upvote-<%= answer.getAnswerId() %>" class="vote-btn upvote-btn<%= answerUpvoteClass %>" title="Upvote" 
+                                    data-answer-id="<%= answer.getAnswerId() %>" data-vote-type="upvote" onclick="handleVoteClick(event, this)">
+                                <i class="fa-solid fa-arrow-up"></i>
+                            </button>
+                            <% } %>
+                            <div class="vote-count"><%= answer.getScore() %></div>
+
+                            <% if (!isQuestionClosed) { %>
+                            <button type="button" id="answer-downvote-<%= answer.getAnswerId() %>" class="vote-btn downvote-btn<%= answerDownvoteClass %>" title="Downvote" 
+                                    data-answer-id="<%= answer.getAnswerId() %>" data-vote-type="downvote" onclick="handleVoteClick(event, this)">
+                                <i class="fa-solid fa-arrow-down"></i>
+                            </button>
+                            <%
+                                Map<Long, Boolean> answerBookmarks = (java.util.Map<Long, Boolean>) request.getAttribute("answerBookmarks");
+                                if (answerBookmarks == null) answerBookmarks = new java.util.HashMap<>();
+                                Boolean answerIsBookmarked = answerBookmarks.get(answer.getAnswerId());
+                                if (answerIsBookmarked == null) answerIsBookmarked = false;
+                                String answerBookmarkClass = answerIsBookmarked ? " bookmarked" : "";
+                            %>
+                            <button type="button" id="answer-bookmark-<%= answer.getAnswerId() %>" class="vote-btn<%= answerBookmarkClass %>" title="<%= answerIsBookmarked ? "Remove bookmark" : "Bookmark" %>" 
+                                    data-answer-id="<%= answer.getAnswerId() %>" onclick="handleAnswerBookmarkClick(event, this)">
+                                <i class="fa-solid fa-bookmark"></i>
+                            </button>
+                            <% } %>
+                        </div>
+
+                        <div class="answer-content">
+                            <div class="answer-body">
+                                <%= answer.getBody() %>
+                            </div>
+
+                            <% if (answer.getCodeSnippet() != null && !answer.getCodeSnippet().isEmpty()) { %>
+                            <div class="code-block">
+                                <code><%= answer.getCodeSnippet().replace("<", "&lt;").replace(">", "&gt;") %></code>
+                            </div>
+                            <% } %>
+
+                            <div class="post-footer-row answer-footer-row">
+                                <div class="answer-meta-block">
+                                    <div class="answer-meta-info">
+                                        <strong>Answered</strong> <%= answer.getCreatedAt() %>
+                                        <% if (answer.getUpdatedAt() != null && answer.getCreatedAt() != null
+                                        && answer.getUpdatedAt().after(answer.getCreatedAt())) { %>
+                                        <span style="color: #6a737c; margin-left: 10px;">
+                                            Edited <%= editDateFormat.format(answer.getUpdatedAt()) %>
+                                        </span>
+                                        <% } %>
+                                    </div>
+
+                                    <div class="answer-meta-actions">
+                                        <% if (!isQuestionClosed && currentUserId != null && currentUserId == answer.getUserId()) { %>
+                                        <a class="action-btn" href="${pageContext.request.contextPath}/post/edit?type=answer&id=<%= answer.getAnswerId() %>">
+                                            <i class="fa-solid fa-pen"></i> Edit
+                                        </a>
+                                        <% } %>
+                                        <% if (!isQuestionClosed) { %>
+                                        <a class="action-btn" href="${pageContext.request.contextPath}/answer/<%= answer.getAnswerId() %>/revisions">
+                                            <i class="fa-solid fa-clock-rotate-left"></i> Revisions
+                                        </a>
+                                        <% } %>
+                                        <% if (!isQuestionClosed && isLoggedIn && (currentUserId == null || currentUserId != answer.getUserId())) { %>
+                                        <button type="button"
+                                                class="action-btn"
+                                                onclick="openFlagModal('answer', '<%= answer.getAnswerId() %>', '<%= question.getQuestionId() %>', '<%= answer.getAnswerId() %>')">
+                                            <i class="fa-solid fa-flag"></i> Flag
+                                        </button>
+                                        <% } %>
+                                        <% if (!isQuestionClosed && isQuestionOwner) { %>
+                                        <button type="button" class="accept-btn<%= accepted ? " accepted" : "" %>" 
+                                                data-question-id="<%= question.getQuestionId() %>" data-answer-id="<%= answer.getAnswerId() %>"
+                                                onclick="handleAcceptClick(event, this)" title="<%= accepted ? "Unaccept" : "Accept" %>">
+                                            <i class="fa-solid fa-check"></i> <%= accepted ? "Accepted" : "Accept" %>
+                                        </button>
+                                        <% } else if (accepted) { %>
+                                        <span style="color: #2e7d32; font-weight: 500;"><i class="fa-solid fa-check-circle"></i> Accepted</span>
+                                        <% } %>
+                                    </div>
+                                </div>
+
+                                <div class="user-card user-card-compact">
+                                    <div class="user-avatar">
+                                        <i class="fa-solid fa-user"></i>
+                                    </div>
+                                    <div class="user-info">
+                                        <a href="#" class="user-name"><%= answer.getAuthorName() %></a>
+                                        <div class="user-meta">answered at <%= answer.getCreatedAt() %></div>
+                                        <div class="user-meta">reputation: <%= answer.getAuthorReputation() %></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Comments Section -->
+                            <% 
+                                Map answerComments = 
+                                    (Map) request.getAttribute("answerComments");
+                                Map answerCommentTrees =
+                                    (java.util.Map) request.getAttribute("answerCommentTrees");
+                                if (answerComments == null) answerComments = new java.util.HashMap<>();
+                                if (answerCommentTrees == null) answerCommentTrees = new java.util.HashMap<>();
+                                List comments = (java.util.List) answerComments.get(answer.getAnswerId());
+                                Map commentTree = (java.util.Map) answerCommentTrees.get(answer.getAnswerId());
+                                if (comments == null) comments = new java.util.ArrayList<>();
+                                if (commentTree == null) commentTree = new java.util.HashMap<>();
+                        
+                                // Determine if should be collapsed by default
+                                boolean answerCommentsCollapsed = comments.size() > 3;
+                            %>
+
+                            <% if (!comments.isEmpty()) { %>
+                            <div class="comments-section" style="margin-top: 15px; padding-top: 10px; border-top: 1px solid #e3e6e8;">
+                                <!-- Toggle Button -->
+                                <button type="button" id="answer-comments-toggle-btn-<%= answer.getAnswerId() %>" 
+                                        style="font-size: 13px; color: #0a95ff; background: none; border: none; cursor: pointer; padding: 0; margin-bottom: 10px;"
+                                        onclick="toggleAnswerComments(<%= answer.getAnswerId() %>)">
+                                    <span id="answer-comments-toggle-text-<%= answer.getAnswerId() %>">
+                                        <%= answerCommentsCollapsed ? 
+                                            "Show comments (" + comments.size() + ")" : 
+                                            "Hide comments (" + comments.size() + ")" %>
+                                    </span>
+                                </button>
+
+                                <!-- Comments Container -->
+                                <div id="answer-comments-container-<%= answer.getAnswerId() %>" 
+                                     style="<%= answerCommentsCollapsed ? "display: none;" : "display: block;" %>">
+                                    <% List rootComments = (List) commentTree.get(null);
+                                        out.print(CommentRenderUtil.renderAnswerCommentThread(
+                                            commentTree,
+                                            rootComments,
+                                                answer.getAnswerId(),
+                                                question.getQuestionId(),
+                                                isLoggedIn,
+                                                request.getContextPath(),
+                                                0));
+                                    %>
+                                </div>
+                            </div>
+                            <% } %>
+
+                            <!-- Reply Button and Form -->
+                            <div style="margin-top: 12px; padding-top: 10px; border-top: 1px solid #e3e6e8;">
+                                <% if (isLoggedIn && !isQuestionClosed) { %>
+                                <div id="comment-form-<%= answer.getAnswerId() %>" style="display: none; margin-top: 12px;">
+                                    <form method="post" action="${pageContext.request.contextPath}/comment/add">
+                                        <input type="hidden" name="answerId" value="<%= answer.getAnswerId() %>">
+                                        <input type="hidden" name="questionId" value="<%= question.getQuestionId() %>">
+                                        <div style="display: flex; gap: 8px;">
+                                            <textarea name="commentBody" class="form-input" placeholder="Add a comment..." 
+                                                      style="flex: 1; min-height: 60px; font-size: 13px; padding: 8px;" required></textarea>
+                                        </div>
+                                        <div style="display: flex; gap: 8px; margin-top: 8px;">
+                                            <button type="submit" class="btn" style="padding: 6px 12px; font-size: 13px;">Add Comment</button>
+                                            <button type="button" class="btn" style="padding: 6px 12px; font-size: 13px; background: #f1f2f3; color: #3b4045;" 
+                                                    onclick="document.getElementById('comment-form-<%= answer.getAnswerId() %>').style.display = 'none'; document.getElementById('reply-btn-<%= answer.getAnswerId() %>').style.display = 'block';">Cancel</button>
+                                        </div>
+                                    </form>
+                                </div>
+                                <button type="button" class="reply-btn" style="font-size: 13px; color: #0a95ff; background: none; border: none; cursor: pointer; padding: 0;"
+                                        id="reply-btn-<%= answer.getAnswerId() %>"
+                                        onclick="document.getElementById('comment-form-<%= answer.getAnswerId() %>').style.display = 'block'; this.style.display = 'none';">
+                                    Add a comment
+                                </button>
+                                <% } else if (!isLoggedIn) { %>
+                                <a href="${pageContext.request.contextPath}/auth/login" style="font-size: 13px; color: #0a95ff; text-decoration: none;">
+                                    Sign in to add a comment
+                                </a>
+                                <% } else { %>
+                                <span style="font-size: 13px; color: #6a737c;">Comments are disabled because this question is closed</span>
+                                <% } %>
+                            </div>
                         </div>
                     </div>
-                </div>
-            </div>
-            <%
-                    }
-                } else {
-            %>
-            <div class="answer-box">
-                <div class="answer-content">
-                    <div class="empty-state">
-                        <i class="fa-solid fa-lightbulb" style="font-size: 32px; margin-bottom: 10px;"></i>
-                        <div>Chưa có câu trả lời nào</div>
+                    <%
+                            }
+                        } else {
+                    %>
+                    <div class="answer-box">
+                        <div class="answer-content">
+                            <div class="empty-state">
+                                <i class="fa-solid fa-lightbulb" style="font-size: 32px; margin-bottom: 10px;"></i>
+                                <div>Chưa có câu trả lời nào</div>
+                            </div>
+                        </div>
                     </div>
+                    <%
+                        }
+                    %>
+
+                    <% if (answerTotalPages > 1) {
+                        int startAnswerIndex = ((answerCurrentPage - 1) * answerPageSize) + 1;
+                        int endAnswerIndex = Math.min(answerCurrentPage * answerPageSize, answerTotalCount);
+                        String detailPath = (String) request.getAttribute("answerPaginationPath");
+                        if (detailPath == null || detailPath.trim().isEmpty()) {
+                            detailPath = request.getContextPath() + "/question/detail";
+                        }
+                    %>
+                    <div class="answers-pagination">
+                        <div class="answers-pagination-info">
+                            Showing <%= startAnswerIndex %>-<%= endAnswerIndex %> of <%= answerTotalCount %> answers
+                        </div>
+                        <div class="answers-pagination-links">
+                            <% if (answerCurrentPage > 1) { %>
+                            <a href="<%= detailPath %>?id=<%= question.getQuestionId() %>&page=<%= answerCurrentPage - 1 %><%= answerFilterQuery %>#answers-section" aria-label="Previous page">&laquo;</a>                            <% } else { %>
+                            <span class="disabled" aria-disabled="true">&laquo;</span>
+                            <% } %>
+
+                            <% for (int pageIndex = 1; pageIndex <= answerTotalPages; pageIndex++) { %>
+                            <a href="<%= detailPath %>?id=<%= question.getQuestionId() %>&page=<%= pageIndex %><%= answerFilterQuery %>#answers-section"                               class="<%= answerCurrentPage == pageIndex ? "active" : "" %>"><%= pageIndex %></a>
+                            <% } %>
+
+                            <% if (answerCurrentPage < answerTotalPages) { %>
+                            <a href="<%= detailPath %>?id=<%= question.getQuestionId() %>&page=<%= answerCurrentPage + 1 %><%= answerFilterQuery %>#answers-section" aria-label="Next page">&raquo;</a>                            <% } else { %>
+                            <span class="disabled" aria-disabled="true">&raquo;</span>
+                            <% } %>
+                        </div>
+                    </div>
+                    <% } %>
                 </div>
-            </div>
-            <%
-                }
-            %>
-        </div>
 
-        <!-- Add Answer Section -->
-        <div class="add-answer-section">
-            <div class="section-header">Your Answer</div>
+                <!-- Add Answer Section -->
+                <% if (!isQuestionClosed) { %>
+                <div class="add-answer-section">
+                    <div class="section-header">Your Answer</div>
 
-            <form method="post" action="${pageContext.request.contextPath}/answer/create">
-                <input type="hidden" name="questionId" value="<%= question.getQuestionId() %>">
+                    <form method="post" action="${pageContext.request.contextPath}/answer/create" onsubmit="return handleAnswerFormSubmit(event)">
+                        <input type="hidden" name="questionId" value="<%= question.getQuestionId() %>">
+                        <input type="hidden" name="answerBody" id="answer-body-hidden">
 
-                <div class="form-group">
-                    <label class="form-label">Answer</label>
-                    <textarea name="answerBody" class="form-input" placeholder="Viết câu trả lời của bạn..." required></textarea>
+                        <div class="form-group">
+                            <label class="form-label">Answer</label>
+                            <div id="answer-editor"></div>
+                        </div>
+
+                        <button type="submit" class="btn">Post Answer</button>
+                    </form>
                 </div>
-
-                <button type="submit" class="btn">Post Answer</button>
-            </form>
-        </div>
-
-        <% } else { %>
-        <div class="empty-state">
-            <i class="fa-solid fa-circle-xmark" style="font-size: 48px;"></i>
-            <div style="margin-top: 10px;">
-                <% if (request.getAttribute("error") != null) { %>
-                    <%= request.getAttribute("error") %>
                 <% } else { %>
-                    Câu hỏi không tồn tại
+                <div class="add-answer-section">
+                    <div class="section-header">This question is closed</div>
+                    <div style="font-size: 14px; color: #6a737c;">All interaction features are disabled. You can only view the question and existing answers.</div>
+                </div>
+                <% } %>
+
+                <% } else { %>
+                <div class="empty-state">
+                    <i class="fa-solid fa-circle-xmark" style="font-size: 48px;"></i>
+                    <div style="margin-top: 10px;">
+                        <% if (request.getAttribute("error") != null) { %>
+                        <%= request.getAttribute("error") %>
+                        <% } else { %>
+                        Câu hỏi không tồn tại
+                        <% } %>
+                    </div>
+                </div>
+                <% } %>
+            </div>
+
+            <!-- Right Sidebar -->
+            <div class="sidebar-right">
+                <% 
+                    List<dto.QuestionDTO> relatedQuestions = (List<dto.QuestionDTO>) request.getAttribute("relatedQuestions");
+                    if (relatedQuestions == null) {
+                        relatedQuestions = new java.util.ArrayList<>();
+                    }
+            
+                    // Split related questions into linked and related
+                    int mid = (relatedQuestions.size() + 1) / 2;
+                    List<dto.QuestionDTO> linkedQuestions = relatedQuestions.subList(0, Math.min(mid, relatedQuestions.size()));
+                    List<dto.QuestionDTO> relatedOnlyQuestions = relatedQuestions.subList(Math.min(mid, relatedQuestions.size()), relatedQuestions.size());
+                %>
+
+                <% if (!linkedQuestions.isEmpty()) { %>
+                <div class="card">
+                    <div class="card-title"><i class="fa-solid fa-link"></i> Linked</div>
+                    <div class="linked-box">
+                        <% for (dto.QuestionDTO q : linkedQuestions) { %>
+                        <a href="${pageContext.request.contextPath}/question/detail?id=<%= q.getQuestionId() %>" class="linked-link"><%= q.getTitle() %></a>
+                        <% } %>
+                    </div>
+                </div>
+                <% } %>
+
+                <% if (!relatedOnlyQuestions.isEmpty()) { %>
+                <div class="card">
+                    <div class="card-title"><i class="fa-solid fa-fire"></i> Related</div>
+                    <div class="linked-box">
+                        <% for (dto.QuestionDTO q : relatedOnlyQuestions) { %>
+                        <a href="${pageContext.request.contextPath}/question/detail?id=<%= q.getQuestionId() %>" class="linked-link"><%= q.getTitle() %></a>
+                        <% } %>
+                    </div>
+                </div>
                 <% } %>
             </div>
         </div>
-        <% } %>
-    </div>
 
-    <!-- Right Sidebar -->
-    <div class="sidebar-right">
-        <div class="card">
-            <div class="card-title"><i class="fa-solid fa-link"></i> Linked</div>
-            <div class="linked-box">
-                <a href="#" class="linked-link">Kiếu cách sử dụng trong Java</a>
-                <a href="#" class="linked-link">Exception handling best practices</a>
+        <!-- Footer -->
+        <%@ include file="../Common/footer.jsp" %>
+
+        <div id="flag-modal" class="simple-modal" aria-hidden="true">
+            <div class="simple-modal-dialog flag-modal-dialog" role="dialog" aria-modal="true" aria-labelledby="flag-modal-title">
+                <div class="simple-modal-header">
+                    <h3 id="flag-modal-title">Report Content</h3>
+                    <button type="button" class="simple-modal-close" onclick="closeFlagModal()" aria-label="Close">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+                <div class="simple-modal-body flag-modal-body">
+                    <form method="post" action="${pageContext.request.contextPath}/flag/submit" class="flag-form">
+                        <input type="hidden" id="flag-post-type" name="postType">
+                        <input type="hidden" id="flag-post-id" name="postId">
+                        <input type="hidden" id="flag-question-id" name="questionId" value="<%= question != null ? question.getQuestionId() : 0 %>">
+                        <input type="hidden" id="flag-answer-id" name="answerId">
+
+                        <div class="flag-field">
+                            <label for="flag-reason" class="form-label">Reason</label>
+                            <select id="flag-reason" name="reason" class="form-input" required>
+                                <option value="">Select a reason</option>
+                                <option value="Spam">Spam</option>
+                                <option value="Harassment or abusive language">Harassment or abusive language</option>
+                                <option value="Misleading content">Misleading content</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+
+                        <div class="flag-field">
+                            <label for="flag-note" class="form-label">Note (optional)</label>
+                            <textarea id="flag-note"
+                                      name="note"
+                                      class="form-input"
+                                      maxlength="500"
+                                      placeholder="Add a short note (optional)..."></textarea>
+                        </div>
+
+                        <div class="flag-actions">
+                            <button type="submit" class="btn">Submit Report</button>
+                            <button type="button" class="btn btn-secondary" onclick="closeFlagModal()">Cancel</button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
 
-        <div class="card">
-            <div class="card-title"><i class="fa-solid fa-fire"></i> Related</div>
-            <div class="linked-box">
-                <a href="#" class="linked-link">NullPointerException trong Spring Boot</a>
-                <a href="#" class="linked-link">Cách xử lý Exception</a>
+        <div id="close-modal" class="simple-modal" aria-hidden="true">
+            <div class="simple-modal-dialog flag-modal-dialog" role="dialog" aria-modal="true" aria-labelledby="close-modal-title">
+                <div class="simple-modal-header">
+                    <h3 id="close-modal-title">Close Question</h3>
+                    <button type="button" class="simple-modal-close" onclick="closeCloseModal()" aria-label="Close">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+                <div class="simple-modal-body flag-modal-body">
+                    <form method="post" action="${pageContext.request.contextPath}/question/close" class="flag-form">
+                        <input type="hidden" id="close-question-id" name="questionId" value="<%= question != null ? question.getQuestionId() : 0 %>">
+
+                        <div class="flag-field">
+                            <label for="close-reason" class="form-label">Reason</label>
+                            <select id="close-reason" name="closeReason" class="form-input" required>
+                                <option value="">Select a reason</option>
+                                <option value="Duplicate question">Duplicate question</option>
+                                <option value="Needs more details">Needs more details</option>
+                                <option value="Off-topic">Off-topic</option>
+                                <option value="Opinion-based">Opinion-based</option>
+                            </select>
+                        </div>
+
+                        <div class="flag-actions">
+                            <button type="submit" class="btn">Close Question</button>
+                            <button type="button" class="btn btn-secondary" onclick="closeCloseModal()">Cancel</button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
-    </div>
-</div>
 
-<!-- Footer -->
-<%@ include file="../Common/footer.jsp" %>
-
-<script>
-    function toggleMenu() {
-        var sidebar = document.getElementById('sidebar');
-        sidebar.classList.toggle('active');
-        document.body.classList.toggle('sidebar-open');
-    }
-
-    function submitVote(questionId, answerId, voteType) {
-        // Check if user is logged in (this is a simple check)
-        // In a real app, you'd validate on the server side
-        
-        const formData = new FormData();
-        
-        if (questionId) {
-            formData.append('questionId', questionId);
-        }
-        
-        if (answerId) {
-            formData.append('answerId', answerId);
-        }
-        
-        formData.append('voteType', voteType);
-
-        fetch('${pageContext.request.contextPath}/vote/submit', {
-            method: 'POST',
-            body: formData
-        })
-        .then(response => {
-            if (response.status === 401) {
-                alert('Please log in to vote');
-                window.location.href = '${pageContext.request.contextPath}/auth/login';
-                return null;
-            }
-            return response.json();
-        })
-        .then(data => {
-            if (data && data.success) {
-                // Update the vote count on the page
-                location.reload(); // Simple way to refresh the vote count
-            } else if (data && data.error) {
-                alert('Error: ' + data.error);
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('An error occurred while voting');
-        });
-    }
-</script>
-</body>
+        <%@ include file="partials/question-detail-scripts.jspf" %>
+    </body>
 </html>

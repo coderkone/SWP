@@ -16,10 +16,13 @@ public class Question {
     private String codeSnippet;
     private int viewCount;
     private boolean isClosed; // bit trong SQL -> boolean
+    private Long closedBy;
     private String closedReason;
+    private Timestamp closedAt;
     private Timestamp createdAt;
     private Timestamp updatedAt;
     private int score;
+    private Long acceptedAnswerId;
 
     public Question(long questionId, long userId, String title, String body, String codeSnippet, int viewCount, boolean isClosed, String closedReason, Timestamp createdAt, Timestamp updatedAt, int score) {
         this.questionId = questionId;
@@ -102,6 +105,22 @@ public class Question {
         this.closedReason = closedReason;
     }
 
+    public Long getClosedBy() {
+        return closedBy;
+    }
+
+    public void setClosedBy(Long closedBy) {
+        this.closedBy = closedBy;
+    }
+
+    public Timestamp getClosedAt() {
+        return closedAt;
+    }
+
+    public void setClosedAt(Timestamp closedAt) {
+        this.closedAt = closedAt;
+    }
+
     public Timestamp getCreatedAt() {
         return createdAt;
     }
@@ -125,5 +144,12 @@ public class Question {
     public void setScore(int score) {
         this.score = score;
     }
-    
+
+    public Long getAcceptedAnswerId() {
+        return acceptedAnswerId;
+    }
+
+    public void setAcceptedAnswerId(Long acceptedAnswerId) {
+        this.acceptedAnswerId = acceptedAnswerId;
+    }
 }

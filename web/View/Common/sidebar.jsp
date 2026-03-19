@@ -83,8 +83,18 @@
                 </li>
                 
                 <li class="nav-item">
+<<<<<<< HEAD
                     <a class="nav-link ${param.page == 'bookmarks' ? 'active' : ''}" href="${pageContext.request.contextPath}/bookmarks">
                         <i class="fa-solid fa-bookmark me-2"></i> Bookmarks
+=======
+                    <a class="nav-link ${uri.contains('/saves') ? 'active' : ''}" href="${pageContext.request.contextPath}/saves">
+                        <i class="fa-solid fa-bookmark me-2"></i> Saves
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link ${uri.contains('/blog') ? 'active' : ''}" href="${pageContext.request.contextPath}/blog">
+                        <i class="fa-solid fa-book-open"></i> Dev Blog
+>>>>>>> Mai
                     </a>
                 </li>
             </c:if>

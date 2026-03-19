@@ -10,251 +10,326 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
-public class QuestionDAO {
-    private final DBContext db = new DBContext();
+public class QuestionDAO extends DBContext {
 
-    // Tạo câu hỏi mới với tags
-    public long createQuestion(long userId, String title, String body, String codeSnippet, String tagsStr) throws Exception {
-        String sql = "INSERT INTO Questions (user_id, title, body, code_snippet, view_count, is_closed, created_at, updated_at, Score) " +
-                "VALUES (?, ?, ?, ?, 0, 0, GETDATE(), GETDATE(), 0)";
-
-        long questionId = -1;
-
-        try (Connection con = db.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-
-            ps.setLong(1, userId);
-            ps.setString(2, title);
-            ps.setString(3, body);
-            ps.setString(4, codeSnippet);
-
-            ps.executeUpdate();
-
-            try (ResultSet rs = ps.getGeneratedKeys()) {
-                if (rs.next()) {
-                    questionId = rs.getLong(1);
-                }
-            }
-        }
-
-        if (questionId > 0 && tagsStr != null && !tagsStr.trim().isEmpty()) {
-            addTagsToQuestion(questionId, tagsStr);
-        }
-
-        return questionId;
-    }
-
-    // Thêm tags cho câu hỏi
-    private void addTagsToQuestion(long questionId, String tagsStr) throws Exception {
-        String[] tagNames = tagsStr.split(",");
-
-        try (Connection con = db.getConnection()) {
-            for (String tagName : tagNames) {
-                tagName = tagName.trim();
-                if (tagName.isEmpty()) {
-                    continue;
-                }
-
-                long tagId = getOrCreateTag(con, tagName);
-
-                String linkSql = "INSERT INTO Question_Tags (question_id, tag_id) VALUES (?, ?)";
-                try (PreparedStatement ps = con.prepareStatement(linkSql)) {
-                    ps.setLong(1, questionId);
-                    ps.setLong(2, tagId);
-                    ps.executeUpdate();
-                }
-            }
-        }
-    }
-
-    // Lấy hoặc tạo tag
-    private long getOrCreateTag(Connection con, String tagName) throws Exception {
-        String select = "SELECT tag_id FROM Tags WHERE tag_name = ?";
-
-        try (PreparedStatement ps = con.prepareStatement(select)) {
-            ps.setString(1, tagName);
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    return rs.getLong(1);
-                }
-            }
-        }
-
-        String insert = "INSERT INTO Tags (tag_name) VALUES (?)";
-
-        try (PreparedStatement ps = con.prepareStatement(insert, Statement.RETURN_GENERATED_KEYS)) {
-            ps.setString(1, tagName);
-            ps.executeUpdate();
-            try (ResultSet rs = ps.getGeneratedKeys()) {
-                if (rs.next()) {
-                    return rs.getLong(1);
-                }
-            }
-        }
-
-        return -1;
-    }
-
-    // Lấy câu hỏi theo ID
-    public QuestionDTO getQuestionById(long questionId) throws Exception {
-        String sql = "SELECT q.*, u.username FROM Questions q " +
-                "JOIN Users u ON q.user_id = u.user_id WHERE q.question_id = ?";
-
-        try (Connection con = db.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
-
-            ps.setLong(1, questionId);
-
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    QuestionDTO q = mapQuestion(rs);
-                    q.setTags(getTagsByQuestionId(questionId));
-                    return q;
-                }
-            }
-        }
-        return null;
-    }
-
-    // Lấy danh sách câu hỏi với tìm kiếm, bộ lọc, sắp xếp, phân trang
-    public List<QuestionDTO> getQuestions(int pageIndex, int pageSize, String sortBy, String keyword, String filterType) throws Exception {
+    // 1. Hàm chính lấy danh sách câu hỏi
+    public List<QuestionDTO> getQuestions(int pageIndex, int pageSize, String sortBy, String keyword, String filterType, String tag) {
         List<QuestionDTO> list = new ArrayList<>();
+        StringBuilder sql = new StringBuilder();
+        sql.append("SELECT q.*, u.username, u.Reputation AS author_reputation, up.avatar_url, ")
+           .append("(SELECT COUNT(*) FROM Answers a WHERE a.question_id = q.question_id) as ans_count ")
+           .append("FROM Questions q ")
+           .append("JOIN Users u ON q.user_id = u.user_id ")
+           .append("LEFT JOIN User_Profile up ON u.user_id = up.user_id ")
+              .append("WHERE ISNULL(q.is_deleted, 0) = 0 ");
 
-        StringBuilder sql = new StringBuilder(
-                "SELECT q.*, u.username, up.avatar_url, " +
-                "(SELECT COUNT(*) FROM Answers a WHERE a.question_id = q.question_id) as ans_count " +
-                "FROM Questions q " +
-                "JOIN Users u ON q.user_id = u.user_id " +
-                "LEFT JOIN User_Profile up ON u.user_id = up.user_id WHERE 1=1 ");
-
-        // Tìm kiếm (Search)
         if (keyword != null && !keyword.trim().isEmpty()) {
             sql.append(" AND (q.title LIKE ? OR q.body LIKE ?) ");
         }
-
-        // Bộ lọc (Filter)
         if ("unanswered".equals(filterType)) {
             sql.append(" AND (SELECT COUNT(*) FROM Answers a WHERE a.question_id = q.question_id) = 0 ");
         }
-
-        // Sắp xếp (Sorting)
-        switch (sortBy) {
-            case "views" -> sql.append(" ORDER BY q.view_count DESC ");
-            case "active" -> sql.append(" ORDER BY q.updated_at DESC ");
-            case "voted" -> sql.append(" ORDER BY q.Score DESC ");
-            default -> sql.append(" ORDER BY q.created_at DESC ");
+        // Logic lọc theo tag mới thêm
+        if (tag != null && !tag.trim().isEmpty()) {
+            sql.append(" AND q.question_id IN (SELECT qt.question_id FROM Question_Tags qt JOIN Tags t ON qt.tag_id = t.tag_id WHERE t.tag_name = ?) ");
         }
 
-        // Phân trang
+        if ("views".equals(sortBy)) {
+            sql.append(" ORDER BY q.view_count DESC ");
+        } else if ("active".equals(sortBy)) {
+            sql.append(" ORDER BY q.updated_at DESC "); 
+        } else if ("voted".equals(sortBy)) {
+            sql.append(" ORDER BY q.Score DESC "); 
+        } else {
+            sql.append(" ORDER BY q.created_at DESC "); 
+        }
+
         sql.append(" OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
 
-        try (Connection con = db.getConnection();
-             PreparedStatement st = con.prepareStatement(sql.toString())) {
+        try {
+            Connection conn = getConnection();
+            PreparedStatement st = conn.prepareStatement(sql.toString());
+            int paramIndex = 1;
 
-            int idx = 1;
-
-            // Set tham số cho Search
             if (keyword != null && !keyword.trim().isEmpty()) {
-                st.setString(idx++, "%" + keyword + "%");
-                st.setString(idx++, "%" + keyword + "%");
+                st.setString(paramIndex++, "%" + keyword + "%");
+                st.setString(paramIndex++, "%" + keyword + "%");
+            }
+            // Truyền tham số cho tag
+            if (tag != null && !tag.trim().isEmpty()) {
+                st.setString(paramIndex++, tag);
             }
 
-            // Set tham số cho Phân trang
-            st.setInt(idx++, (pageIndex - 1) * pageSize);
-            st.setInt(idx++, pageSize);
+            st.setInt(paramIndex++, (pageIndex - 1) * pageSize);
+            st.setInt(paramIndex++, pageSize);
 
-            try (ResultSet rs = st.executeQuery()) {
-                while (rs.next()) {
-                    QuestionDTO q = mapQuestion(rs);
-                    q.setAuthorAvatar(rs.getString("avatar_url"));
-                    q.setAnswerCount(rs.getInt("ans_count"));
-                    q.setTags(getTagsByQuestionId(q.getQuestionId()));
-                    list.add(q);
-                }
+            ResultSet rs = st.executeQuery();
+            while (rs.next()) {
+                list.add(mapRow(rs)); 
             }
+            rs.close(); st.close(); conn.close();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-
         return list;
     }
-
-    // Đếm tổng số câu hỏi (dùng cho phân trang)
-    public int getTotalQuestions(String keyword, String filterType) throws Exception {
-        StringBuilder sql = new StringBuilder("SELECT COUNT(*) FROM Questions q WHERE 1=1 ");
-
-        if (keyword != null && !keyword.trim().isEmpty()) {
-            sql.append(" AND (q.title LIKE ? OR q.body LIKE ?) ");
-        }
-
-        if ("unanswered".equals(filterType)) {
-            sql.append(" AND (SELECT COUNT(*) FROM Answers a WHERE a.question_id = q.question_id) = 0 ");
-        }
-
-        try (Connection con = db.getConnection();
-             PreparedStatement st = con.prepareStatement(sql.toString())) {
-
-            int idx = 1;
-
-            if (keyword != null && !keyword.trim().isEmpty()) {
-                st.setString(idx++, "%" + keyword + "%");
-                st.setString(idx++, "%" + keyword + "%");
-            }
-
-            try (ResultSet rs = st.executeQuery()) {
-                if (rs.next()) {
-                    return rs.getInt(1);
-                }
-            }
-        }
-        return 0;
-    }
-
-    // Tìm kiếm câu hỏi (rút gọn)
-    public List<QuestionDTO> searchQuestions(String keyword) throws Exception {
-        return getQuestions(1, 20, "newest", keyword, "all");
-    }
-
-    // Lấy danh sách Tags của một câu hỏi
-    private List<String> getTagsByQuestionId(long questionId) throws Exception {
-        List<String> tags = new ArrayList<>();
-        String sql = "SELECT t.tag_name FROM Tags t " +
-                "JOIN Question_Tags qt ON t.tag_id = qt.tag_id " +
-                "WHERE qt.question_id = ?";
-
-        try (Connection con = db.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
-
-            ps.setLong(1, questionId);
-
-            try (ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    tags.add(rs.getString("tag_name"));
-                }
-            }
-        }
-        return tags;
-    }
-
-    // Tăng lượt xem
-    public void incrementViewCount(long questionId) throws Exception {
-        try (Connection con = db.getConnection();
-             PreparedStatement ps = con.prepareStatement(
-                     "UPDATE Questions SET view_count = view_count + 1 WHERE question_id = ?")) {
-            ps.setLong(1, questionId);
-            ps.executeUpdate();
-        }
-    }
-
-    // Map dữ liệu từ ResultSet sang QuestionDTO
-    private QuestionDTO mapQuestion(ResultSet rs) throws SQLException {
+    
+    // 2. Hàm hỗ trợ Map dữ liệu từ ResultSet sang Object (Giúp code gọn hơn)
+    private QuestionDTO mapRow(ResultSet rs) throws SQLException {
         QuestionDTO q = new QuestionDTO();
         q.setQuestionId(rs.getLong("question_id"));
         q.setUserId(rs.getLong("user_id"));
         q.setTitle(rs.getString("title"));
         q.setBody(rs.getString("body"));
         q.setViewCount(rs.getInt("view_count"));
+        q.setIsClosed(rs.getBoolean("is_closed"));
+        q.setClosedReason(rs.getString("closed_reason"));
+        long closedBy = rs.getLong("closed_by");
+        if (!rs.wasNull()) {
+            q.setClosedBy(closedBy);
+        }
+        q.setClosedAt(rs.getTimestamp("closed_at"));
         q.setScore(rs.getInt("Score"));
         q.setCreatedAt(rs.getTimestamp("created_at"));
+        
         q.setAuthorName(rs.getString("username"));
+        q.setAuthorReputation(rs.getInt("author_reputation"));
+        q.setAuthorAvatar(rs.getString("avatar_url"));
+        q.setAnswerCount(rs.getInt("ans_count"));
+        
+        // Tự động lấy Tags cho câu hỏi này luôn
+        q.setTags(getTagsByQuestionId(q.getQuestionId())); 
+        
         return q;
     }
+<<<<<<< HEAD
 }
+=======
+
+    // 3. Hàm đếm tổng số câu hỏi (Dùng cho phân trang)
+    public int getTotalQuestions(String keyword, String filterType, String tag) {
+        StringBuilder sql = new StringBuilder("SELECT COUNT(*) FROM Questions q WHERE 1=1 ");
+        
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            sql.append(" AND (q.title LIKE ? OR q.body LIKE ?) ");
+        }
+        if ("unanswered".equals(filterType)) {
+             sql.append(" AND (SELECT COUNT(*) FROM Answers a WHERE a.question_id = q.question_id) = 0 ");
+        }
+        if (tag != null && !tag.trim().isEmpty()) {
+            sql.append(" AND q.question_id IN (SELECT qt.question_id FROM Question_Tags qt JOIN Tags t ON qt.tag_id = t.tag_id WHERE t.tag_name = ?) ");
+        }
+
+        try {
+            Connection conn = getConnection();
+            PreparedStatement st = conn.prepareStatement(sql.toString());
+            int paramIndex = 1;
+            
+            if (keyword != null && !keyword.trim().isEmpty()) {
+                st.setString(paramIndex++, "%" + keyword + "%");
+                st.setString(paramIndex++, "%" + keyword + "%");
+            }
+            if (tag != null && !tag.trim().isEmpty()) {
+                st.setString(paramIndex++, tag);
+            }
+            
+            ResultSet rs = st.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+            conn.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+    
+    // 4. Hàm Search (Optional)
+    public List<QuestionDTO> searchQuestions(String keyword) {
+        return getQuestions(1, 20, "newest", keyword, "all", null);
+    }
+    
+    // 5. Hàm lấy danh sách Tags của 1 câu hỏi
+    public List<String> getTagsByQuestionId(long questionId) {
+        List<String> tags = new ArrayList<>();
+        String sql = "SELECT t.tag_name FROM Tags t " +
+                     "JOIN Question_Tags qt ON t.tag_id = qt.tag_id " +
+                     "WHERE qt.question_id = ?";
+        try {
+            Connection conn = getConnection();
+            PreparedStatement st = conn.prepareStatement(sql);
+            st.setLong(1, questionId);
+            ResultSet rs = st.executeQuery();
+            while (rs.next()) {
+                tags.add(rs.getString("tag_name"));
+            }
+            rs.close();
+            st.close();
+            conn.close(); 
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return tags;
+    }
+    
+    // 5. Hàm thêm Câu hỏi mới kèm Tags (Sử dụng Transaction)
+    // Hàm quản lý transaction
+    public boolean insertQuestionWithTags(long userId, String title, String body, String tagsInput, int userReputation) throws Exception {
+        Connection conn = null;
+        try {
+            conn = getConnection();
+            conn.setAutoCommit(false); // Bắt đầu Transaction
+
+            // Bước 1: Gọi hàm phụ để Insert Question
+            long questionId = insertQuestionCore(conn, userId, title, body);
+
+            // Bước 2: Gọi hàm phụ để xử lý Tags, truyền thêm userReputation vào
+            if (questionId != -1 && tagsInput != null && !tagsInput.trim().isEmpty()) {
+                processTagsForQuestion(conn, questionId, tagsInput, userReputation);
+            }
+
+            conn.commit(); // Thành công thì lưu
+            return true;
+
+        } catch (Exception e) {
+            try { if (conn != null) conn.rollback(); } catch (SQLException ex) { ex.printStackTrace(); }
+            e.printStackTrace();
+            // Ném lỗi ngược lên Controller để nó biết tại sao lỗi (do database hay do điểm uy tín)
+            throw e; 
+        } finally {
+            try {
+                if (conn != null) {
+                    conn.setAutoCommit(true);
+                    conn.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+    // insert câu hỏi mới bảng Questions
+    private long insertQuestionCore(Connection conn, long userId, String title, String body) throws SQLException {
+        String sql = "INSERT INTO Questions (user_id, title, body) VALUES (?, ?, ?)";
+        // Dùng try-with-resources để tự động đóng PreparedStatement và ResultSet
+        try (PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            ps.setLong(1, userId);
+            ps.setString(2, title);
+            ps.setString(3, body);
+            ps.executeUpdate();
+            
+            try (ResultSet rs = ps.getGeneratedKeys()) {
+                if (rs.next()) {
+                    return rs.getLong(1);
+                }
+            }
+        }
+        return -1;
+    }
+    // Hàm kiểm tra tag
+    public List<String> findNewTags(String tagsInput) {
+        List<String> newTags = new ArrayList<>();
+        if (tagsInput == null || tagsInput.trim().isEmpty()) return newTags;
+
+        String[] tagsArray = tagsInput.split(",");
+
+        try (Connection conn = getConnection()) {
+            for (String tag : tagsArray) {
+                String tagName = tag.trim().toLowerCase();
+                if (tagName.isEmpty()) continue;
+
+                // Reuse helper method
+                long tagId = getTagIdIfExists(conn, tagName);
+                if (tagId == -1) {
+                    newTags.add(tagName);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return newTags;
+    }
+    
+    // Helper method: Check if tag exists and return tagId, or -1 if not exists
+    private long getTagIdIfExists(Connection conn, String tagName) throws SQLException {
+        String sql = "SELECT tag_id FROM Tags WHERE tag_name = ?";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, tagName);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getLong("tag_id");
+                }
+            }
+        }
+        return -1;
+    }
+    // Xử lý tag và check Reputation
+    private void processTagsForQuestion(Connection conn, long questionId, String tagsInput, int userReputation) throws Exception {
+        String[] tagsArray = tagsInput.split(",");
+        String sqlInsertTag = "INSERT INTO Tags (tag_name) VALUES (?)";
+        String sqlInsertQT = "INSERT INTO Question_Tags (question_id, tag_id) VALUES (?, ?)";
+
+        try (PreparedStatement psInsertTag = conn.prepareStatement(sqlInsertTag, Statement.RETURN_GENERATED_KEYS);
+             PreparedStatement psInsertQT = conn.prepareStatement(sqlInsertQT)) {
+
+            for (String tag : tagsArray) {
+                String tagName = tag.trim().toLowerCase();
+                if (tagName.isEmpty()) continue;
+
+                // Reuse helper method to check if tag exists
+                long tagId = getTagIdIfExists(conn, tagName);
+
+                // B. Nếu là TAG MỚI HOÀN TOÀN -> Bắt đầu check uy tín
+                if (tagId == -1) {
+                    // Giả sử mốc uy tín cần thiết là 50 điểm
+                    if (userReputation < 50) {
+                        // Ném ra Exception để Rollback toàn bộ và báo lỗi
+                        throw new Exception("NOT_ENOUGH_REP:" + tagName);
+                    }
+
+                    // Nếu đủ điểm uy tín thì mới cho tạo Tag mới
+                    psInsertTag.setString(1, tagName);
+                    psInsertTag.executeUpdate();
+                    try (ResultSet rsNew = psInsertTag.getGeneratedKeys()) {
+                        if (rsNew.next()) {
+                            tagId = rsNew.getLong(1);
+                        }
+                    }
+                }
+
+                // C. Link Question và Tag
+                if (tagId != -1) {
+                    psInsertQT.setLong(1, questionId);
+                    psInsertQT.setLong(2, tagId);
+                    psInsertQT.executeUpdate();
+                }
+            }
+        }
+    }
+    
+    // Lấy top các tag phổ biến nhất dựa trên số lượng câu hỏi
+    public List<String> getPopularTags(int limit) {
+        List<String> tags = new ArrayList<>();
+        String sql = "SELECT t.tag_name, COUNT(qt.question_id) as count " +
+                     "FROM Tags t " +
+                     "JOIN Question_Tags qt ON t.tag_id = qt.tag_id " +
+                     "GROUP BY t.tag_name " +
+                     "ORDER BY count DESC " +
+                     "OFFSET 0 ROWS FETCH NEXT ? ROWS ONLY";
+        try {
+            Connection conn = getConnection();
+            PreparedStatement st = conn.prepareStatement(sql);
+            st.setInt(1, limit);
+            ResultSet rs = st.executeQuery();
+            while (rs.next()) {
+                tags.add(rs.getString("tag_name"));
+            }
+            rs.close();
+            st.close();
+            conn.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return tags;
+    }
+}
+>>>>>>> Mai

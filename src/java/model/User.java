@@ -13,6 +13,9 @@ public class User {
     private String providerId;
     private Timestamp createdAt;
     private String avatarUrl;
+    private String bio;
+    private String location;
+    private String website;
 
     public User() {
     }
@@ -107,6 +110,38 @@ public class User {
 
     public void setAvatarUrl(String avatarUrl) {
         this.avatarUrl = avatarUrl;
+    }
+
+    public String getBio() {
+        return bio;
+    }
+
+    public void setBio(String bio) {
+        this.bio = bio;
+    }
+
+    public String getLocation() {
+        return location;
+    }
+
+    public void setLocation(String location) {
+        this.location = location;
+    }
+
+    public String getWebsite() {
+        return website;
+    }
+
+    public void setWebsite(String website) {
+        this.website = website;
+    }
+
+    // Helper: Display avatar with default fallback
+    public String getDisplayAvatar() {
+        if (avatarUrl != null && !avatarUrl.isEmpty()) {
+            return avatarUrl;
+        }
+        return "assets/img/default-avatar.png";
     }
 
     @Override

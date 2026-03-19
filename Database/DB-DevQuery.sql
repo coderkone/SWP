@@ -35,25 +35,31 @@ CREATE TABLE [dbo].[User_Profile](
 )
 GO
 
--- 3. QUESTIONS (Đã xóa accepted_answer_id để tránh vòng lặp)
+-- 3. QUESTIONS 
 CREATE TABLE [dbo].[Questions](
 	[question_id] [bigint] IDENTITY(1,1) PRIMARY KEY,
 	[user_id] [bigint] NOT NULL,
 	[title] [nvarchar](255) NOT NULL,
 	[body] [nvarchar](max) NOT NULL,
 	[code_snippet] [nvarchar](max) NULL,
-	-- [accepted_answer_id] ĐÃ XÓA
 	[view_count] [int] DEFAULT 0,
 	[is_closed] [bit] DEFAULT 0,
+	[closed_by] [bigint] NULL,
 	[closed_reason] [nvarchar](255) NULL,
+	[closed_at] [datetime] NULL,
+	[is_deleted] [bit] NOT NULL DEFAULT 0,
+	[deleted_at] [datetime] NULL,
+	[deleted_by] [bigint] NULL,
 	[created_at] [datetime] DEFAULT GETDATE(),
 	[updated_at] [datetime] DEFAULT GETDATE(),
 	[Score] [int] DEFAULT 0,
-    FOREIGN KEY (user_id) REFERENCES Users(user_id)
+    FOREIGN KEY (user_id) REFERENCES Users(user_id),
+    FOREIGN KEY (closed_by) REFERENCES Users(user_id),
+    FOREIGN KEY (deleted_by) REFERENCES Users(user_id)
 )
 GO
 
--- 4. ANSWERS (Thêm is_accepted)
+-- 4. ANSWERS 
 CREATE TABLE [dbo].[Answers](
 	[answer_id] [bigint] IDENTITY(1,1) PRIMARY KEY,
 	[question_id] [bigint] NOT NULL,
@@ -61,7 +67,7 @@ CREATE TABLE [dbo].[Answers](
 	[body] [nvarchar](max) NOT NULL,
 	[code_snippet] [nvarchar](max) NULL,
 	[is_edited] [bit] DEFAULT 0,
-    [is_accepted] [bit] DEFAULT 0, -- THÊM DÒNG NÀY
+    [is_accepted] [bit] DEFAULT 0, 
 	[created_at] [datetime] DEFAULT GETDATE(),
 	[updated_at] [datetime] DEFAULT GETDATE(),
 	[Score] [int] DEFAULT 0,
@@ -76,11 +82,13 @@ CREATE TABLE [dbo].[Comments](
 	[user_id] [bigint] NOT NULL,
 	[question_id] [bigint] NULL,
 	[answer_id] [bigint] NULL,
+	[parent_comment_id] [bigint] NULL,
 	[body] [nvarchar](max) NOT NULL,
 	[created_at] [datetime] DEFAULT GETDATE(),
     FOREIGN KEY (user_id) REFERENCES Users(user_id),
     FOREIGN KEY (question_id) REFERENCES Questions(question_id) ON DELETE CASCADE,
-    FOREIGN KEY (answer_id) REFERENCES Answers(answer_id)
+    FOREIGN KEY (answer_id) REFERENCES Answers(answer_id),
+    FOREIGN KEY (parent_comment_id) REFERENCES Comments(comment_id)
 )
 GO
 
@@ -139,6 +147,8 @@ CREATE TABLE [dbo].[Bookmarks](
     FOREIGN KEY (collection_id) REFERENCES Collections(collection_id)
 )
 GO
+
+
 
 -- BADGES
 CREATE TABLE [dbo].[Badges](
@@ -215,6 +225,7 @@ CREATE TABLE [dbo].[Reports](
 	[target_type] [varchar](20) NOT NULL,
 	[target_id] [bigint] NOT NULL,
 	[reason] [nvarchar](max) NOT NULL,
+	[note] [nvarchar](500) NULL,
 	[status] [varchar](20) DEFAULT 'open',
 	[created_at] [datetime] DEFAULT GETDATE(),
     FOREIGN KEY (reporter_id) REFERENCES Users(user_id)
@@ -254,3 +265,47 @@ CREATE TABLE [dbo].[UserFollow](
     FOREIGN KEY (following_id) REFERENCES Users(user_id)
 )
 GO
+
+ALTER TABLE [dbo].[Badges] 
+ADD [required_reputation] [int] DEFAULT 0;
+GO
+
+CREATE TABLE [dbo].[Privileges](
+	[privilege_id] [int] IDENTITY(1,1) PRIMARY KEY,
+	[name] [nvarchar](100) NOT NULL,
+	[description] [nvarchar](max) NOT NULL,
+	[required_reputation] [int] NOT NULL
+)
+GO
+
+-- 1. BLOGS TABLE (Stores articles posted by the Admin)
+CREATE TABLE [dbo].[Blogs] (
+    [blog_id] INT IDENTITY(1,1) PRIMARY KEY,
+    [title] NVARCHAR(MAX) NOT NULL,
+    [content] NVARCHAR(MAX) NOT NULL,
+    [thumbnail_url] VARCHAR(500) NULL,
+    [author_id] BIGINT NOT NULL,
+    [created_at] DATETIME DEFAULT GETDATE(),
+    [updated_at] DATETIME DEFAULT GETDATE(),
+    [view_count] INT DEFAULT 0,
+    [comment_count] INT DEFAULT 0,
+    [status] INT DEFAULT 1,
+    FOREIGN KEY ([author_id]) REFERENCES [dbo].[Users]([user_id])
+);
+GO
+-- 2. BLOG COMMENTS TABLE (Stores user discussions and replies)
+CREATE TABLE [dbo].[BlogComments] (
+    [comment_id] INT IDENTITY(1,1) PRIMARY KEY,
+    -- Which blog post this comment belongs to
+    [blog_id] INT NOT NULL,
+    [user_id] BIGINT NOT NULL,
+    [parent_id] INT NULL,
+    [content] NVARCHAR(MAX) NOT NULL,
+    [created_at] DATETIME DEFAULT GETDATE(),  
+    FOREIGN KEY ([blog_id]) REFERENCES [dbo].[Blogs]([blog_id]) ON DELETE CASCADE,
+    FOREIGN KEY ([user_id]) REFERENCES [dbo].[Users]([user_id]),
+    FOREIGN KEY ([parent_id]) REFERENCES [dbo].[BlogComments]([comment_id])
+);
+GO
+
+select * from [dbo].[Users];

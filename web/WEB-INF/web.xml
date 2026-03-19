@@ -3,7 +3,15 @@
     <session-config>
         <session-timeout>60</session-timeout>
     </session-config>
-    <!-- Auth filter - using @WebFilter annotation in AuthFilter.java -->
+    <!-- Auth filter -->
+    <filter>
+        <filter-name>AuthFilter</filter-name>
+        <filter-class>filter.AuthFilter</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>AuthFilter</filter-name>
+        <url-pattern>/admin/*</url-pattern>
+    </filter-mapping>
     <welcome-file-list>
         <welcome-file>index.jsp</welcome-file>
     </welcome-file-list>

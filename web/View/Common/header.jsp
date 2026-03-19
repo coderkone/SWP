@@ -65,6 +65,7 @@
 
             <ul class="navbar-nav ms-auto align-items-center gap-2 mt-2 mt-lg-0">
                 
+<<<<<<< HEAD
                 <c:choose>
                     <c:when test="${sessionScope.USER != null || sessionScope.user != null}">
                         <c:set var="currentUser" value="${sessionScope.USER != null ? sessionScope.USER : sessionScope.user}" />
@@ -90,6 +91,42 @@
                         </li>
                     </c:otherwise>
                 </c:choose>
+=======
+                <c:if test="${sessionScope.user != null}">
+                    
+                    <li class="nav-item">
+                        <a class="nav-link d-flex align-items-center py-0" href="${pageContext.request.contextPath}/profile">
+                            <img src="${sessionScope.user.avatarUrl != null ? sessionScope.user.avatarUrl : 'https://via.placeholder.com/32'}" 
+                                 alt="Avatar" width="32" height="32" class="rounded bg-light border avatar-img">
+                            
+                            <span id="user-reputation-display" class="ms-2 fw-bold text-dark small">${sessionScope.user.reputation != null ? sessionScope.user.reputation : 0}</span>
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link text-secondary" href="#"><i class="fa-solid fa-inbox fa-lg"></i></a>
+                    </li>
+                    
+                    <li class="nav-item me-2">
+                         <a class="nav-link text-secondary" href="#"><i class="fa-solid fa-circle-question fa-lg"></i></a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="btn btn-outline-secondary btn-sm btn-auth" href="${pageContext.request.contextPath}/logout">
+                            <i class="fa-solid fa-right-from-bracket"></i>
+                        </a>
+                    </li>
+                </c:if>
+
+                <c:if test="${sessionScope.user == null}">
+                    <li class="nav-item">
+                        <a class="btn btn-outline-primary btn-sm btn-auth px-3" href="${pageContext.request.contextPath}/auth/login">Log in</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="btn btn-primary btn-sm btn-auth px-3 me-4" href="${pageContext.request.contextPath}/auth/register">Sign up</a>
+                        </li>
+                </c:if>
+>>>>>>> Mai
 
             </ul>
         </div>
