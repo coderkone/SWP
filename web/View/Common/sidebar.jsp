@@ -51,44 +51,37 @@
 
 <nav class="d-none d-md-block bg-light sidebar">
     <div class="sidebar-sticky">
+        <c:set var="uri" value="${pageContext.request.requestURI}" />
+
         <ul class="nav flex-column">
-            
+            <li class="sidebar-heading">Public</li>
             <li class="nav-item">
-                <a class="nav-link ${param.page == 'home' ? 'active' : ''}" href="${pageContext.request.contextPath}/home">
+                <a class="nav-link ${uri.contains('/home') ? 'active' : ''}" href="${pageContext.request.contextPath}/home">
                     <i class="fa-solid fa-house me-2"></i> Home
                 </a>
             </li>
 
-            <li class="sidebar-heading">Public</li>
-
             <li class="nav-item">
-                <a class="nav-link ${param.page == 'questions' ? 'active' : ''}" href="${pageContext.request.contextPath}/questions">
-                    <i class="fa-solid fa-earth-americas me-2"></i> Questions
-                </a>
-            </li>
-
-            <li class="nav-item">
-                <a class="nav-link ${param.page == 'tags' ? 'active' : ''}" href="${pageContext.request.contextPath}/tags">
+                <a class="nav-link ${uri.contains('/tags') ? 'active' : ''}" href="${pageContext.request.contextPath}/tags">
                     <i class="fa-solid fa-tags me-2"></i> Tags
                 </a>
             </li>
 
             <c:if test="${sessionScope.user != null}">
                 <li class="sidebar-heading">Personal</li>
-                
+
                 <li class="nav-item">
-                    <a class="nav-link ${param.page == 'profile' ? 'active' : ''}" href="${pageContext.request.contextPath}/profile">
+                    <a class="nav-link ${uri.contains('/profile') ? 'active' : ''}" href="${pageContext.request.contextPath}/profile">
                         <i class="fa-solid fa-user me-2"></i> Profile
                     </a>
                 </li>
-                
+
                 <li class="nav-item">
-                    <a class="nav-link ${param.page == 'bookmarks' ? 'active' : ''}" href="${pageContext.request.contextPath}/bookmarks">
-                        <i class="fa-solid fa-bookmark me-2"></i> Bookmarks
+                    <a class="nav-link ${uri.contains('/saves') ? 'active' : ''}" href="${pageContext.request.contextPath}/saves">
+                        <i class="fa-solid fa-bookmark me-2"></i> Saves
                     </a>
                 </li>
             </c:if>
-
         </ul>
     </div>
 </nav>

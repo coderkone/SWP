@@ -34,7 +34,7 @@ public class GithubCallbackController extends HttpServlet {
 
                 if (user != null) {
                     request.getSession().setAttribute("user", user);
-                    response.sendRedirect(request.getContextPath() + "/View/User/home.jsp");
+                    response.sendRedirect(request.getContextPath() + "/home");
                 } else {
                     response.sendRedirect(request.getContextPath() + "/View/User/login.jsp?error=GithubLoginFailed");
                 }

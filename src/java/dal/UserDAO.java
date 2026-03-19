@@ -6,13 +6,11 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import util.PasswordUtil;
 import model.GithubUser;
 import model.GoogleUser;
 import model.User;
-import util.PasswordUtil;
+import java.util.UUID;
 public class UserDAO {
 
     private final DBContext db = new DBContext();
@@ -116,7 +114,7 @@ public class UserDAO {
         String sql = "INSERT INTO Users (username, email, password_hash, role, provider, provider_id) VALUES (?, ?, ?, 'member', ?, ?)";
         
         try (Connection con = db.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            PreparedStatement ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             
             String safeName = (name != null ? name : "User").replaceAll("\\s+", "") + "_" + (int)(Math.random() * 10000);
             if (safeName.length() > 50) safeName = safeName.substring(0, 50);
@@ -182,16 +180,6 @@ public class UserDAO {
             e.printStackTrace();
         }
         return user;
-    }
-    public void changPassword(String email, String newPassword) throws Exception{
-        String sql = "UPDATE Users SET password_hash = ? WHERE email = ?";
-        String hash = PasswordUtil.sha256(newPassword);
-        try(Connection con = db.getConnection();
-            PreparedStatement ps = con.prepareStatement(sql)){
-            ps.setString(1, hash);
-            ps.setString(2, email);
-            ps.executeUpdate();
-        }
     }
 
     public List<String> getReputationChanges(long userId, int limit) {

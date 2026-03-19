@@ -98,9 +98,11 @@ public class AuthController extends HttpServlet {
             return;
         }
 
-        UserDTO user = dao.login(email, pass);
-        if (user == null) {
-            request.setAttribute("error", "Sai email hoặc password.");
+        // 2. Gọi DAO lấy UserDTO (Giữ nguyên theo ý bạn)
+        UserDTO dto = dao.login(email, pass);
+
+        if (dto == null) {
+            request.setAttribute("error", "Email or Password is not correct.");
             request.getRequestDispatcher("/View/User/login.jsp").forward(request, response);
             return;
         }
@@ -112,7 +114,7 @@ public class AuthController extends HttpServlet {
         if (role != null && role.equalsIgnoreCase("admin")) {
             response.sendRedirect(request.getContextPath() + "/dashboard");
         } else {
-            response.sendRedirect(request.getContextPath() + "/SystemRules");
+            response.sendRedirect(request.getContextPath() + "/home");
         }
     }
 }

@@ -36,9 +36,8 @@ public class SearchController extends HttpServlet {
 
         String keyword = request.getParameter("q");
         String tab = request.getParameter("tab");       
-        String filter = request.getParameter("filter");
-        String pageParam = request.getParameter("page");
-        int page = (pageParam != null) ? Integer.parseInt(pageParam) : 1;
+        String filter = request.getParameter("filter"); 
+        String tag = request.getParameter("tag");
                 
         // Nếu người dùng bấm "Unanswered" -> Reset tab về newest
         if ("unanswered".equals(filter)) {
@@ -54,23 +53,30 @@ public class SearchController extends HttpServlet {
         if (filter == null) filter = "all";
 
         QuestionDAO dao = new QuestionDAO();
-        List<QuestionDTO> list;
-        
+        // Bắt tham số page từ URL
+        int pageIndex = 1;
+        int pageSize = 10;
+        String pageStr = request.getParameter("page");
         try {
-            list = dao.getQuestions(page, 10, tab, keyword, filter);
-            int totalQuestions = dao.getTotalQuestions(keyword, filter);
-            int totalPages = (totalQuestions + 9) / 10; // Ceiling division
-            
-            request.setAttribute("questions", list);
-            request.setAttribute("currentPage", page);
-            request.setAttribute("totalPage", totalPages);
-        } catch (Exception e) {
-            System.err.println("Error searching questions: " + e.getMessage());
-            request.setAttribute("questions", new java.util.ArrayList<>());
-            request.setAttribute("currentPage", 1);
-            request.setAttribute("totalPage", 1);
+            if (pageStr != null) pageIndex = Integer.parseInt(pageStr);
+        } catch (NumberFormatException e) {
+            pageIndex = 1;
         }
 
+        // Lấy danh sách và tính toán phân trang
+        List<QuestionDTO> list = dao.getQuestions(pageIndex, pageSize, tab, keyword, filter,tag);
+        int totalRecords = dao.getTotalQuestions(keyword, filter, tag);
+        int totalPage = (totalRecords % pageSize == 0) ? (totalRecords / pageSize) : (totalRecords / pageSize + 1);
+
+        List<String> popularTags = dao.getPopularTags(10);
+        
+        // Truyền dữ liệu sang JSP
+        request.setAttribute("questions", list);
+        request.setAttribute("totalPage", totalPage);
+        request.setAttribute("currentPage", pageIndex);
+        request.setAttribute("totalQuestions", totalRecords); // Gửi tổng số bài thực tế
+        request.setAttribute("popularTags", popularTags);
+        
         request.setAttribute("currentKeyword", keyword);
         request.setAttribute("currentSort", tab);
         request.setAttribute("currentFilter", filter);

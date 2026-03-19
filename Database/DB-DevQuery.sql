@@ -266,6 +266,20 @@ CREATE TABLE [dbo].[UserFollow](
 )
 GO
 
+ALTER TABLE [dbo].[Badges] 
+ADD [required_reputation] [int] DEFAULT 0;
+GO
+
+CREATE TABLE [dbo].[Privileges](
+	[privilege_id] [int] IDENTITY(1,1) PRIMARY KEY,
+	[name] [nvarchar](100) NOT NULL,
+	[description] [nvarchar](max) NOT NULL,
+	[required_reputation] [int] NOT NULL
+)
+GO
+
+select * from [dbo].[Users];
+
 -- Add accepted_answer_id to Questions (Option A - recommended)
 -- When accepted answer is deleted, ON DELETE SET NULL clears it automatically.
 
