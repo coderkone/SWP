@@ -7,18 +7,14 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
-<<<<<<< HEAD
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-=======
-import java.util.List;
->>>>>>> Mai
-import util.PasswordUtil;
+import java.util.UUID;
 import model.GithubUser;
 import model.GoogleUser;
 import model.User;
-import java.util.UUID;
+import util.PasswordUtil;
 public class UserDAO {
 
     private final DBContext db = new DBContext();
@@ -57,11 +53,7 @@ public class UserDAO {
     }
 
     public UserDTO login(String email, String rawPassword) throws Exception {
-<<<<<<< HEAD
-        String sql = "SELECT user_id, username, email, role, status FROM Users WHERE email = ? AND password_hash = ?";
-=======
         String sql = "SELECT user_id, username, email, role, Reputation FROM Users WHERE email = ? AND password_hash = ?";
->>>>>>> Mai
         String hash = PasswordUtil.sha256(rawPassword);
 
         try (Connection con = db.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
@@ -70,23 +62,15 @@ public class UserDAO {
 
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-<<<<<<< HEAD
                     UserDTO user = new UserDTO(
-=======
-                        UserDTO user = new UserDTO(
->>>>>>> Mai
                             rs.getLong("user_id"),
                             rs.getString("username"),
                             rs.getString("email"),
                             rs.getString("role")
                     );
-<<<<<<< HEAD
                     user.setStatus(rs.getString("status"));
+                    user.setReputation(rs.getInt("Reputation"));
                     return user;
-=======
-                        user.setReputation(rs.getInt("Reputation"));
-                        return user;
->>>>>>> Mai
                 }
             }
         }
@@ -167,22 +151,12 @@ public class UserDAO {
         UserDTO user = null;
         // Query join 2 bảng Users và User_Profile
         String sql = "SELECT u.user_id, u.username, u.email, u.role, u.Reputation, u.created_at, "
-<<<<<<< HEAD
-                   + "p.bio, p.location, p.website, p.avatar_url "
-                   + "FROM Users u "
-                   + "LEFT JOIN User_Profile p ON u.user_id = p.user_id "
-                   + "WHERE u.user_id = ?";
-
-        try (Connection con = db.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
-=======
                 + "p.bio, p.location, p.website, p.avatar_url "
                 + "FROM Users u "
                 + "LEFT JOIN User_Profile p ON u.user_id = p.user_id "
                 + "WHERE u.user_id = ?";
 
         try (Connection con = db.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
->>>>>>> Mai
 
             ps.setLong(1, id);
             try (ResultSet rs = ps.executeQuery()) {
@@ -209,9 +183,7 @@ public class UserDAO {
         return user;
     }
 
-<<<<<<< HEAD
     // ==================== ADMIN USER MANAGEMENT ====================
-
     // Lấy tổng số users
     public int getUserCount() {
         String sql = "SELECT COUNT(*) FROM Users";
@@ -548,7 +520,7 @@ public class UserDAO {
             e.printStackTrace();
         }
         return trend;
-=======
+    }
     public List<String> getReputationChanges(long userId, int limit) {
         List<String> changes = new ArrayList<>();
         String sql = "SELECT TOP (?) delta, reason FROM Reputation_History WHERE user_id = ? ORDER BY created_at DESC, history_id DESC";
@@ -572,6 +544,15 @@ public class UserDAO {
         }
 
         return changes;
->>>>>>> Mai
+    }
+    public void changPassword(String email, String newPassword) throws Exception{
+        String sql = "UPDATE Users SET password_hash = ? WHERE email = ?";
+        String hash = PasswordUtil.sha256(newPassword);
+        try(Connection con = db.getConnection();
+            PreparedStatement ps = con.prepareStatement(sql)){
+            ps.setString(1, hash);
+            ps.setString(2, email);
+            ps.executeUpdate();
+        }
     }
 }
