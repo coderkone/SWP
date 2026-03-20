@@ -8,14 +8,13 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.List;
-import util.PasswordUtil;
+import java.util.Map;
+import java.util.UUID;
 import model.GithubUser;
 import model.GoogleUser;
 import model.User;
-import java.util.UUID;
-
+import util.PasswordUtil;
 public class UserDAO {
 
     private final DBContext db = new DBContext();
@@ -54,7 +53,6 @@ public class UserDAO {
     }
 
     public UserDTO login(String email, String rawPassword) throws Exception {
-
         String sql = "SELECT user_id, username, email, role, Reputation FROM Users WHERE email = ? AND password_hash = ?";
         String hash = PasswordUtil.sha256(rawPassword);
 
@@ -64,14 +62,13 @@ public class UserDAO {
 
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-
                     UserDTO user = new UserDTO(
                             rs.getLong("user_id"),
                             rs.getString("username"),
                             rs.getString("email"),
                             rs.getString("role")
                     );
-
+                    user.setStatus(rs.getString("status"));
                     user.setReputation(rs.getInt("Reputation"));
                     return user;
                 }
@@ -185,13 +182,14 @@ public class UserDAO {
         }
         return user;
     }
-    
- // ==================== ADMIN USER MANAGEMENT ====================
 
+    // ==================== ADMIN USER MANAGEMENT ====================
     // Lấy tổng số users
     public int getUserCount() {
         String sql = "SELECT COUNT(*) FROM Users";
-        try (Connection con = db.getConnection(); PreparedStatement ps = con.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
+        try (Connection con = db.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
             if (rs.next()) {
                 return rs.getInt(1);
             }
@@ -205,10 +203,11 @@ public class UserDAO {
     public List<UserDTO> getAllUsers(int page, int pageSize) {
         List<UserDTO> users = new ArrayList<>();
         String sql = "SELECT user_id, username, email, role, status, created_at, Reputation "
-                + "FROM Users ORDER BY created_at DESC "
-                + "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
+                   + "FROM Users ORDER BY created_at DESC "
+                   + "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
 
-        try (Connection con = db.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
+        try (Connection con = db.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setInt(1, (page - 1) * pageSize);
             ps.setInt(2, pageSize);
 
@@ -235,9 +234,10 @@ public class UserDAO {
     public List<UserDTO> searchUsers(String keyword, int limit) {
         List<UserDTO> users = new ArrayList<>();
         String sql = "SELECT TOP (?) user_id, username, email, role, status, created_at "
-                + "FROM Users WHERE username LIKE ? OR email LIKE ?";
+                   + "FROM Users WHERE username LIKE ? OR email LIKE ?";
 
-        try (Connection con = db.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
+        try (Connection con = db.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setInt(1, limit);
             ps.setString(2, "%" + keyword + "%");
             ps.setString(3, "%" + keyword + "%");
@@ -264,7 +264,8 @@ public class UserDAO {
     public UserDTO getUserById(long userId) {
         String sql = "SELECT user_id, username, email, role, status, created_at, Reputation FROM Users WHERE user_id = ?";
 
-        try (Connection con = db.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
+        try (Connection con = db.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setLong(1, userId);
 
             try (ResultSet rs = ps.executeQuery()) {
@@ -291,7 +292,8 @@ public class UserDAO {
         String sql = "INSERT INTO Users(username, email, password_hash, role, status) VALUES (?, ?, ?, ?, 'active')";
         String hash = PasswordUtil.sha256(rawPassword);
 
-        try (Connection con = db.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
+        try (Connection con = db.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setString(1, username);
             ps.setString(2, email);
             ps.setString(3, hash);
@@ -307,7 +309,8 @@ public class UserDAO {
     public boolean updateUser(long userId, String role, String status) {
         String sql = "UPDATE Users SET role = ?, status = ?, updated_at = GETDATE() WHERE user_id = ?";
 
-        try (Connection con = db.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
+        try (Connection con = db.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setString(1, role);
             ps.setString(2, status);
             ps.setLong(3, userId);
@@ -321,9 +324,10 @@ public class UserDAO {
     // Toggle status (active <-> inactive)
     public boolean toggleUserStatus(long userId) {
         String sql = "UPDATE Users SET status = CASE WHEN status = 'active' THEN 'inactive' ELSE 'active' END, "
-                + "updated_at = GETDATE() WHERE user_id = ?";
+                   + "updated_at = GETDATE() WHERE user_id = ?";
 
-        try (Connection con = db.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
+        try (Connection con = db.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setLong(1, userId);
             return ps.executeUpdate() > 0;
         } catch (Exception e) {
@@ -346,7 +350,8 @@ public class UserDAO {
             params.add(status);
         }
 
-        try (Connection con = db.getConnection(); PreparedStatement ps = con.prepareStatement(sql.toString())) {
+        try (Connection con = db.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql.toString())) {
             for (int i = 0; i < params.size(); i++) {
                 ps.setString(i + 1, params.get(i));
             }
@@ -365,7 +370,7 @@ public class UserDAO {
     public List<UserDTO> getUsersByFilter(String role, String status, int page, int pageSize) {
         List<UserDTO> users = new ArrayList<>();
         StringBuilder sql = new StringBuilder(
-                "SELECT user_id, username, email, role, status, created_at, Reputation FROM Users WHERE 1=1"
+            "SELECT user_id, username, email, role, status, created_at, Reputation FROM Users WHERE 1=1"
         );
         List<Object> params = new ArrayList<>();
 
@@ -381,7 +386,8 @@ public class UserDAO {
         params.add((page - 1) * pageSize);
         params.add(pageSize);
 
-        try (Connection con = db.getConnection(); PreparedStatement ps = con.prepareStatement(sql.toString())) {
+        try (Connection con = db.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql.toString())) {
             for (int i = 0; i < params.size(); i++) {
                 Object param = params.get(i);
                 if (param instanceof String) {
@@ -414,9 +420,10 @@ public class UserDAO {
     public List<UserDTO> getNewestUsers(int limit) {
         List<UserDTO> users = new ArrayList<>();
         String sql = "SELECT TOP (?) user_id, username, email, role, status, created_at "
-                + "FROM Users ORDER BY created_at DESC";
+                   + "FROM Users ORDER BY created_at DESC";
 
-        try (Connection con = db.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
+        try (Connection con = db.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setInt(1, limit);
 
             try (ResultSet rs = ps.executeQuery()) {
@@ -440,7 +447,9 @@ public class UserDAO {
     // Lấy tổng số questions (cho dashboard)
     public int getQuestionCount() {
         String sql = "SELECT COUNT(*) FROM Questions";
-        try (Connection con = db.getConnection(); PreparedStatement ps = con.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
+        try (Connection con = db.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
             if (rs.next()) {
                 return rs.getInt(1);
             }
@@ -453,7 +462,9 @@ public class UserDAO {
     // Lấy tổng số answers (cho dashboard)
     public int getAnswerCount() {
         String sql = "SELECT COUNT(*) FROM Answers";
-        try (Connection con = db.getConnection(); PreparedStatement ps = con.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
+        try (Connection con = db.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
             if (rs.next()) {
                 return rs.getInt(1);
             }
@@ -466,11 +477,12 @@ public class UserDAO {
     // Lấy xu hướng đăng ký user theo ngày (cho dashboard chart)
     public List<Map<String, Object>> getUserRegistrationTrend(int days) {
         List<Map<String, Object>> trend = new ArrayList<>();
-        String sql = "SELECT CAST(created_at AS DATE) as reg_date, COUNT(*) as count "
-                + "FROM Users WHERE created_at >= DATEADD(DAY, -?, GETDATE()) "
-                + "GROUP BY CAST(created_at AS DATE) ORDER BY reg_date";
+        String sql = "SELECT CAST(created_at AS DATE) as reg_date, COUNT(*) as count " +
+                     "FROM Users WHERE created_at >= DATEADD(DAY, -?, GETDATE()) " +
+                     "GROUP BY CAST(created_at AS DATE) ORDER BY reg_date";
 
-        try (Connection con = db.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
+        try (Connection con = db.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setInt(1, days);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
@@ -489,11 +501,12 @@ public class UserDAO {
     // Lấy xu hướng câu hỏi mới theo ngày (cho dashboard chart)
     public List<Map<String, Object>> getQuestionTrend(int days) {
         List<Map<String, Object>> trend = new ArrayList<>();
-        String sql = "SELECT CAST(created_at AS DATE) as q_date, COUNT(*) as count "
-                + "FROM Questions WHERE created_at >= DATEADD(DAY, -?, GETDATE()) "
-                + "GROUP BY CAST(created_at AS DATE) ORDER BY q_date";
+        String sql = "SELECT CAST(created_at AS DATE) as q_date, COUNT(*) as count " +
+                     "FROM Questions WHERE created_at >= DATEADD(DAY, -?, GETDATE()) " +
+                     "GROUP BY CAST(created_at AS DATE) ORDER BY q_date";
 
-        try (Connection con = db.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
+        try (Connection con = db.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setInt(1, days);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
@@ -512,7 +525,8 @@ public class UserDAO {
         List<String> changes = new ArrayList<>();
         String sql = "SELECT TOP (?) delta, reason FROM Reputation_History WHERE user_id = ? ORDER BY created_at DESC, history_id DESC";
 
-        try (Connection con = db.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
+        try (Connection con = db.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setInt(1, Math.max(1, limit));
             ps.setLong(2, userId);
 
@@ -530,5 +544,15 @@ public class UserDAO {
         }
 
         return changes;
+    }
+    public void changPassword(String email, String newPassword) throws Exception{
+        String sql = "UPDATE Users SET password_hash = ? WHERE email = ?";
+        String hash = PasswordUtil.sha256(newPassword);
+        try(Connection con = db.getConnection();
+            PreparedStatement ps = con.prepareStatement(sql)){
+            ps.setString(1, hash);
+            ps.setString(2, email);
+            ps.executeUpdate();
+        }
     }
 }

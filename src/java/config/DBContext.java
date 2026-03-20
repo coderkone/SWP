@@ -4,6 +4,8 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 
 //test thui
+//test cho Vu
+//test cho Vu 2
 public class DBContext {
     private static final String USER = "sa";
     private static final String PASS = "123";
