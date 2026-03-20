@@ -62,23 +62,15 @@ public class UserDAO {
 
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-<<<<<<< HEAD
                     UserDTO user = new UserDTO(
-=======
-                        UserDTO user = new UserDTO(
->>>>>>> Mai
                             rs.getLong("user_id"),
                             rs.getString("username"),
                             rs.getString("email"),
                             rs.getString("role")
                     );
-<<<<<<< HEAD
                     user.setStatus(rs.getString("status"));
+                    user.setReputation(rs.getInt("Reputation"));
                     return user;
-=======
-                        user.setReputation(rs.getInt("Reputation"));
-                        return user;
->>>>>>> Mai
                 }
             }
         }
@@ -159,22 +151,12 @@ public class UserDAO {
         UserDTO user = null;
         // Query join 2 bảng Users và User_Profile
         String sql = "SELECT u.user_id, u.username, u.email, u.role, u.Reputation, u.created_at, "
-<<<<<<< HEAD
-                   + "p.bio, p.location, p.website, p.avatar_url "
-                   + "FROM Users u "
-                   + "LEFT JOIN User_Profile p ON u.user_id = p.user_id "
-                   + "WHERE u.user_id = ?";
-
-        try (Connection con = db.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
-=======
                 + "p.bio, p.location, p.website, p.avatar_url "
                 + "FROM Users u "
                 + "LEFT JOIN User_Profile p ON u.user_id = p.user_id "
                 + "WHERE u.user_id = ?";
 
         try (Connection con = db.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
->>>>>>> Mai
 
             ps.setLong(1, id);
             try (ResultSet rs = ps.executeQuery()) {
@@ -201,9 +183,7 @@ public class UserDAO {
         return user;
     }
 
-<<<<<<< HEAD
     // ==================== ADMIN USER MANAGEMENT ====================
-
     // Lấy tổng số users
     public int getUserCount() {
         String sql = "SELECT COUNT(*) FROM Users";

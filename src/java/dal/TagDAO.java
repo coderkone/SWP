@@ -15,17 +15,6 @@ import java.util.List;
 
 
 public class TagDAO {
-package dal;
-
-import config.DBContext;
-import dto.TagDTO;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.util.ArrayList;
-import java.util.List;
-
-public class TagDAO {
 
     private final DBContext db = new DBContext();
 
