@@ -825,6 +825,14 @@
         font-family: inherit;
     }
 
+    .ql-editor img {
+        max-width: 100%;
+        height: auto;
+        display: block;
+        margin: 8px 0;
+        border-radius: 4px;
+    }
+
     .ql-toolbar {
         border: 1px solid #c8ccd0 !important;
         border-bottom: none !important;

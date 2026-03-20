@@ -22,6 +22,7 @@ public class HomeController extends HttpServlet {
         String keyword = request.getParameter("q");
         String tab = request.getParameter("tab");
         String filter = request.getParameter("filter");
+        String tag = request.getParameter("tag");
         String pageParam = request.getParameter("page");
 
         if ("unanswered".equals(filter)) {
@@ -54,7 +55,7 @@ public class HomeController extends HttpServlet {
 
         try {
             QuestionDAO questionDAO = new QuestionDAO();
-            List<QuestionDTO> questions = questionDAO.getQuestions(page, PAGE_SIZE, tab, keyword, filter);
+            List<QuestionDTO> questions = questionDAO.getQuestions(page, PAGE_SIZE, tab, keyword, filter, tag);
             int totalQuestions = questionDAO.getTotalQuestions(keyword, filter,tag);
             int totalPage = (int) Math.ceil((double) totalQuestions / PAGE_SIZE);
 

@@ -1,6 +1,6 @@
 package control;
 
-import dal.QuestionDAO;
+import dal.QuestionDetailDAO;
 import dto.UserDTO;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -26,7 +26,7 @@ public class CloseQuestionServlet extends HttpServlet {
             "Opinion-based"
     ));
 
-    private final QuestionDAO questionDao = new QuestionDAO();
+    private final QuestionDetailDAO questionDetailDAO = new QuestionDetailDAO();
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
@@ -73,7 +73,7 @@ public class CloseQuestionServlet extends HttpServlet {
         }
 
         try {
-            boolean closed = questionDao.closeQuestion(questionId, userId, closeReason);
+            boolean closed = questionDetailDAO.closeQuestion(questionId, userId, closeReason);
             if (!closed) {
                 redirectWithError(request, response, String.valueOf(questionId), "Question is already closed or cannot be closed");
                 return;

@@ -487,4 +487,106 @@ public class QuestionDAO extends DBContext {
             }
         }
     }
+
+    // Toggle chấp nhận câu trả lời: nếu đã accepted thì bỏ chọn, nếu chưa thì chọn.
+    // Đồng thời cộng/trừ điểm reputation cho tác giả câu trả lời.
+    public boolean toggleAcceptAnswer(long questionId, long answerId, long questionOwnerId) throws Exception {
+        Connection conn = null;
+        try {
+            conn = getConnection();
+            conn.setAutoCommit(false);
+
+            // Lấy accepted_answer_id hiện tại và tác giả câu trả lời
+            Long currentAccepted = null;
+            long answerAuthorId = -1;
+
+            String checkSql = "SELECT q.accepted_answer_id, a.user_id AS answer_author_id "
+                    + "FROM Questions q JOIN Answers a ON a.answer_id = ? "
+                    + "WHERE q.question_id = ? AND q.user_id = ?";
+            try (PreparedStatement ps = conn.prepareStatement(checkSql)) {
+                ps.setLong(1, answerId);
+                ps.setLong(2, questionId);
+                ps.setLong(3, questionOwnerId);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (!rs.next()) {
+                        conn.rollback();
+                        return false;
+                    }
+                    long val = rs.getLong("accepted_answer_id");
+                    currentAccepted = rs.wasNull() ? null : val;
+                    answerAuthorId = rs.getLong("answer_author_id");
+                }
+            }
+
+            boolean isToggleOff = currentAccepted != null && currentAccepted == answerId;
+            Long newAccepted = isToggleOff ? null : answerId;
+
+            // Cập nhật accepted_answer_id
+            String updateSql = "UPDATE Questions SET accepted_answer_id = ? WHERE question_id = ?";
+            try (PreparedStatement ps = conn.prepareStatement(updateSql)) {
+                if (newAccepted == null) {
+                    ps.setNull(1, java.sql.Types.BIGINT);
+                } else {
+                    ps.setLong(1, newAccepted);
+                }
+                ps.setLong(2, questionId);
+                ps.executeUpdate();
+            }
+
+            // Cập nhật cột is_accepted trên bảng Answers
+            if (!isToggleOff && currentAccepted != null) {
+                // Bỏ accepted cũ
+                String clearOld = "UPDATE Answers SET is_accepted = 0 WHERE answer_id = ?";
+                try (PreparedStatement ps = conn.prepareStatement(clearOld)) {
+                    ps.setLong(1, currentAccepted);
+                    ps.executeUpdate();
+                }
+            }
+            String setNew = "UPDATE Answers SET is_accepted = ? WHERE answer_id = ?";
+            try (PreparedStatement ps = conn.prepareStatement(setNew)) {
+                ps.setBoolean(1, !isToggleOff);
+                ps.setLong(2, answerId);
+                ps.executeUpdate();
+            }
+
+            // Cộng/trừ reputation +15 cho tác giả câu trả lời
+            int reputationDelta = isToggleOff ? -15 : 15;
+            String reputationSql = "UPDATE Users SET Reputation = Reputation + ? WHERE user_id = ?";
+            try (PreparedStatement ps = conn.prepareStatement(reputationSql)) {
+                ps.setInt(1, reputationDelta);
+                ps.setLong(2, answerAuthorId);
+                ps.executeUpdate();
+            }
+
+            // Ghi lịch sử reputation (best-effort)
+            String logSql = "INSERT INTO Reputation_History (user_id, delta, reason, event_type, related_post_type, related_post_id, actor_user_id, created_at) "
+                    + "VALUES (?, ?, ?, ?, ?, ?, ?, GETDATE())";
+            try (PreparedStatement ps = conn.prepareStatement(logSql)) {
+                ps.setLong(1, answerAuthorId);
+                ps.setInt(2, reputationDelta);
+                ps.setString(3, isToggleOff ? "Answer unaccepted" : "Answer accepted");
+                ps.setString(4, isToggleOff ? "accept_removed" : "accept");
+                ps.setString(5, "answer");
+                ps.setLong(6, answerId);
+                ps.setLong(7, questionOwnerId);
+                ps.executeUpdate();
+            } catch (SQLException ignored) {
+            }
+
+            conn.commit();
+            return true;
+        } catch (Exception e) {
+            try { if (conn != null) conn.rollback(); } catch (SQLException ex) { ex.printStackTrace(); }
+            throw e;
+        } finally {
+            try {
+                if (conn != null) {
+                    conn.setAutoCommit(true);
+                    conn.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+    }
 }
