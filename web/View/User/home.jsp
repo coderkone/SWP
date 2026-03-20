@@ -210,6 +210,8 @@
                 -webkit-line-clamp: 2;
                 -webkit-box-orient: vertical;
                 overflow: hidden;
+                word-wrap: break-word; 
+                word-break: break-all;
             }
 
             .meta-container {
@@ -336,68 +338,6 @@
         </style>
     </head>
     <body>
-<<<<<<< HEAD
-
-        <header>
-            <div class="header-container">
-                <div class="logo">
-                    <div style="background-color: #F48024; padding: 5px; border-radius: 3px;">
-                        <img src="https://cdn-icons-png.flaticon.com/512/2111/2111628.png" alt="icon" style="filter: brightness(0) invert(1); width: 16px; height: 16px;">
-                    </div>
-                    <span><b>Dev</b>Query</span>
-                </div>
-
-                <div class="search-bar">
-                    <span class="search-icon">?</span>
-                    <input type="text" placeholder="Search...">
-                </div>
-
-                <div class="user-nav">
-                    <c:choose>
-                        <c:when test="${sessionScope.USER != null || sessionScope.user != null}">
-                            <c:set var="currentUser" value="${sessionScope.USER != null ? sessionScope.USER : sessionScope.user}" />
-                            <div class="user-profile">
-                                <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" alt="avatar">
-                                <span>${not empty currentUser.fullName ? currentUser.fullName : currentUser.username}</span>
-                            </div>
-                            <a class="btn-logout" href="${pageContext.request.contextPath}/logout">Log out</a>
-                        </c:when>
-                        <c:otherwise>
-                            <a class="btn-logout" href="${pageContext.request.contextPath}/auth/login">Log in</a>
-                        </c:otherwise>
-                    </c:choose>
-                </div>
-            </div>
-        </header>
-
-        <div class="container">
-            <aside class="left-sidebar">
-                <a href="${pageContext.request.contextPath}/home" class="nav-link main active">Home</a>
-                <a href="${pageContext.request.contextPath}/home" class="nav-link">Questions</a>
-                <a href="${pageContext.request.contextPath}/View/User/tags-list.jsp" class="nav-link">Tags</a>
-                <a href="${pageContext.request.contextPath}/profile" class="nav-link">Users</a>
-            </aside>
-
-            <main class="main-content">
-                <div class="content-header">
-                    <h1 class="page-title">Newest Questions</h1>
-                     <a href="<%=request.getContextPath()%>/ask" style="text-decoration: none;">
-                        <button class="btn-primary">Ask Question</button>
-                    </a>
-                 </div>
-
-                <div class="filters-container">
-                    <div class="total-questions">
-                        <c:choose>
-                            <c:when test="${totalQuestions > 0}">
-                                <fmt:formatNumber value="${totalQuestions}" type="number"/> questions
-                            </c:when>
-                            <c:otherwise>
-                                0 questions
-                            </c:otherwise>
-                        </c:choose>
-                    </div>
-=======
         <jsp:include page="../Common/header.jsp" />
 
         <div class="container">
@@ -425,7 +365,6 @@
 
                 <div class="filters-container">
                     <div class="total-questions">${totalQuestions != null ? totalQuestions : questions.size()} results</div>
->>>>>>> Mai
                     <div style="display: flex; align-items: center;">
                         <div class="filter-btn-group">
                             <%-- Giữ lại từ khóa tìm kiếm nếu có --%>
@@ -457,31 +396,6 @@
                     </div>
                 </div>
 
-<<<<<<< HEAD
-                <c:choose>
-                    <c:when test="${not empty questions}">
-                        <c:forEach var="question" items="${questions}">
-                            <div class="question-item">
-                                <div class="stats-container">
-                                    <div class="stat-box votes">${question.score} votes</div>
-                                    <div class="stat-box ${question.answerCount > 0 ? 'status-answered' : ''}">
-                                        ${question.answerCount} ${question.answerCount == 1 ? 'answer' : 'answers'}
-                                    </div>
-                                    <div class="stat-box">${question.viewCount} views</div>
-                                </div>
-                                <div class="question-summary">
-                                    <a href="${pageContext.request.contextPath}/question/detail?id=${question.questionId}" class="question-title">
-                                        ${question.title}
-                                    </a>
-                                    <p class="question-excerpt">
-                                        ${fn:substring(question.body, 0, 150)}${fn:length(question.body) > 150 ? '...' : ''}
-                                    </p>
-                                    <div class="meta-container">
-                                        <div class="tags">
-                                            <c:forEach var="tag" items="${question.tags}" varStatus="status">
-                                                <c:if test="${status.index < 3}">
-                                                    <a href="${pageContext.request.contextPath}/tag/${tag}" class="tag">${tag}</a>
-=======
                 <c:forEach items="${questions}" var="q">
                     <div class="question-item">
                         <div class="stats-container">
@@ -511,7 +425,6 @@
                                                     <c:forEach items="${q.tags}" var="t">
                                                         <a href="${pageContext.request.contextPath}/home?tag=${t}" class="tag">${t}</a>
                                                     </c:forEach>
->>>>>>> Mai
                                                 </c:if>
                                             </div>
                                         </c:forEach>
@@ -530,28 +443,25 @@
                                     <span style="margin-left: 5px;">asked <fmt:formatDate value="${q.createdAt}" pattern="MMM dd, yyyy"/></span>
                                 </div>
                             </div>
-<<<<<<< HEAD
-                        </c:forEach>
-                    </c:when>
-                    <c:otherwise>
-                        <div class="empty-state-container text-center pb-5">
-                            <div style="border-top: 1px solid #d6d9dc; width: 100%; margin-bottom: 40px;"></div>
-                            <img src="${pageContext.request.contextPath}/assets/img/KinhLup.png" 
-                                 alt="No results" 
-                                 style="width: 120px; margin-bottom: 20px; opacity: 0.6;">
-                            <h5 class="fw-bold mb-2" style="color: #232629;">We couldn't find anything matching your search</h5>
-                            <p class="text-secondary mb-3" style="font-size: 15px; max-width: 400px; margin: 0 auto;">
-                                Try different keywords or less specific search terms.
-                            </p>
-                            <a href="${pageContext.request.contextPath}/home" class="btn btn-outline-primary btn-sm mt-2">
-                                Clear search & Return home
-                            </a>
-=======
->>>>>>> Mai
                         </div>
-                    </c:otherwise>
-                </c:choose>
+                    </div>
+                </c:forEach>
 
+                <c:if test="${empty questions}">
+                    <div class="empty-state-container text-center pb-5">
+                        <div style="border-top: 1px solid #d6d9dc; width: 100%; margin-bottom: 40px;"></div>
+                        <img src="${pageContext.request.contextPath}/assets/img/KinhLup.png" 
+                             alt="No results" 
+                             style="width: 120px; margin-bottom: 20px; opacity: 0.6;">
+                        <h5 class="fw-bold mb-2" style="color: #232629;">We couldn't find anything matching your search</h5>
+                        <p class="text-secondary mb-3" style="font-size: 15px; max-width: 400px; margin: 0 auto;">
+                            Try different keywords or less specific search terms.
+                        </p>
+                        <a href="${pageContext.request.contextPath}/home" class="btn btn-outline-primary btn-sm mt-2">
+                            Clear search & Return home
+                        </a>
+                    </div>
+                </c:if>
                 <c:if test="${totalPage > 1}">
                     <div class="pagination">
                         <c:forEach begin="1" end="${totalPage}" var="i">
@@ -575,20 +485,11 @@
                 <div class="popular-tags">
                     <h3>Popular tags</h3>
                     <div class="tags" style="flex-wrap: wrap;">
-<<<<<<< HEAD
-                        <a href="${pageContext.request.contextPath}/SearchController?q=javascript&tab=newest" class="tag">javascript</a>
-                        <a href="${pageContext.request.contextPath}/SearchController?q=python&tab=newest" class="tag">python</a>
-                        <a href="${pageContext.request.contextPath}/SearchController?q=java&tab=newest" class="tag">java</a>
-                        <a href="${pageContext.request.contextPath}/SearchController?q=c%23&tab=newest" class="tag">c#</a>
-                        <a href="${pageContext.request.contextPath}/SearchController?q=php&tab=newest" class="tag">php</a>
-                        <a href="${pageContext.request.contextPath}/SearchController?q=android&tab=newest" class="tag">android</a>
-=======
                         <c:if test="${not empty popularTags}">
                             <c:forEach items="${popularTags}" var="popTag">
                                 <a href="${pageContext.request.contextPath}/home?tag=${popTag}" class="tag">${popTag}</a>
                             </c:forEach>
                         </c:if>
->>>>>>> Mai
                     </div>
                 </div>
             </aside>

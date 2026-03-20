@@ -8,13 +8,13 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.List;
-import util.PasswordUtil;
+import java.util.Map;
+import java.util.UUID;
 import model.GithubUser;
 import model.GoogleUser;
 import model.User;
-import java.util.UUID;
+import util.PasswordUtil;
 public class UserDAO {
 
     private final DBContext db = new DBContext();
@@ -62,22 +62,15 @@ public class UserDAO {
 
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-
                     UserDTO user = new UserDTO(
-
-                        
-
                             rs.getLong("user_id"),
                             rs.getString("username"),
                             rs.getString("email"),
                             rs.getString("role")
                     );
-
                     user.setStatus(rs.getString("status"));
+                    user.setReputation(rs.getInt("Reputation"));
                     return user;
-
-                       
-
                 }
             }
         }
@@ -158,22 +151,12 @@ public class UserDAO {
         UserDTO user = null;
         // Query join 2 bảng Users và User_Profile
         String sql = "SELECT u.user_id, u.username, u.email, u.role, u.Reputation, u.created_at, "
-
-                   + "p.bio, p.location, p.website, p.avatar_url "
-                   + "FROM Users u "
-                   + "LEFT JOIN User_Profile p ON u.user_id = p.user_id "
-                   + "WHERE u.user_id = ?";
-
-        try (Connection con = db.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
-
                 + "p.bio, p.location, p.website, p.avatar_url "
                 + "FROM Users u "
                 + "LEFT JOIN User_Profile p ON u.user_id = p.user_id "
                 + "WHERE u.user_id = ?";
 
         try (Connection con = db.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
-
 
             ps.setLong(1, id);
             try (ResultSet rs = ps.executeQuery()) {
@@ -200,9 +183,7 @@ public class UserDAO {
         return user;
     }
 
-
     // ==================== ADMIN USER MANAGEMENT ====================
-
     // Lấy tổng số users
     public int getUserCount() {
         String sql = "SELECT COUNT(*) FROM Users";

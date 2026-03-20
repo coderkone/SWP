@@ -1,7 +1,5 @@
 package dal;
 
-import config.DBContext;
-import dto.QuestionDTO;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -9,6 +7,8 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
+import dto.QuestionDTO;
+import config.DBContext;
 
 public class QuestionDAO extends DBContext {
 
@@ -16,12 +16,12 @@ public class QuestionDAO extends DBContext {
     public List<QuestionDTO> getQuestions(int pageIndex, int pageSize, String sortBy, String keyword, String filterType, String tag) {
         List<QuestionDTO> list = new ArrayList<>();
         StringBuilder sql = new StringBuilder();
-        sql.append("SELECT q.*, u.username, u.Reputation AS author_reputation, up.avatar_url, ")
+        sql.append("SELECT q.*, u.username, up.avatar_url, ")
            .append("(SELECT COUNT(*) FROM Answers a WHERE a.question_id = q.question_id) as ans_count ")
            .append("FROM Questions q ")
            .append("JOIN Users u ON q.user_id = u.user_id ")
            .append("LEFT JOIN User_Profile up ON u.user_id = up.user_id ")
-              .append("WHERE ISNULL(q.is_deleted, 0) = 0 ");
+           .append("WHERE 1=1 ");
 
         if (keyword != null && !keyword.trim().isEmpty()) {
             sql.append(" AND (q.title LIKE ? OR q.body LIKE ?) ");
@@ -82,18 +82,10 @@ public class QuestionDAO extends DBContext {
         q.setTitle(rs.getString("title"));
         q.setBody(rs.getString("body"));
         q.setViewCount(rs.getInt("view_count"));
-        q.setIsClosed(rs.getBoolean("is_closed"));
-        q.setClosedReason(rs.getString("closed_reason"));
-        long closedBy = rs.getLong("closed_by");
-        if (!rs.wasNull()) {
-            q.setClosedBy(closedBy);
-        }
-        q.setClosedAt(rs.getTimestamp("closed_at"));
         q.setScore(rs.getInt("Score"));
         q.setCreatedAt(rs.getTimestamp("created_at"));
         
         q.setAuthorName(rs.getString("username"));
-        q.setAuthorReputation(rs.getInt("author_reputation"));
         q.setAuthorAvatar(rs.getString("avatar_url"));
         q.setAnswerCount(rs.getInt("ans_count"));
         
@@ -102,9 +94,6 @@ public class QuestionDAO extends DBContext {
         
         return q;
     }
-<<<<<<< HEAD
-}
-=======
 
     // 3. Hàm đếm tổng số câu hỏi (Dùng cho phân trang)
     public int getTotalQuestions(String keyword, String filterType, String tag) {
@@ -172,7 +161,7 @@ public class QuestionDAO extends DBContext {
         return tags;
     }
     
-    // 5. Hàm thêm Câu hỏi mới kèm Tags (Sử dụng Transaction)
+    // 6. Hàm thêm Câu hỏi mới kèm Tags (Sử dụng Transaction)
     // Hàm quản lý transaction
     public boolean insertQuestionWithTags(long userId, String title, String body, String tagsInput, int userReputation) throws Exception {
         Connection conn = null;
@@ -231,16 +220,21 @@ public class QuestionDAO extends DBContext {
         if (tagsInput == null || tagsInput.trim().isEmpty()) return newTags;
 
         String[] tagsArray = tagsInput.split(",");
+        String sqlCheck = "SELECT tag_id FROM Tags WHERE tag_name = ?";
 
-        try (Connection conn = getConnection()) {
+        try (Connection conn = getConnection();
+             PreparedStatement psCheck = conn.prepareStatement(sqlCheck)) {
+
             for (String tag : tagsArray) {
                 String tagName = tag.trim().toLowerCase();
                 if (tagName.isEmpty()) continue;
 
-                // Reuse helper method
-                long tagId = getTagIdIfExists(conn, tagName);
-                if (tagId == -1) {
-                    newTags.add(tagName);
+                psCheck.setString(1, tagName);
+                try (ResultSet rs = psCheck.executeQuery()) {
+                    // Nếu rs.next() là false nghĩa là tag này chưa có trong Database
+                    if (!rs.next()) {
+                        newTags.add(tagName);
+                    }
                 }
             }
         } catch (Exception e) {
@@ -248,39 +242,34 @@ public class QuestionDAO extends DBContext {
         }
         return newTags;
     }
-    
-    // Helper method: Check if tag exists and return tagId, or -1 if not exists
-    private long getTagIdIfExists(Connection conn, String tagName) throws SQLException {
-        String sql = "SELECT tag_id FROM Tags WHERE tag_name = ?";
-        try (PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, tagName);
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    return rs.getLong("tag_id");
-                }
-            }
-        }
-        return -1;
-    }
     // Xử lý tag và check Reputation
     private void processTagsForQuestion(Connection conn, long questionId, String tagsInput, int userReputation) throws Exception {
         String[] tagsArray = tagsInput.split(",");
+        String sqlCheck = "SELECT tag_id FROM Tags WHERE tag_name = ?";
         String sqlInsertTag = "INSERT INTO Tags (tag_name) VALUES (?)";
         String sqlInsertQT = "INSERT INTO Question_Tags (question_id, tag_id) VALUES (?, ?)";
 
-        try (PreparedStatement psInsertTag = conn.prepareStatement(sqlInsertTag, Statement.RETURN_GENERATED_KEYS);
+        try (PreparedStatement psCheck = conn.prepareStatement(sqlCheck);
+             PreparedStatement psInsertTag = conn.prepareStatement(sqlInsertTag, Statement.RETURN_GENERATED_KEYS);
              PreparedStatement psInsertQT = conn.prepareStatement(sqlInsertQT)) {
 
             for (String tag : tagsArray) {
                 String tagName = tag.trim().toLowerCase();
                 if (tagName.isEmpty()) continue;
 
-                // Reuse helper method to check if tag exists
-                long tagId = getTagIdIfExists(conn, tagName);
+                long tagId = -1;
+                
+                // A. Check xem tag này đã tồn tại trong DB chưa
+                psCheck.setString(1, tagName);
+                try (ResultSet rsCheck = psCheck.executeQuery()) {
+                    if (rsCheck.next()) {
+                        tagId = rsCheck.getLong("tag_id"); // Tag cũ, ai cũng dùng được
+                    }
+                }
 
                 // B. Nếu là TAG MỚI HOÀN TOÀN -> Bắt đầu check uy tín
                 if (tagId == -1) {
-                    // Giả sử mốc uy tín cần thiết là 50 điểm
+                    // Giả sử mốc uy tín cần thiết là 50 điểm (bạn có thể thay đổi số này)
                     if (userReputation < 50) {
                         // Ném ra Exception để Rollback toàn bộ và báo lỗi
                         throw new Exception("NOT_ENOUGH_REP:" + tagName);
@@ -332,4 +321,3 @@ public class QuestionDAO extends DBContext {
         return tags;
     }
 }
->>>>>>> Mai
