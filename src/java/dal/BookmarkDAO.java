@@ -233,5 +233,20 @@ public class BookmarkDAO extends DBContext {
     }
 
     // 1. Hàm lấy TẤT CẢ bài viết đã lưu (Dành cho nút "All saves")
-   
+
+    // Kiểm tra user đã bookmark câu hỏi chưa (dùng long để khớp với Controller)
+    public boolean checkIfBookmarked(long userId, long questionId) {
+        String sql = "SELECT 1 FROM Bookmarks WHERE user_id = ? AND question_id = ?";
+        try (Connection conn = getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setLong(1, userId);
+            ps.setLong(2, questionId);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
 }

@@ -14,11 +14,7 @@ public class AnswerDAO extends DBContext {
 
     public long createAnswer(long questionId, long userId, String body, String codeSnippet) throws Exception {
         String sql = "INSERT INTO Answers (question_id, user_id, body, code_snippet, is_edited, is_accepted, created_at, updated_at, Score) "
-<<<<<<< HEAD
-                + "VALUES (?, ?, ?, ?, 0, 0, GETDATE(), GETDATE(), 0)";
-=======
                 + "VALUES (?, ?, ?, ?, 0, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 0)";
->>>>>>> Mai
 
         long answerId = -1;
 
@@ -42,16 +38,10 @@ public class AnswerDAO extends DBContext {
     }
 
     public List<AnswerDTO> getAnswersByQuestionId(long questionId) throws Exception {
-<<<<<<< HEAD
-        String sql = "SELECT a.*, u.username FROM Answers a "
-                + "JOIN Users u ON a.user_id = u.user_id "
-                + "WHERE a.question_id = ? "
-                + "ORDER BY a.is_accepted DESC, a.Score DESC, a.created_at DESC";
-=======
+
         String sql = "SELECT a.*, u.username, u.Reputation AS author_reputation FROM Answers a "
                 + "JOIN Users u ON a.user_id = u.user_id WHERE a.question_id = ? "
                 + "ORDER BY CASE WHEN a.answer_id = (SELECT accepted_answer_id FROM Questions WHERE question_id = ?) THEN 1 ELSE 0 END DESC, a.Score DESC, a.created_at DESC";
->>>>>>> Mai
 
         List<AnswerDTO> answers = new ArrayList<>();
 
@@ -70,16 +60,11 @@ public class AnswerDAO extends DBContext {
         return answers;
     }
 
-<<<<<<< HEAD
-    public AnswerDTO getAnswerById(long answerId) throws Exception {
-        String sql = "SELECT a.*, u.username FROM Answers a "
-                + "JOIN Users u ON a.user_id = u.user_id "
-                + "WHERE a.answer_id = ?";
-=======
+ 
+
     public List<AnswerDTO> getAnswersByQuestionId(long questionId, int pageIndex, int pageSize) throws Exception {
         return getAnswersByQuestionId(questionId, pageIndex, pageSize, "score_desc");
     }
->>>>>>> Mai
 
     public List<AnswerDTO> getAnswersByQuestionId(long questionId,
             int pageIndex,
@@ -166,13 +151,8 @@ public class AnswerDAO extends DBContext {
     }
 
     public boolean updateAnswer(long answerId, String body, String codeSnippet) throws Exception {
-<<<<<<< HEAD
-        String sql = "UPDATE Answers "
-                + "SET body = ?, code_snippet = ?, is_edited = 1, updated_at = GETDATE() "
-                + "WHERE answer_id = ?";
-=======
+
         String sql = "UPDATE Answers SET body = ?, code_snippet = ?, is_edited = 1, updated_at = CURRENT_TIMESTAMP WHERE answer_id = ?";
->>>>>>> Mai
 
         try (Connection con = getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
 

@@ -1,9 +1,4 @@
-<<<<<<< HEAD
-package dal;
 
-import config.DBContext;
-import dto.TagDTO;
-=======
 /*
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
@@ -11,13 +6,11 @@ import dto.TagDTO;
 package dal;
 import dto.TagDTO;
 import config.DBContext;
->>>>>>> Mai
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
-<<<<<<< HEAD
 
 public class TagDAO {
 
@@ -315,7 +308,7 @@ public class TagDAO {
     }
 
     // Check tag name exists
-    public boolean tagNameExists(String tagName) {
+    public boolean tagNameExists(String tagName) throws Exception {
         String sql = "SELECT COUNT(*) FROM Tags WHERE tag_name = ?";
 
         try (Connection con = db.getConnection();
@@ -327,13 +320,6 @@ public class TagDAO {
                     return rs.getInt(1) > 0;
                 }
             }
-=======
-/**
- *
- * @author Asus
- */
-public class TagDAO extends DBContext {
-    
     private boolean isFollowed(long userId, long tagId) {
         String sql = "SELECT COUNT(*) FROM TagFollow "
                    + "WHERE user_id = ? AND tag_id = ?";
@@ -344,13 +330,11 @@ public class TagDAO extends DBContext {
             st.setLong(2, tagId);
             ResultSet rs = st.executeQuery();
             if (rs.next()) return rs.getInt(1) > 0;
->>>>>>> Mai
         } catch (Exception e) {
             e.printStackTrace();
         }
         return false;
     }
-<<<<<<< HEAD
 
     // Check tag name exists excluding current tag (for edit validation)
     public boolean tagNameExistsExcluding(String tagName, long excludeId) {
@@ -383,7 +367,6 @@ public class TagDAO extends DBContext {
         tag.setFollowerCount(rs.getInt("followerCount"));
         return tag;
     }
-=======
     
     public List<TagDTO> getAllTags(long userId , String keyword , String sort){
         List<TagDTO> list = new ArrayList<>();
@@ -469,5 +452,4 @@ public class TagDAO extends DBContext {
     }
     
        
->>>>>>> Mai
 }

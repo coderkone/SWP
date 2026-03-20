@@ -55,7 +55,7 @@ public class HomeController extends HttpServlet {
         try {
             QuestionDAO questionDAO = new QuestionDAO();
             List<QuestionDTO> questions = questionDAO.getQuestions(page, PAGE_SIZE, tab, keyword, filter);
-            int totalQuestions = questionDAO.getTotalQuestions(keyword, filter);
+            int totalQuestions = questionDAO.getTotalQuestions(keyword, filter,tag);
             int totalPage = (int) Math.ceil((double) totalQuestions / PAGE_SIZE);
 
             request.setAttribute("questions", questions);

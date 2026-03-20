@@ -13,7 +13,7 @@ import java.util.List;
 public class QuestionDAO extends DBContext {
 
     // 1. Hàm chính lấy danh sách câu hỏi
-    public List<QuestionDTO> getQuestions(int pageIndex, int pageSize, String sortBy, String keyword, String filterType, String tag) {
+    public List<QuestionDTO> getQuestions(int pageIndex, int pageSize, String sortBy, String keyword, String filterType,String tag) {
         List<QuestionDTO> list = new ArrayList<>();
         StringBuilder sql = new StringBuilder();
         sql.append("SELECT q.*, u.username, u.Reputation AS author_reputation, up.avatar_url, ")
@@ -102,9 +102,8 @@ public class QuestionDAO extends DBContext {
         
         return q;
     }
-<<<<<<< HEAD
-}
-=======
+
+
 
     // 3. Hàm đếm tổng số câu hỏi (Dùng cho phân trang)
     public int getTotalQuestions(String keyword, String filterType, String tag) {
@@ -146,7 +145,7 @@ public class QuestionDAO extends DBContext {
     
     // 4. Hàm Search (Optional)
     public List<QuestionDTO> searchQuestions(String keyword) {
-        return getQuestions(1, 20, "newest", keyword, "all", null);
+        return getQuestions(1, 20, "newest", keyword, "all",null);
     }
     
     // 5. Hàm lấy danh sách Tags của 1 câu hỏi
@@ -306,6 +305,31 @@ public class QuestionDAO extends DBContext {
         }
     }
     
+    // Lấy thông tin chi tiết một câu hỏi theo ID
+    public QuestionDTO getQuestionById(long questionId) {
+        String sql = "SELECT q.*, u.username, u.Reputation AS author_reputation, up.avatar_url, "
+                + "(SELECT COUNT(*) FROM Answers a WHERE a.question_id = q.question_id) as ans_count "
+                + "FROM Questions q "
+                + "JOIN Users u ON q.user_id = u.user_id "
+                + "LEFT JOIN User_Profile up ON u.user_id = up.user_id "
+                + "WHERE q.question_id = ? AND ISNULL(q.is_deleted, 0) = 0";
+        try {
+            Connection conn = getConnection();
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setLong(1, questionId);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                QuestionDTO q = mapRow(rs);
+                rs.close(); ps.close(); conn.close();
+                return q;
+            }
+            rs.close(); ps.close(); conn.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
     // Lấy top các tag phổ biến nhất dựa trên số lượng câu hỏi
     public List<String> getPopularTags(int limit) {
         List<String> tags = new ArrayList<>();
@@ -331,5 +355,136 @@ public class QuestionDAO extends DBContext {
         }
         return tags;
     }
+
+    // Lấy các câu hỏi liên quan (cùng tag) với câu hỏi cho trước
+    public List<QuestionDTO> getRelatedQuestions(long questionId, int limit) {
+        List<QuestionDTO> list = new ArrayList<>();
+        String sql = "SELECT q.*, u.username, u.Reputation AS author_reputation, up.avatar_url, "
+                + "(SELECT COUNT(*) FROM Answers a WHERE a.question_id = q.question_id) as ans_count "
+                + "FROM Questions q "
+                + "JOIN Users u ON q.user_id = u.user_id "
+                + "LEFT JOIN User_Profile up ON u.user_id = up.user_id "
+                + "WHERE q.question_id != ? AND ISNULL(q.is_deleted, 0) = 0 "
+                + "AND q.question_id IN ("
+                + "  SELECT qt2.question_id FROM Question_Tags qt2 "
+                + "  WHERE qt2.tag_id IN (SELECT qt1.tag_id FROM Question_Tags qt1 WHERE qt1.question_id = ?)"
+                + ") "
+                + "ORDER BY q.created_at DESC "
+                + "OFFSET 0 ROWS FETCH NEXT ? ROWS ONLY";
+        try {
+            Connection conn = getConnection();
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setLong(1, questionId);
+            ps.setLong(2, questionId);
+            ps.setInt(3, limit);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                list.add(mapRow(rs));
+            }
+            rs.close(); ps.close(); conn.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
+    // Kiểm tra câu hỏi có bị đóng không
+    public boolean isQuestionClosed(long questionId) {
+        String sql = "SELECT is_closed FROM Questions WHERE question_id = ?";
+        try {
+            Connection conn = getConnection();
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setLong(1, questionId);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                boolean closed = rs.getBoolean("is_closed");
+                rs.close(); ps.close(); conn.close();
+                return closed;
+            }
+            rs.close(); ps.close(); conn.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    // Cập nhật câu hỏi kèm lịch sử chỉnh sửa và xử lý tags (dùng Transaction)
+    public boolean updateQuestionWithHistory(long questionId, long editorId, String title, String body, String codeSnippet, String tags, int userReputation) throws Exception {
+        Connection conn = null;
+        try {
+            conn = getConnection();
+            conn.setAutoCommit(false);
+
+            // Bước 1: Tải dữ liệu cũ để lưu vào lịch sử
+            String loadSql = "SELECT title, body FROM Questions WHERE question_id = ?";
+            String oldTitle = null, oldBody = null;
+            try (PreparedStatement ps = conn.prepareStatement(loadSql)) {
+                ps.setLong(1, questionId);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (!rs.next()) {
+                        conn.rollback();
+                        return false;
+                    }
+                    oldTitle = rs.getString("title");
+                    oldBody = rs.getString("body");
+                }
+            }
+
+            // Bước 2: Lưu lịch sử chỉnh sửa
+            String oldTags = String.join(",", getTagsByQuestionId(questionId));
+            String editedContent = "title=" + (oldTitle != null ? oldTitle : "")
+                    + "\nbody=" + (oldBody != null ? oldBody : "")
+                    + "\ntags=" + oldTags;
+            String historySql = "INSERT INTO Post_Edit_History (post_type, post_id, title, body, code_snippet, tags, editor_id, edited_content, edited_at) "
+                    + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, GETDATE())";
+            try (PreparedStatement ps = conn.prepareStatement(historySql)) {
+                ps.setString(1, "question");
+                ps.setLong(2, questionId);
+                ps.setString(3, oldTitle != null ? oldTitle : "");
+                ps.setString(4, oldBody != null ? oldBody : "");
+                ps.setString(5, "");
+                ps.setString(6, oldTags);
+                ps.setLong(7, editorId);
+                ps.setString(8, editedContent);
+                ps.executeUpdate();
+            }
+
+            // Bước 3: Cập nhật nội dung câu hỏi
+            String updateSql = "UPDATE Questions SET title = ?, body = ?, updated_at = GETDATE() WHERE question_id = ?";
+            try (PreparedStatement ps = conn.prepareStatement(updateSql)) {
+                ps.setString(1, title);
+                ps.setString(2, body);
+                ps.setLong(3, questionId);
+                if (ps.executeUpdate() == 0) {
+                    conn.rollback();
+                    return false;
+                }
+            }
+
+            // Bước 4: Cập nhật tags nếu được cung cấp
+            if (tags != null && !tags.trim().isEmpty()) {
+                String deleteTagsSql = "DELETE FROM Question_Tags WHERE question_id = ?";
+                try (PreparedStatement ps = conn.prepareStatement(deleteTagsSql)) {
+                    ps.setLong(1, questionId);
+                    ps.executeUpdate();
+                }
+                processTagsForQuestion(conn, questionId, tags, userReputation);
+            }
+
+            conn.commit();
+            return true;
+        } catch (Exception e) {
+            try { if (conn != null) conn.rollback(); } catch (SQLException ex) { ex.printStackTrace(); }
+            throw e;
+        } finally {
+            try {
+                if (conn != null) {
+                    conn.setAutoCommit(true);
+                    conn.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+    }
 }
->>>>>>> Mai
