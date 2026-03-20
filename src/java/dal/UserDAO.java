@@ -7,13 +7,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
-<<<<<<< HEAD
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-=======
 import java.util.List;
->>>>>>> Mai
 import util.PasswordUtil;
 import model.GithubUser;
 import model.GoogleUser;
@@ -57,11 +53,7 @@ public class UserDAO {
     }
 
     public UserDTO login(String email, String rawPassword) throws Exception {
-<<<<<<< HEAD
-        String sql = "SELECT user_id, username, email, role, status FROM Users WHERE email = ? AND password_hash = ?";
-=======
         String sql = "SELECT user_id, username, email, role, Reputation FROM Users WHERE email = ? AND password_hash = ?";
->>>>>>> Mai
         String hash = PasswordUtil.sha256(rawPassword);
 
         try (Connection con = db.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
@@ -548,7 +540,7 @@ public class UserDAO {
             e.printStackTrace();
         }
         return trend;
-=======
+    }
     public List<String> getReputationChanges(long userId, int limit) {
         List<String> changes = new ArrayList<>();
         String sql = "SELECT TOP (?) delta, reason FROM Reputation_History WHERE user_id = ? ORDER BY created_at DESC, history_id DESC";
@@ -572,6 +564,5 @@ public class UserDAO {
         }
 
         return changes;
->>>>>>> Mai
     }
 }
