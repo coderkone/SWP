@@ -18,6 +18,7 @@ import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 import model.User;
+import dal.BookmarkQuesDAO;
 
 @WebServlet(name = "QuestionDetailController", urlPatterns = {"/question/detail"})
 public class QuestionDetailController extends HttpServlet {
@@ -25,7 +26,7 @@ public class QuestionDetailController extends HttpServlet {
     private final QuestionDAO questionDao = new QuestionDAO();
     private final AnswerDAO answerDao = new AnswerDAO();
     private final VoteDAO voteDao = new VoteDAO();
-    private final BookmarkDAO bookmarkDao = new BookmarkDAO();
+    private final BookmarkQuesDAO BookmqDAO = new  BookmarkQuesDAO();
     private final CommentDAO commentDao = new CommentDAO();
     private static final int ANSWERS_PER_PAGE = 5;
 
@@ -198,7 +199,7 @@ public class QuestionDetailController extends HttpServlet {
                         request.setAttribute("answerVotes", answerVotes);
                         // Check if question is bookmarked
                         try {
-                            boolean isBookmarked = bookmarkDao.checkIfBookmarked(userId, questionId);
+                            boolean isBookmarked = BookmqDAO.checkIfBookmarked(userId, questionId);
                             request.setAttribute("isBookmarked", isBookmarked);
                         } catch (Exception e) {
                             request.setAttribute("isBookmarked", false);
