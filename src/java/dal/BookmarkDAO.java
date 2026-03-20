@@ -231,7 +231,4 @@ public class BookmarkDAO extends DBContext {
         }
         return list;
     }
-
-    // 1. Hàm lấy TẤT CẢ bài viết đã lưu (Dành cho nút "All saves")
-   
 }
