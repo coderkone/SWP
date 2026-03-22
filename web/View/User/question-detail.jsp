@@ -21,39 +21,18 @@
     </head>
     <body>
 
-        <header>
-            <div class="header-left">
-                <button class="menu-btn" onclick="toggleMenu()">
-                    <i class="fa-solid fa-bars"></i>
-                </button>
-                <a href="${pageContext.request.contextPath}/home" class="logo">
-                    <i class="fa-brands fa-stack-overflow"></i>
-                    <span>Dev<b>Query</b></span>
-                </a>
-            </div>
+        <jsp:include page="../Common/header.jsp" />
 
-            <div class="search-box">
-                <form method="get" action="${pageContext.request.contextPath}/home">
-                    <input type="text" name="q" class="search-input" placeholder="Search...">
-                </form>
-            </div>
-
-            <div class="header-right">
-                <a href="<%=request.getContextPath()%>/logout">Log out</a>
-            </div>
-        </header>
-
-        <div class="sidebar" id="sidebar">
-            <ul class="nav-list">
-                <li><a href="${pageContext.request.contextPath}/home" class="nav-link"><i class="fa-solid fa-house"></i> Home</a></li>
-                <li><a href="#" class="nav-link"><i class="fa-solid fa-earth-americas"></i> Questions</a></li>
-                <li><a href="${pageContext.request.contextPath}/ask" class="nav-link"><i class="fa-solid fa-pen"></i> Ask</a></li>
-                <li><a href="${pageContext.request.contextPath}/tags" class="nav-link"><i class="fa-solid fa-tags"></i> Tags</a></li>
-                <li><a href="#" class="nav-link"><i class="fa-solid fa-bookmark"></i> Saves</a></li>
-            </ul>
-        </div>
 
         <div class="container">
+            <div class="sidebar" id="sidebar">
+                <ul class="nav-list">
+                    <li><a href="${pageContext.request.contextPath}/home" class="nav-link"><i class="fa-solid fa-house"></i> Home</a></li>
+                    <li><a href="${pageContext.request.contextPath}/home" class="nav-link"><i class="fa-solid fa-earth-americas"></i> Questions</a></li>                <li><a href="${pageContext.request.contextPath}/ask" class="nav-link"><i class="fa-solid fa-pen"></i> Ask</a></li>
+                    <li><a href="${pageContext.request.contextPath}/tags" class="nav-link"><i class="fa-solid fa-tags"></i> Tags</a></li>
+                    <li><a href="${pageContext.request.contextPath}/saves" class="nav-link"><i class="fa-solid fa-bookmark"></i> Saves</a></li>            </ul>
+            </div>
+
             <div class="main-content">
                 <% 
                     QuestionDTO question = (QuestionDTO) request.getAttribute("question");
@@ -168,8 +147,7 @@
                                     <i class="fa-solid fa-lock"></i> Close Question
                                 </button>
                                 <% } %>
-                                <% if (!isQuestionClosed && currentUserId != null && currentUserId == question.getUserId()) { %>
-                                <a class="action-btn" href="${pageContext.request.contextPath}/post/edit?type=question&id=<%= question.getQuestionId() %>">
+                                <% if (!isQuestionClosed && currentUserId != null && (currentUserId == question.getUserId() || currentUserReputation >= 3000)) { %>                                <a class="action-btn" href="${pageContext.request.contextPath}/post/edit?type=question&id=<%= question.getQuestionId() %>">
                                     <i class="fa-solid fa-pen"></i> Edit
                                 </a>
                                 <% } %>
@@ -210,8 +188,7 @@
                         <% if (question.getTags() != null && !question.getTags().isEmpty()) { %>
                         <div class="tags-list">
                             <% for (String tag : question.getTags()) { %>
-                            <a href="#" class="tag-badge"><%= tag %></a>
-                            <% } %>
+                            <a href="${pageContext.request.contextPath}/home?tag=<%= tag %>" class="tag-badge"><%= tag %></a>                            <% } %>
                         </div>
                         <% } %>
 
@@ -236,8 +213,7 @@
                                     <i class="fa-solid fa-user"></i>
                                 </div>
                                 <div class="user-info">
-                                    <a href="#" class="user-name"><%= question.getAuthorName() %></a>
-                                    <div class="user-meta">asked at <%= question.getCreatedAt() %></div>
+                                    <a href="${pageContext.request.contextPath}/profile?id=<%= question.getUserId() %>" class="user-name"><%= question.getAuthorName() %></a>                                    <div class="user-meta">asked at <%= question.getCreatedAt() %></div>
                                     <div class="user-meta">reputation: <%= question.getAuthorReputation() %></div>
                                 </div>
                             </div>
@@ -449,8 +425,7 @@
                                         <i class="fa-solid fa-user"></i>
                                     </div>
                                     <div class="user-info">
-                                        <a href="#" class="user-name"><%= answer.getAuthorName() %></a>
-                                        <div class="user-meta">answered at <%= answer.getCreatedAt() %></div>
+                                        <a href="${pageContext.request.contextPath}/profile?id=<%= answer.getUserId() %>" class="user-name"><%= answer.getAuthorName() %></a>                                        <div class="user-meta">answered at <%= answer.getCreatedAt() %></div>
                                         <div class="user-meta">reputation: <%= answer.getAuthorReputation() %></div>
                                     </div>
                                 </div>

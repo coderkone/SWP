@@ -9,23 +9,11 @@
     body {
         background-color: #f1f2f3;
         color: #3b4045;
+         padding-top: 60px;
     }
 
     /* Header */
-    header {
-        background-color: white;
-        height: 53px;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-        border-top: 3px solid #f48024;
-        position: fixed;
-        top: 0;
-        width: 100%;
-        z-index: 1000;
-        padding: 0 10px;
-    }
+    
 
     .header-left {
         display: flex;
@@ -154,6 +142,7 @@
 
     /* Main Container */
     .container {
+        margin-top: 60px;
         max-width: 1264px;
         margin: 53px auto 0;
         padding: 24px 16px;

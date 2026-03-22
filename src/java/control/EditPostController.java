@@ -49,7 +49,7 @@ public class EditPostController extends HttpServlet {
                     response.sendError(HttpServletResponse.SC_FORBIDDEN, "Question is closed. Editing is disabled.");
                     return;
                 }
-                if (question.getUserId() != sessionUser.userId) {
+                if (!canEditQuestion(question, sessionUser)) {
                     response.sendError(HttpServletResponse.SC_FORBIDDEN, "You are not allowed to edit this question.");
                     return;
                 }
@@ -123,7 +123,7 @@ public class EditPostController extends HttpServlet {
             response.sendError(HttpServletResponse.SC_FORBIDDEN, "Question is closed. Editing is disabled.");
             return;
         }
-        if (question.getUserId() != sessionUser.userId) {
+        if (!canEditQuestion(question, sessionUser)) {
             response.sendError(HttpServletResponse.SC_FORBIDDEN, "You are not allowed to edit this question.");
             return;
         }
@@ -209,6 +209,10 @@ public class EditPostController extends HttpServlet {
         return "question".equals(type) || "answer".equals(type);
     }
 
+    private boolean canEditQuestion(QuestionDTO question, SessionUser sessionUser) {
+        return question.getUserId() == sessionUser.userId || sessionUser.reputation >= 3000;
+    }
+
     private SessionUser getSessionUser(HttpServletRequest request) {
         HttpSession session = request.getSession(false);
         if (session == null) {
@@ -228,6 +232,7 @@ public class EditPostController extends HttpServlet {
     }
 
     private static class SessionUser {
+
         private final long userId;
         private final int reputation;
 
