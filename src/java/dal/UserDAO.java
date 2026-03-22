@@ -555,4 +555,73 @@ public class UserDAO {
             ps.executeUpdate();
         }
     }
+    public List<UserDTO> getTopUsers() {
+    List<UserDTO> list = new ArrayList<>();
+    String sql = "SELECT TOP 10 u.user_id, u.username, u.Reputation, "
+               + "u.created_at, p.avatar_url "
+               + "FROM Users u "
+               + "LEFT JOIN User_Profile p ON u.user_id = p.user_id "
+               + "WHERE u.role != 'admin' AND u.role != 'bot' "
+               + "ORDER BY u.Reputation DESC";
+    try (Connection conn = db.getConnection();
+         PreparedStatement st = conn.prepareStatement(sql);
+         ResultSet rs = st.executeQuery()) {
+        while (rs.next()) {
+            UserDTO user = new UserDTO();
+            user.setUserId(rs.getLong("user_id"));
+            user.setUsername(rs.getString("username"));
+            user.setReputation(rs.getInt("Reputation"));
+            user.setCreatedAt(rs.getTimestamp("created_at"));
+            user.setAvatarUrl(rs.getString("avatar_url"));
+            list.add(user);
+        }
+    } catch (Exception e) {
+        e.printStackTrace();
+        System.out.println("getTopUsers LỖI: " + e.getMessage());
+    }
+    return list;
+}
+
+public List<UserDTO> getAllUsers(String keyword, String sort) {
+    List<UserDTO> list = new ArrayList<>();
+    StringBuilder sql = new StringBuilder(
+        "SELECT u.user_id, u.username, u.Reputation, "
+      + "u.created_at, p.avatar_url "
+      + "FROM Users u "
+      + "LEFT JOIN User_Profile p ON u.user_id = p.user_id "
+      + "WHERE u.role != 'admin' AND u.role != 'bot' "
+    );
+    if (keyword != null && !keyword.trim().isEmpty()) {
+        sql.append("AND u.username LIKE ? ");
+    }
+    if ("date".equals(sort)) {
+        sql.append("ORDER BY u.created_at DESC");
+    } else if ("reputation".equals(sort)) {
+        sql.append("ORDER BY u.Reputation DESC");
+    } else {
+        sql.append("ORDER BY u.username ASC");
+    }
+    try (Connection conn = db.getConnection();
+         PreparedStatement st = conn.prepareStatement(sql.toString())) {
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            st.setString(1, "%" + keyword.trim() + "%");
+        }
+        try (ResultSet rs = st.executeQuery()) {
+            while (rs.next()) {
+                UserDTO user = new UserDTO();
+                user.setUserId(rs.getLong("user_id"));
+                user.setUsername(rs.getString("username"));
+                user.setReputation(rs.getInt("Reputation"));
+                user.setCreatedAt(rs.getTimestamp("created_at"));
+                user.setAvatarUrl(rs.getString("avatar_url"));
+                list.add(user);
+            }
+        }
+    } catch (Exception e) {
+        e.printStackTrace();
+        System.out.println("getAllUsers LỖI: " + e.getMessage());
+    }
+    return list;
+}
+    
 }
