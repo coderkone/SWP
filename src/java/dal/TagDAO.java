@@ -5,6 +5,7 @@
  */
 package dal;
 import config.DBContext;
+import dto.QuestionDTO;
 import dto.TagDTO;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -456,6 +457,125 @@ ps.setLong(1, targetTagId);
             System.out.println("Error" + e.getMessage());
         }
     }
+    public TagDTO getTagById(long tagId, long userId){
+        String sql = "SELECT t.tag_id, t.tag_name, t.description, t.IsActive, "
+               + "CASE WHEN tf.user_id IS NOT NULL THEN 1 ELSE 0 END AS is_followed "
+               + "FROM Tags t "
+               + "LEFT JOIN TagFollow tf ON t.tag_id = tf.tag_id AND tf.user_id = ? "
+               + "WHERE t.tag_id = ? AND t.IsActive = 1";
+    try {
+        Connection conn = db.getConnection();
+        PreparedStatement st = conn.prepareStatement(sql);
+        st.setLong(1, userId);
+        st.setLong(2, tagId);
+        ResultSet rs = st.executeQuery();
+        if (rs.next()) {
+            TagDTO tag = new TagDTO();
+            tag.setTagId(rs.getLong("tag_id"));
+            tag.setTagName(rs.getString("tag_name"));
+            tag.setDescription(rs.getString("description"));
+            tag.setIsActive(rs.getBoolean("IsActive"));
+            tag.setIsFollowed(rs.getInt("is_followed") == 1);
+            return tag;
+        }
+    } catch (Exception e) {
+        e.printStackTrace();
+        System.out.println("Error: " + e.getMessage());
+    }
+    return null;
+        
+    }
+    public int countQuestionsByTag(long tagId, String filter) {
+    StringBuilder sql = new StringBuilder(
+        "SELECT COUNT(DISTINCT q.question_id) "
+      + "FROM Questions q "
+      + "JOIN Question_Tags qt ON q.question_id = qt.question_id "
+      + "WHERE qt.tag_id = ? "
+    );
+    if ("unanswered".equals(filter)) {
+        sql.append("AND NOT EXISTS ("
+                 + "SELECT 1 FROM Answers a WHERE a.question_id = q.question_id) ");
+    }
+    try {
+        Connection conn = db.getConnection();
+        PreparedStatement st = conn.prepareStatement(sql.toString());
+        st.setLong(1, tagId);
+        ResultSet rs = st.executeQuery();
+        if (rs.next()) return rs.getInt(1);
+    } catch (Exception e) {
+        e.printStackTrace();
+        System.out.println("countQuestionsByTag LỖI: " + e.getMessage());
+    }
+    return 0;
+}
+    public List<QuestionDTO> getQuestionsByTag(long tagId, String filter, int page) {
+    List<QuestionDTO> list = new ArrayList<>();
+    int pageSize = 10;
+    int offset   = (page - 1) * pageSize;
+
+    StringBuilder sql = new StringBuilder(
+        //  Bỏ DISTINCT — GROUP BY đã xử lý rồi
+        "SELECT q.question_id, q.title, q.body, q.Score, "
+      + "q.view_count, q.created_at, q.updated_at, q.is_closed, "
+      + "u.username, up.avatar_url, "
+      + "COUNT(a.answer_id) AS answer_count "
+      + "FROM Questions q "
+      + "JOIN Question_Tags qt ON q.question_id = qt.question_id "
+      + "JOIN Users u           ON q.user_id = u.user_id "
+      + "LEFT JOIN User_Profile up ON u.user_id = up.user_id "
+      + "LEFT JOIN Answers a    ON q.question_id = a.question_id "
+      + "WHERE qt.tag_id = ? "
+    );
+
+   if ("unanswered".equals(filter)) {
+        sql.append("AND NOT EXISTS ("
+                 + "SELECT 1 FROM Answers a2 "
+                 + "WHERE a2.question_id = q.question_id) ");
+    }
+
+    //  GROUP BY đủ tất cả non-aggregate columns
+    sql.append("GROUP BY q.question_id, q.title, q.body, q.Score, "
+             + "q.view_count, q.created_at, q.updated_at, q.is_closed, "
+             + "u.username, up.avatar_url ");
+
+    if ("voted".equals(filter)) {
+        sql.append("ORDER BY q.Score DESC ");
+    } else {
+        sql.append("ORDER BY q.created_at DESC ");
+    }
+
+    sql.append("OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
+
+    try {
+        Connection conn = db.getConnection();
+        PreparedStatement st = conn.prepareStatement(sql.toString());
+        st.setLong(1, tagId);
+        st.setInt(2, offset);
+        st.setInt(3, pageSize);
+
+        ResultSet rs = st.executeQuery();
+        while (rs.next()) {
+            QuestionDTO q = new QuestionDTO();
+            q.setQuestionId(rs.getLong("question_id"));
+            q.setTitle(rs.getString("title"));
+            q.setBody(rs.getString("body"));
+            q.setScore(rs.getInt("Score"));           // ✅ 'S' hoa — đúng tên cột DB
+            q.setViewCount(rs.getInt("view_count"));
+            q.setCreatedAt(rs.getTimestamp("created_at"));
+            q.setUpdatedAt(rs.getTimestamp("updated_at"));
+            q.setIsClosed(rs.getBoolean("is_closed"));
+            q.setAuthorName(rs.getString("username"));
+            q.setAuthorAvatar(rs.getString("avatar_url"));
+            q.setAnswerCount(rs.getInt("answer_count"));
+            list.add(q);
+        }
+
+    } catch (Exception e) {
+        e.printStackTrace();
+        System.out.println("getQuestionsByTag LỖI: " + e.getMessage());
+    }
+    return list;
+}
 }
 
 

@@ -111,7 +111,16 @@ public class TagDTO {
     public void setIsFollowed(boolean isFollowed) {
         this.isFollowed = isFollowed;
     }
-
+public String getShortDescription() {
+    if (description == null || description.trim().isEmpty()) {
+        return "";
+    }
+    int dot = description.indexOf('.');
+    if (dot != -1) {
+        return description.substring(0, dot + 1); // "Java là ngôn ngữ."
+    }
+    return description; // Không có dấu chấm → trả nguyên
+}
     
     
     
