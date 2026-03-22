@@ -23,14 +23,19 @@
 
         <jsp:include page="../Common/header.jsp" />
 
-
-        <div class="container">
-            <div class="sidebar" id="sidebar">
+        <div class="sidebar" id="sidebar">
                 <ul class="nav-list">
                     <li><a href="${pageContext.request.contextPath}/home" class="nav-link"><i class="fa-solid fa-house"></i> Home</a></li>
                     <li><a href="${pageContext.request.contextPath}/home" class="nav-link"><i class="fa-solid fa-earth-americas"></i> Questions</a></li>                <li><a href="${pageContext.request.contextPath}/ask" class="nav-link"><i class="fa-solid fa-pen"></i> Ask</a></li>
                     <li><a href="${pageContext.request.contextPath}/tags" class="nav-link"><i class="fa-solid fa-tags"></i> Tags</a></li>
                     <li><a href="${pageContext.request.contextPath}/saves" class="nav-link"><i class="fa-solid fa-bookmark"></i> Saves</a></li>            </ul>
+            </div>
+
+        <div class="container">
+             <div class="left-sidebar">
+                <jsp:include page="../Common/sidebar.jsp">
+                    <jsp:param name="page" value="bookmarks"/>
+                </jsp:include>
             </div>
 
             <div class="main-content">
@@ -635,7 +640,6 @@
         </div>
 
         <!-- Footer -->
-        <%@ include file="../Common/footer.jsp" %>
 
         <div id="flag-modal" class="simple-modal" aria-hidden="true">
             <div class="simple-modal-dialog flag-modal-dialog" role="dialog" aria-modal="true" aria-labelledby="flag-modal-title">

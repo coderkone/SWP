@@ -10,6 +10,7 @@ import jakarta.servlet.http.*;
 import java.io.IOException;
 import java.io.PrintWriter;
 import com.google.gson.JsonObject;
+import model.User;
 
 @WebServlet(name = "BookmarkController", urlPatterns = {"/bookmark/toggle"})
 public class BookmarkQuesController extends HttpServlet {
@@ -21,7 +22,7 @@ public class BookmarkQuesController extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        
+
         response.setContentType("application/json;charset=UTF-8");
         PrintWriter out = response.getWriter();
         JsonObject jsonResponse = new JsonObject();
@@ -38,15 +39,27 @@ public class BookmarkQuesController extends HttpServlet {
                 return;
             }
 
-            UserDTO user = (UserDTO) session.getAttribute("user");
-            long userId = user.getUserId();
+            Object sessionUser = session.getAttribute("user");
+            long userId;
+
+            if (sessionUser instanceof UserDTO) {
+                userId = ((UserDTO) sessionUser).getUserId();
+            } else if (sessionUser instanceof model.User) {
+                userId = ((model.User) sessionUser).getUserId();
+            } else {
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                jsonResponse.addProperty("success", false);
+                jsonResponse.addProperty("message", "Invalid user session");
+                out.print(jsonResponse);
+                return;
+            }
 
             // 2. Get question ID or answer ID from request
             String questionIdParam = request.getParameter("questionId");
             String answerIdParam = request.getParameter("answerId");
 
-            if ((questionIdParam == null || !questionIdParam.matches("\\d+")) &&
-                (answerIdParam == null || !answerIdParam.matches("\\d+"))) {
+            if ((questionIdParam == null || !questionIdParam.matches("\\d+"))
+                    && (answerIdParam == null || !answerIdParam.matches("\\d+"))) {
                 response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                 jsonResponse.addProperty("success", false);
                 jsonResponse.addProperty("message", "Invalid question or answer ID");
@@ -71,7 +84,7 @@ public class BookmarkQuesController extends HttpServlet {
                 }
 
                 boolean isBookmarked = bookmarkDao.checkIfBookmarked(userId, questionId);
-                
+
                 if (isBookmarked) {
                     success = bookmarkDao.removeBookmark(userId, questionId);
                     action = "removed";
@@ -81,8 +94,7 @@ public class BookmarkQuesController extends HttpServlet {
                     action = "added";
                     newBookmarkState = true;
                 }
-            }
-            // 4. Toggle answer bookmark
+            } // 4. Toggle answer bookmark
             else if (answerIdParam != null && answerIdParam.matches("\\d+")) {
                 long answerId = Long.parseLong(answerIdParam);
                 dto.AnswerDTO answer = answerDao.getAnswerById(answerId);
@@ -94,7 +106,7 @@ public class BookmarkQuesController extends HttpServlet {
                     return;
                 }
                 boolean isBookmarked = bookmarkDao.checkIfAnswerBookmarked(userId, answerId);
-                
+
                 if (isBookmarked) {
                     success = bookmarkDao.removeAnswerBookmark(userId, answerId);
                     action = "removed";
@@ -128,10 +140,20 @@ public class BookmarkQuesController extends HttpServlet {
         }
     }
 
+    private Long extractUserId(Object principal) {
+        if (principal instanceof UserDTO) {
+            return ((UserDTO) principal).getUserId();
+        }
+        if (principal instanceof User) {
+            return ((User) principal).getUserId();
+        }
+        return null;
+    }
+
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        
+
         response.setContentType("application/json;charset=UTF-8");
         PrintWriter out = response.getWriter();
         JsonObject jsonResponse = new JsonObject();
@@ -145,8 +167,14 @@ public class BookmarkQuesController extends HttpServlet {
                 return;
             }
 
-            UserDTO user = (UserDTO) session.getAttribute("user");
-            long userId = user.getUserId();
+            Long userId = extractUserId(session.getAttribute("user"));
+            if (userId == null) {
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                jsonResponse.addProperty("success", false);
+                jsonResponse.addProperty("message", "Invalid user session");
+                out.print(jsonResponse);
+                return;
+            }
 
             // 2. Get question ID or answer ID from request
             String questionIdParam = request.getParameter("questionId");
