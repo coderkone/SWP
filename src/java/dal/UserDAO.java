@@ -7,18 +7,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
-<<<<<<< HEAD
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-=======
-import java.util.List;
->>>>>>> Mai
 import util.PasswordUtil;
-import model.GithubUser;
-import model.GoogleUser;
-import model.User;
-import java.util.UUID;
 public class UserDAO {
 
     private final DBContext db = new DBContext();
