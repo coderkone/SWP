@@ -262,36 +262,6 @@
             .status-text {
                 letter-spacing: 1px;
             }
-
-<<<<<<< HEAD
-<aside class="sidebar">
-    <div class="logo-area"><b>QUERY</b>&nbsp;ADMIN</div>
-    <nav class="nav-menu">
-        <a href="${pageContext.request.contextPath}/dashboard" class="nav-item">
-            <span class="nav-icon">📊</span> Dashboard
-        </a>
-        <a href="${pageContext.request.contextPath}/admin/users" class="nav-item">
-            <span class="nav-icon">👥</span> User Management
-        </a>
-        <a href="${pageContext.request.contextPath}/admin/tags" class="nav-item">
-            <span class="nav-icon">🏷️</span> Tag Management
-        </a>
-        <a href="${pageContext.request.contextPath}/admin/reports" class="nav-item">
-            <span class="nav-icon">📋</span> Content Reports
-        </a>
-        <a href="${pageContext.request.contextPath}/admin/blogs" class="nav-item active">
-            <span class="nav-icon">📝</span> Blog Management
-        </a> 
-        <a href="${pageContext.request.contextPath}/admin/rules" class="nav-item">
-            <span class="nav-icon">⚙️</span> System Rules
-        </a>                
-    </nav>
-    <div class="logout-area">
-        <a href="${pageContext.request.contextPath}/logout" class="nav-item">
-            <span class="nav-icon">🚪</span> Log Out
-        </a>
-    </div>
-</aside>
             /* Utilities */
             .alert {
                 padding: 12px 16px;
