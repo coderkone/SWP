@@ -603,6 +603,6 @@
                 </main>
             </div>
         </div>
-
+        <jsp:include page="../Common/footer.jsp" />
     </body>
 </html>

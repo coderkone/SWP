@@ -65,4 +65,52 @@ SELECT question_id, 1 FROM [dbo].[Questions] WHERE user_id = 18 AND title LIKE N
 
 INSERT INTO [dbo].[Question_Tags] ([question_id], [tag_id])
 SELECT question_id, 2 FROM [dbo].[Questions] WHERE user_id = 18 AND title LIKE N'%MVC%'; -- tag 2 là spring-boot
-GO
+GO
+
+
+-- ========================================================
+-- Tạo 15 bản ghi cho mỗi tab. Với pageSize = 10, giao diện 
+-- sẽ tự động tách thành 2 trang để test click chuyển trang!
+-- ========================================================
+DECLARE @Counter INT = 1;
+DECLARE @NewQuestionID BIGINT;
+DECLARE @NewAnswerID BIGINT;
+
+WHILE @Counter <= 15
+BEGIN
+    -- 1. Tạo 15 câu hỏi nháp -> Sẽ hiển thị ở tab Questions
+    INSERT INTO [dbo].[Questions] ([user_id], [title], [body], [created_at], [Score], [view_count])
+    VALUES (18, CONCAT(N'[Test Phân Trang] Câu hỏi số ', @Counter), N'Nội dung để test UI phân trang...', DATEADD(DAY, -@Counter, GETDATE()), @Counter * 2, @Counter * 10);
+    
+    SET @NewQuestionID = SCOPE_IDENTITY();
+
+    -- 2. Tạo 15 câu trả lời -> Sẽ hiển thị ở tab Answers
+    INSERT INTO [dbo].[Answers] ([question_id], [user_id], [body], [created_at], [Score], [is_accepted])
+    VALUES (@NewQuestionID, 18, CONCAT(N'[Test Phân Trang] Câu trả lời số ', @Counter), DATEADD(HOUR, -@Counter, GETDATE()), @Counter, @Counter % 2);
+    
+    SET @NewAnswerID = SCOPE_IDENTITY();
+
+    -- 3. Bookmark 15 câu hỏi này -> Sẽ hiển thị ở tab Follows
+    INSERT INTO [dbo].[Bookmarks] ([user_id], [question_id], [created_at])
+    VALUES (18, @NewQuestionID, DATEADD(MINUTE, -@Counter, GETDATE()));
+
+    -- 4. Tạo 15 Comments (xen kẽ giữa bình luận vào Question và Answer) -> Sẽ hiển thị ở tab Comments
+    IF @Counter % 2 = 0
+        INSERT INTO [dbo].[Comments] ([user_id], [question_id], [answer_id], [body], [created_at])
+        VALUES (18, @NewQuestionID, NULL, CONCAT(N'Comment test trên Question số ', @Counter), DATEADD(SECOND, -@Counter, GETDATE()));
+    ELSE
+        INSERT INTO [dbo].[Comments] ([user_id], [question_id], [answer_id], [body], [created_at])
+        VALUES (18, NULL, @NewAnswerID, CONCAT(N'Comment test trên Answer số ', @Counter), DATEADD(SECOND, -@Counter, GETDATE()));
+
+    -- 5. Tạo 15 Votes (xen kẽ up/down, Question/Answer) -> Sẽ hiển thị ở tab Votes
+    IF @Counter % 2 = 0
+        INSERT INTO [dbo].[Votes] ([user_id], [question_id], [answer_id], [vote_type], [created_at])
+        VALUES (18, @NewQuestionID, NULL, 'up', DATEADD(MILLISECOND, -@Counter * 10, GETDATE()));
+    ELSE
+        INSERT INTO [dbo].[Votes] ([user_id], [question_id], [answer_id], [vote_type], [created_at])
+        VALUES (18, NULL, @NewAnswerID, 'down', DATEADD(MILLISECOND, -@Counter * 10, GETDATE()));
+
+    SET @Counter = @Counter + 1;
+END
+GO
+>>>>>>> master
