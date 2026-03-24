@@ -36,6 +36,7 @@
                 </library>
                 <library dirs="200">
                     <file>${file.reference.jakarta.servlet-api-6.0.0.jar-1}</file>
+                    <path-in-war>WEB-INF/lib</path-in-war>
                 </library>
                 <library dirs="200">
                     <file>${file.reference.mssql-jdbc-12.8.1.jre11.jar-1}</file>
