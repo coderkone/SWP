@@ -350,6 +350,9 @@
                 <a href="#" class="nav-item">
                     <span class="nav-icon">📋</span> Content Reports
                 </a>
+                <a href="${pageContext.request.contextPath}/admin/badges" class="nav-item">
+                    <span class="nav-icon">🏅</span> Badge Management
+                </a>
                 <a href="${pageContext.request.contextPath}/admin/blogs" class="nav-item">
                     <span class="nav-icon">📝</span> Blog Management
                 </a> 
