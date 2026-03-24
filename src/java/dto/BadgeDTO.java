@@ -16,7 +16,7 @@ public class BadgeDTO {
     private String type; // Lưu loại: Gold, Silver, Bronze
     private String description;
     private Timestamp earnedAt;
-
+    
     public BadgeDTO() {
     }
 
@@ -57,5 +57,22 @@ public class BadgeDTO {
 
     public void setEarnedAt(Timestamp earnedAt) {
         this.earnedAt = earnedAt;
+    }
+    private int badgeId;
+    private int requiredReputation;
+    public int getBadgeId() {
+        return badgeId;
+    }
+
+    public void setBadgeId(int badgeId) {
+        this.badgeId = badgeId;
+    }
+
+    public int getRequiredReputation() {
+        return requiredReputation;
+    }
+
+    public void setRequiredReputation(int requiredReputation) {
+        this.requiredReputation = requiredReputation;
     }
 }

@@ -5,7 +5,7 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>${not empty blog ? 'Edit Blog' : 'Create New Post'} - DevQuery Admin</title>
+        <title>${not empty badge ? 'Edit Badge' : 'Create Badge'} - DevQuery Admin</title>
         <style>
             /* 1. Biến dùng chung */
             :root {
@@ -29,7 +29,7 @@
                 min-height: 100vh;
             }
 
-            /* 2. Sidebar */
+            /* 2. Sidebar (Đồng bộ) */
             .sidebar {
                 width: 250px; background-color: var(--sidebar-bg); color: #AAB7C4;
                 display: flex; flex-direction: column; position: fixed; height: 100%;
@@ -65,13 +65,13 @@
             /* 4. Layout Container */
             .container { padding: 30px; max-width: 1200px; margin: 0 auto; }
 
-            /* 5. Form Box Styling (Dành riêng cho Blog form rộng hơn) */
+            /* 5. Form Box Styling */
             .form-card {
                 background: var(--card-bg);
                 padding: 30px 40px;
                 border-radius: 8px;
-                max-width: 900px; /* Rộng hơn form badge để nhập text dễ hơn */
-                margin: 0 auto;
+                max-width: 600px;
+                margin: 0 auto; /* Căn giữa form */
                 border: 1px solid var(--border-color);
                 box-shadow: 0 4px 6px rgba(0,0,0,0.05);
             }
@@ -86,7 +86,7 @@
                 color: var(--text-main); font-size: 14px;
             }
             
-            /* Inputs */
+            /* Input Đẹp - Bắt mắt hơn */
             .form-control {
                 width: 100%; padding: 10px 14px; border: 1px solid #babfc4;
                 border-radius: 5px; font-size: 14px; color: #3b4045;
@@ -94,15 +94,13 @@
             }
             .form-control:focus {
                 outline: none; border-color: #0a95ff;
-                box-shadow: 0 0 0 4px rgba(0, 116, 204, 0.15);
+                box-shadow: 0 0 0 4px rgba(0, 116, 204, 0.15); /* Hiệu ứng phát sáng viền */
             }
-            textarea.form-control { resize: vertical; min-height: 350px; line-height: 1.6; }
+            textarea.form-control { resize: vertical; min-height: 100px; }
 
             /* 6. Buttons */
             .form-actions {
                 display: flex; gap: 15px; margin-top: 30px;
-                border-top: 1px solid var(--border-color);
-                padding-top: 20px;
             }
             .btn {
                 padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer;
@@ -114,11 +112,6 @@
             .btn-primary:hover { background-color: #0074cc; }
             .btn-secondary { background-color: white; color: var(--text-main); border: 1px solid var(--border-color); }
             .btn-secondary:hover { background-color: #f8f9f9; }
-            
-            /* Tiện ích text */
-            .text-danger { color: #dc3545; }
-            .text-muted { font-size: 13px; color: var(--text-sub); margin-bottom: 5px; }
-            .image-preview { margin-top: 10px; width: 150px; border-radius: 4px; border: 1px solid var(--border-color); }
         </style>
     </head>
     <body>
@@ -135,13 +128,13 @@
                 <a href="${pageContext.request.contextPath}/admin/tags" class="nav-item">
                     <span class="nav-icon">🏷️</span> Tag Management
                 </a>
-                <a href="${pageContext.request.contextPath}/admin/reports" class="nav-item">
+                <a href="#" class="nav-item">
                     <span class="nav-icon">📋</span> Content Reports
                 </a>
-                <a href="${pageContext.request.contextPath}/admin/badges" class="nav-item">
+                <a href="${pageContext.request.contextPath}/admin/badges" class="nav-item active">
                     <span class="nav-icon">🏅</span> Badge Management
                 </a>
-                <a href="${pageContext.request.contextPath}/admin/blogs" class="nav-item active">
+                <a href="${pageContext.request.contextPath}/admin/blogs" class="nav-item">
                     <span class="nav-icon">📝</span> Blog Management
                 </a> 
                 <a href="${pageContext.request.contextPath}/admin/rules" class="nav-item">
@@ -157,7 +150,7 @@
 
         <main class="main-content">
             <header class="top-header">
-                <div class="page-title">Blog Management</div>
+                <div class="page-title">Badge Management</div>
                 <div class="admin-profile">
                     <span class="admin-name">${sessionScope.USER.username != null ? sessionScope.USER.username : 'Admin'}</span>
                     <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" alt="Avatar" class="admin-avatar">
@@ -166,58 +159,41 @@
 
             <div class="container">
                 <div class="form-card">
-                    <h2 class="form-title">
-                        <c:choose>
-                            <c:when test="${not empty blog}">✎ Edit Blog Post (ID: ${blog.blogId})</c:when>
-                            <c:otherwise>+ Create New Post</c:otherwise>
-                        </c:choose>
-                    </h2>
+                    <h2 class="form-title">${not empty badge ? '✎ Edit Badge' : '+ Create New Badge'}</h2>
 
-                    <form action="${pageContext.request.contextPath}/admin/blogs/${not empty blog ? 'edit' : 'create'}" 
-                          method="POST" enctype="multipart/form-data">
-
-                        <c:if test="${not empty blog}">
-                            <input type="hidden" name="id" value="${blog.blogId}">
-                            <input type="hidden" name="oldThumbnailUrl" value="${blog.thumbnailUrl}">
+                    <form action="${pageContext.request.contextPath}/admin/badges/${not empty badge ? 'edit' : 'create'}" method="POST">
+                        
+                        <c:if test="${not empty badge}">
+                            <input type="hidden" name="id" value="${badge.badgeId}">
                         </c:if>
 
                         <div class="form-group">
-                            <label for="title" class="form-label">Blog Title <span class="text-danger">*</span></label>
-                            <input type="text" id="title" name="title" class="form-control" 
-                                   value="${blog.title}" required placeholder="Enter an engaging title...">
+                            <label class="form-label">Badge Name *</label>
+                            <input type="text" name="name" class="form-control" value="${badge.name}" placeholder="e.g. Helpful Hero" required>
                         </div>
 
                         <div class="form-group">
-                            <label for="imageFile" class="form-label">Thumbnail Image</label>
-                            <input type="file" id="imageFile" name="imageFile" class="form-control" accept="image/*">
-
-                            <c:if test="${not empty blog.thumbnailUrl}">
-                                <div style="margin-top: 15px;">
-                                    <p class="text-muted">Current Preview:</p>
-                                    <img src="${pageContext.request.contextPath}/${blog.thumbnailUrl}" class="image-preview" alt="Thumbnail Preview">
-                                </div>
-                            </c:if>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="status" class="form-label">Status</label>
-                            <select id="status" name="status" class="form-control" style="width: 250px;">
-                                <option value="1" ${blog.status == 1 ? 'selected' : ''}>Published</option>
-                                <option value="0" ${blog.status == 0 ? 'selected' : ''}>Draft / Hidden</option>
+                            <label class="form-label">Badge Type</label>
+                            <select name="type" class="form-control">
+                                <option value="Bronze" ${badge.type == 'Bronze' ? 'selected' : ''}>Bronze</option>
+                                <option value="Silver" ${badge.type == 'Silver' ? 'selected' : ''}>Silver</option>
+                                <option value="Gold" ${badge.type == 'Gold' ? 'selected' : ''}>Gold</option>
                             </select>
                         </div>
 
                         <div class="form-group">
-                            <label for="content" class="form-label">Content <span class="text-danger">*</span></label>
-                            <textarea id="content" name="content" class="form-control" required 
-                                      placeholder="Write your content here... (HTML tags supported if handled by backend)">${blog.content}</textarea>
+                            <label class="form-label">Required Reputation</label>
+                            <input type="number" name="requiredReputation" class="form-control" value="${not empty badge ? badge.requiredReputation : 0}" required min="0">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Description</label>
+                            <textarea name="description" class="form-control" placeholder="Describe how users can earn this badge...">${badge.description}</textarea>
                         </div>
 
                         <div class="form-actions">
-                            <button type="submit" class="btn btn-primary">
-                                ${not empty blog ? 'Save Changes' : 'Publish Post'}
-                            </button>
-                            <a href="${pageContext.request.contextPath}/admin/blogs" class="btn btn-secondary">Cancel</a>
+                            <button type="submit" class="btn btn-primary">${not empty badge ? 'Update Badge' : 'Save Badge'}</button>
+                            <a href="${pageContext.request.contextPath}/admin/badges" class="btn btn-secondary">Cancel</a>
                         </div>
                     </form>
                 </div>

@@ -62,7 +62,9 @@ public class BlogManagerController extends HttpServlet {
             case "/admin/blogs":
             default:
                 // Hiển thị danh sách kết hợp: Tìm kiếm, Sắp xếp, Phân trang
-                String keyword = request.getParameter("q"); 
+                String keyword = request.getParameter("q");
+                if(keyword != null) keyword=keyword.trim();
+                String status = request.getParameter("status");
                 String sort = request.getParameter("sort");
                 String order = request.getParameter("order");
                 
@@ -79,16 +81,16 @@ public class BlogManagerController extends HttpServlet {
                 }
 
                 // Gọi DAO lấy dữ liệu
-                int totalBlogs = blogDAO.getTotalBlogs(keyword);
+                int totalBlogs = blogDAO.getTotalBlogs(keyword, status);
                 int totalPages = (int) Math.ceil((double) totalBlogs / pageSize);
-                List<Blog> blogList = blogDAO.getBlogsWithPagination(keyword, sort, order, page, pageSize);
+                List<Blog> blogList = blogDAO.getBlogsWithPagination(keyword, status, sort, order, page, pageSize);
 
                 // Đẩy dữ liệu sang JSP
                 request.setAttribute("blogList", blogList);
                 request.setAttribute("searchKeyword", keyword); 
                 request.setAttribute("currentPage", page);
                 request.setAttribute("totalPages", totalPages);
-                
+                request.setAttribute("selectedStatus", status);
                 request.getRequestDispatcher("/View/Admin/blog-manager.jsp").forward(request, response);
                 break;
         }

@@ -6,9 +6,9 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Blog Management - DevQuery Admin</title>
+        <title>Badge Management - DevQuery Admin</title>
         <style>
-            /* Core CSS */
+            /* Core CSS - Đồng bộ hoàn toàn với Blog Manager */
             :root {
                 --sidebar-bg: #2D3E50;
                 --sidebar-hover: #3A4B5D;
@@ -151,6 +151,7 @@
                 width: 250px;
                 font-size: 14px;
             }
+
             .btn {
                 padding: 8px 16px;
                 border: none;
@@ -184,6 +185,11 @@
             .btn-edit:hover {
                 background: #f8f9f9;
             }
+            .btn-del {
+                background: #dc3545;
+                color: white;
+                border: none;
+            }
 
             /* Table */
             .section-box {
@@ -214,84 +220,31 @@
             tr:hover {
                 background-color: #f8f9f9;
             }
-            .sort-link {
-                text-decoration: none;
-                color: inherit;
-                display: inline-flex;
-                align-items: center;
-                gap: 4px;
-            }
-            .blog-title {
-                font-weight: bold;
-                color: #0074cc;
-                display: block;
-                max-width: 400px;
-                white-space: nowrap;
-                overflow: hidden;
-                text-overflow: ellipsis;
-            }
 
-            /* Status Toggle Button CSS */
-            .status-toggle {
-                display: inline-flex;
-                align-items: center;
-                gap: 8px;
-                padding: 8px 16px;
+            /* Badge Type Styling */
+            .badge-tag {
+                padding: 4px 10px;
                 border-radius: 20px;
                 font-size: 11px;
                 font-weight: bold;
                 text-transform: uppercase;
-                border: none;
-                cursor: pointer;
-                transition: 0.3s ease-in-out;
-                font-family: inherit;
-                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
             }
-            .status-toggle:hover {
-                transform: translateY(-2px);
-                box-shadow: 0 4px 6px rgba(0,0,0,0.15);
+            .badge-gold {
+                background: #FFF4D5;
+                color: #856404;
+                border: 1px solid #FFE69C;
             }
-            .status-active {
-                color: #fff;
-                background: linear-gradient(135deg, #2ecc71, #27ae60);
+            .badge-silver {
+                background: #F2F2F2;
+                color: #383d41;
+                border: 1px solid #D6D8DB;
             }
-            .status-inactive {
-                color: #fff;
-                background: linear-gradient(135deg, #e67e22, #c0392b);
-            }
-            .status-text {
-                letter-spacing: 1px;
+            .badge-bronze {
+                background: #FDEBD0;
+                color: #784212;
+                border: 1px solid #FAD7A0;
             }
 
-<<<<<<< HEAD
-<aside class="sidebar">
-    <div class="logo-area"><b>QUERY</b>&nbsp;ADMIN</div>
-    <nav class="nav-menu">
-        <a href="${pageContext.request.contextPath}/dashboard" class="nav-item">
-            <span class="nav-icon">📊</span> Dashboard
-        </a>
-        <a href="${pageContext.request.contextPath}/admin/users" class="nav-item">
-            <span class="nav-icon">👥</span> User Management
-        </a>
-        <a href="${pageContext.request.contextPath}/admin/tags" class="nav-item">
-            <span class="nav-icon">🏷️</span> Tag Management
-        </a>
-        <a href="${pageContext.request.contextPath}/admin/reports" class="nav-item">
-            <span class="nav-icon">📋</span> Content Reports
-        </a>
-        <a href="${pageContext.request.contextPath}/admin/blogs" class="nav-item active">
-            <span class="nav-icon">📝</span> Blog Management
-        </a> 
-        <a href="${pageContext.request.contextPath}/admin/rules" class="nav-item">
-            <span class="nav-icon">⚙️</span> System Rules
-        </a>                
-    </nav>
-    <div class="logout-area">
-        <a href="${pageContext.request.contextPath}/logout" class="nav-item">
-            <span class="nav-icon">🚪</span> Log Out
-        </a>
-    </div>
-</aside>
             /* Utilities */
             .alert {
                 padding: 12px 16px;
@@ -308,32 +261,6 @@
                 text-align: center;
                 padding: 40px;
                 color: var(--text-sub);
-            }
-            /* Pagination CSS */
-            .pagination-container {
-                padding: 20px;
-                display: flex;
-                justify-content: center;
-                gap: 5px;
-            }
-            .page-link {
-                padding: 8px 14px;
-                border: 1px solid var(--border-color);
-                border-radius: 4px;
-                text-decoration: none;
-                color: var(--text-main);
-                font-size: 13px;
-                transition: 0.2s;
-            }
-            .page-link:hover {
-                background-color: #f8f9f9;
-                border-color: #babfc4;
-            }
-            .page-link.active {
-                background-color: var(--active-orange);
-                color: white;
-                border-color: var(--active-orange);
-                font-weight: bold;
             }
         </style>
     </head>
@@ -354,10 +281,10 @@
                 <a href="#" class="nav-item">
                     <span class="nav-icon">📋</span> Content Reports
                 </a>
-                <a href="${pageContext.request.contextPath}/admin/badges" class="nav-item">
+                <a href="${pageContext.request.contextPath}/admin/badges" class="nav-item active">
                     <span class="nav-icon">🏅</span> Badge Management
                 </a>
-                <a href="${pageContext.request.contextPath}/admin/blogs" class="nav-item active">
+                <a href="${pageContext.request.contextPath}/admin/blogs" class="nav-item">
                     <span class="nav-icon">📝</span> Blog Management
                 </a> 
                 <a href="${pageContext.request.contextPath}/admin/rules" class="nav-item">
@@ -373,7 +300,7 @@
 
         <main class="main-content">
             <header class="top-header">
-                <div class="page-title">Blog Management</div>
+                <div class="page-title">Badge Management</div>
                 <div class="admin-profile">
                     <span class="admin-name">${sessionScope.USER.username}</span>
                     <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" alt="Admin Avatar" class="admin-avatar">
@@ -381,99 +308,71 @@
             </header>
 
             <div class="container">
-                <c:if test="${param.success == 'status_updated'}"><div class="alert alert-success">Blog status updated successfully!</div></c:if>
-                <c:if test="${param.success == 'created'}"><div class="alert alert-success">Blog created successfully!</div></c:if>
-                <c:if test="${param.success == 'updated'}"><div class="alert alert-success">Blog updated successfully!</div></c:if>
-                <c:if test="${param.success == 'deleted'}"><div class="alert alert-success">Blog deleted successfully!</div></c:if>
+                <c:if test="${not empty param.success}">
+                    <div class="alert alert-success">Action completed successfully!</div>
+                </c:if>
 
-                    <div class="toolbar">
-                        <form action="${pageContext.request.contextPath}/admin/blogs" method="get" class="search-box">
-                        <input type="text" name="q" placeholder="Search blog titles..." value="${searchKeyword}">
-
-                        <select name="status" class="btn btn-secondary" style="border: 1px solid var(--border-color);" onchange="this.form.submit()">
-                            <option value="">All Status</option>
-                            <option value="1" ${selectedStatus == '1' ? 'selected' : ''}>Published</option>
-                            <option value="0" ${selectedStatus == '0' ? 'selected' : ''}>Hidden</option>
+                <div class="toolbar">
+                    <form action="${pageContext.request.contextPath}/admin/badges" method="get" class="search-box">
+                        <input type="text" name="q" placeholder="Search badges..." value="${param.q}">
+                        <select name="type" style="padding: 8px; border: 1px solid var(--border-color); border-radius: 4px;">
+                            <option value="">All Ranks</option>
+                            <option value="Gold" ${param.type == 'Gold' ? 'selected' : ''}>Gold</option>
+                            <option value="Silver" ${param.type == 'Silver' ? 'selected' : ''}>Silver</option>
+                            <option value="Bronze" ${param.type == 'Bronze' ? 'selected' : ''}>Bronze</option>
                         </select>
-                        <a href="${pageContext.request.contextPath}/admin/blogs" class="btn btn-edit" style="text-decoration: none;">
+                        <a href="${pageContext.request.contextPath}/admin/badges" class="btn btn-edit" style="text-decoration: none;">
                             ✖ Clear
                         </a>
                     </form>
-                    <a href="${pageContext.request.contextPath}/admin/blogs/create" class="btn btn-primary">+ Create New Post</a>
+                    <a href="${pageContext.request.contextPath}/admin/badges/create" class="btn btn-primary">+ Create New Badge</a>
                 </div>
 
                 <div class="section-box">
                     <table>
                         <thead>
                             <tr>
-                                <th>ID</th>
-                                <th>Title</th>
-                                <th>
-                                    <a href="?q=${searchKeyword}&status=${selectedStatus}&sort=views&order=${param.sort == 'views' && param.order == 'asc' ? 'desc' : 'asc'}" class="sort-link">
-                                        Views ${param.sort == 'views' ? (param.order == 'asc' ? '▲' : '▼') : '↕'}
-                                    </a>
-                                </th>
-                                <th>
-                                    <a href="?q=${searchKeyword}&status=${selectedStatus}&sort=comments&order=${param.sort == 'comments' && param.order == 'asc' ? 'desc' : 'asc'}" class="sort-link">
-                                        Comments ${param.sort == 'comments' ? (param.order == 'asc' ? '▲' : '▼') : '↕'}
-                                    </a>
-                                </th>
-                                <th>Created At</th>
-                                <th>Status</th>
-                                <th style="text-align: center;">Actions</th>
+                                <th style="width: 80px;">ID</th>
+                                <th>Badge Details</th>
+                                <th style="width: 150px;">Rank</th>
+                                <th style="width: 150px;">Rep Required</th>
+                                <th style="text-align: center; width: 180px;">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <c:forEach var="blog" items="${blogList}">
+                            <c:forEach var="b" items="${badgeList}">
                                 <tr>
-                                    <td>${blog.blogId}</td>
-                                    <td><span class="blog-title" title="${blog.title}">${blog.title}</span></td>
-                                    <td><fmt:formatNumber value="${blog.viewCount}" type="number"/></td>
-                                    <td>${blog.commentCount}</td>
-                                    <td><fmt:formatDate value="${blog.createdAt}" pattern="dd/MM/yyyy"/></td>
-
+                                    <td>#${b.badgeId}</td>
                                     <td>
-                                        <form action="${pageContext.request.contextPath}/admin/blogs/toggle-status" method="POST" style="margin:0;">
-                                            <input type="hidden" name="id" value="${blog.blogId}">
-                                            <input type="hidden" name="newStatus" value="${blog.status == 1 ? 0 : 1}">
-                                            <button type="submit" class="status-toggle ${blog.status == 1 ? 'status-active' : 'status-inactive'}" title="Click to change status">
-                                                <span class="status-text">${blog.status == 1 ? 'PUBLISHED' : 'HIDDEN'}</span>
-                                            </button>
-                                        </form>
+                                        <div style="font-weight: bold; color: #0074cc; font-size: 14px;">${b.name}</div>
+                                        <div style="color: var(--text-sub); font-size: 12px; margin-top: 2px;">${b.description}</div>
                                     </td>
-
+                                    <td>
+                                        <c:choose>
+                                            <c:when test="${b.type.toLowerCase() == 'gold'}"><span class="badge-tag badge-gold">Gold</span></c:when>
+                                            <c:when test="${b.type.toLowerCase() == 'silver'}"><span class="badge-tag badge-silver">Silver</span></c:when>
+                                            <c:otherwise><span class="badge-tag badge-bronze">Bronze</span></c:otherwise>
+                                        </c:choose>
+                                    </td>
+                                    <td style="font-weight: bold;">${b.requiredReputation} pts</td>
                                     <td style="text-align: center;">
-                                        <a href="blogs/edit?id=${blog.blogId}" class="btn btn-edit btn-sm">Edit</a>
+                                        <div style="display: flex; gap: 6px; justify-content: center;">
+                                            <a href="${pageContext.request.contextPath}/admin/badges/edit?id=${b.badgeId}" class="btn btn-edit btn-sm">Edit</a>
+                                            <form action="${pageContext.request.contextPath}/admin/badges/delete" method="post" style="margin:0;" onsubmit="return confirm('Delete badge: ${b.name}?');">
+                                                <input type="hidden" name="id" value="${b.badgeId}">
+                                                <button type="submit" class="btn btn-del btn-sm">Delete</button>
+                                            </form>
+                                        </div>
                                     </td>
                                 </tr>
                             </c:forEach>
-
-                            <c:if test="${empty blogList}">
+                            <c:if test="${empty badgeList}">
                                 <tr>
-                                    <td colspan="7" class="empty-state">No blogs were found matching your criteria.</td>
+                                    <td colspan="5" class="empty-state">No badges found matching your criteria.</td>
                                 </tr>
                             </c:if>
                         </tbody>
                     </table>
-
-                    <c:if test="${totalPages > 1}">
-                        <div class="pagination-container">
-                            <c:if test="${currentPage > 1}">
-                                <a href="?page=${currentPage - 1}&q=${searchKeyword}&status=${selectedStatus}&sort=${param.sort}&order=${param.order}" class="page-link">« Prev</a>
-                            </c:if>
-
-                            <c:forEach begin="1" end="${totalPages}" var="i">
-                                <a href="?page=${i}&q=${searchKeyword}&status=${selectedStatus}&sort=${param.sort}&order=${param.order}" 
-                                   class="page-link ${i == currentPage ? 'active' : ''}">
-                                    ${i}
-                                </a>
-                            </c:forEach>
-
-                            <c:if test="${currentPage < totalPages}">
-                                <a href="?page=${currentPage + 1}&q=${searchKeyword}&status=${selectedStatus}&sort=${param.sort}&order=${param.order}" class="page-link">Next »</a>
-                            </c:if>
-                        </div>
-                    </c:if>
                 </div>
             </div>
         </main>

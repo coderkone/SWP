@@ -277,62 +277,6 @@ public class BlogDAO extends DBContext {
         return list;
     }
 
-    public int getTotalBlogs(String keyword) {
-        String query = "SELECT COUNT(*) FROM Blogs WHERE title LIKE ?";
-        try (Connection conn = new DBContext().getConnection(); PreparedStatement ps = conn.prepareStatement(query)) {
-            ps.setString(1, "%" + (keyword != null ? keyword : "") + "%");
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    return rs.getInt(1);
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return 0;
-    }
-
-    public List<Blog> getBlogsWithPagination(String keyword, String sortField, String sortOrder, int pageIndex, int pageSize) {
-        List<Blog> list = new ArrayList<>();
-        String orderBy = "created_at DESC"; // Mặc định [cite: 172]
-
-        if (sortField != null && !sortField.isEmpty()) {
-            String order = (sortOrder != null && sortOrder.equalsIgnoreCase("asc")) ? "ASC" : "DESC";
-            if (sortField.equals("views")) {
-                orderBy = "view_count " + order;
-            } else if (sortField.equals("comments")) {
-                orderBy = "comment_count " + order;
-            }
-        }
-
-        // SQL Server Pagination: OFFSET và FETCH NEXT
-        String query = "SELECT * FROM Blogs WHERE title LIKE ? "
-                + "ORDER BY " + orderBy + " "
-                + "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
-
-        try (Connection conn = new DBContext().getConnection(); PreparedStatement ps = conn.prepareStatement(query)) {
-            ps.setString(1, "%" + (keyword != null ? keyword : "") + "%");
-            ps.setInt(2, (pageIndex - 1) * pageSize);
-            ps.setInt(3, pageSize);
-
-            try (ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    Blog blog = new Blog(); //
-                    blog.setBlogId(rs.getInt("blog_id"));
-
-                blog.setTitle(rs.getString("title"));
-                blog.setViewCount(rs.getInt("view_count"));
-                blog.setCommentCount(rs.getInt("comment_count"));
-                blog.setCreatedAt(rs.getTimestamp("created_at"));
-                blog.setStatus(rs.getInt("status"));
-                    list.add(blog);
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return list;
-    }
     public Blog getBlogByIdForAdmin(int blogId) {
         // 1. XÓA u.avatar_url
         String sql = "SELECT b.*, u.username "
@@ -365,5 +309,83 @@ public class BlogDAO extends DBContext {
             e.printStackTrace();
         }
         return null;
+    }
+    // Trong BlogDAO.java
+
+    public int getTotalBlogs(String keyword, String status) {
+        String query = "SELECT COUNT(*) FROM Blogs WHERE title LIKE ?";
+        if (status != null && !status.isEmpty()) {
+            query += " AND status = " + status;
+        }
+        try (Connection conn = new DBContext().getConnection(); PreparedStatement ps = conn.prepareStatement(query)) {
+            ps.setString(1, "%" + (keyword != null ? keyword : "") + "%");
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+
+    public List<Blog> getBlogsWithPagination(String keyword, String status, String sortField, String sortOrder, int pageIndex, int pageSize) {
+        List<Blog> list = new ArrayList<>();
+        // LUÔN ĐẨY HIDDEN XUỐNG DƯỚI (status 1 đứng trước status 0)
+        String orderBy = "b.status DESC, b.created_at DESC"; 
+
+        if (sortField != null && !sortField.isEmpty()) {
+            String order = (sortOrder != null && sortOrder.equalsIgnoreCase("asc")) ? "ASC" : "DESC";
+            if (sortField.equals("views")) {
+                orderBy = "b.status DESC, b.view_count " + order;
+            } else if (sortField.equals("comments")) {
+                orderBy = "b.status DESC, b.comment_count " + order;
+            }
+        }
+
+        // Đã bổ sung LEFT JOIN với Users để lấy authorName
+        String query = "SELECT b.*, u.username "
+                     + "FROM Blogs b "
+                     + "LEFT JOIN Users u ON b.author_id = u.user_id "
+                     + "WHERE b.title LIKE ? ";
+        
+        if (status != null && !status.isEmpty()) {
+            query += " AND b.status = " + status;
+        }
+        
+        query += " ORDER BY " + orderBy + " OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
+
+        try (Connection conn = new DBContext().getConnection(); 
+             PreparedStatement ps = conn.prepareStatement(query)) {
+             
+            ps.setString(1, "%" + (keyword != null ? keyword : "") + "%");
+            ps.setInt(2, (pageIndex - 1) * pageSize);
+            ps.setInt(3, pageSize);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Blog blog = new Blog();
+                    blog.setBlogId(rs.getInt("blog_id"));
+                    blog.setTitle(rs.getString("title"));
+                    blog.setContent(rs.getString("content"));
+                    blog.setThumbnailUrl(rs.getString("thumbnail_url"));
+                    blog.setAuthorId(rs.getLong("author_id"));
+                    blog.setCreatedAt(rs.getTimestamp("created_at"));
+                    blog.setUpdatedAt(rs.getTimestamp("updated_at"));
+                    blog.setViewCount(rs.getInt("view_count"));
+                    blog.setCommentCount(rs.getInt("comment_count"));
+                    blog.setStatus(rs.getInt("status"));
+                    
+                    // Lấy username từ bảng Users
+                    blog.setAuthorName(rs.getString("username"));
+                    
+                    list.add(blog);
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("===== ERROR IN getBlogsWithPagination =====");
+            e.printStackTrace();
+        }
+        return list;
     }
 }
