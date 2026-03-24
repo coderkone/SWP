@@ -96,24 +96,27 @@ public class AuthController extends HttpServlet {
             return;
         }
 
-        UserDTO user = dao.login(email, pass);
-        if (user == null) {
+        UserDTO userDTO = dao.login(email, pass);
+        model.User userModel = dao.loginModel(email, pass);
+        
+        if (userDTO == null || userModel == null) {
             request.setAttribute("error", "Sai email hoặc password.");
             request.getRequestDispatcher("/View/User/login.jsp").forward(request, response);
             return;
         }
 
         // Check inactive user
-        if ("inactive".equalsIgnoreCase(user.getStatus())) {
+        if ("inactive".equalsIgnoreCase(userDTO.getStatus())) {
             request.setAttribute("error", "Tài khoản của bạn đã bị khóa. Vui lòng liên hệ admin.");
             request.getRequestDispatcher("/View/User/login.jsp").forward(request, response);
             return;
         }
 
         HttpSession session = request.getSession(true);
-        session.setAttribute("USER", user);
+        session.setAttribute("USER", userDTO);
+        session.setAttribute("user", userModel); // Use lowercase "user" for model-based JSPs
 
-        String role = user.getRole(); // admin / moderator / member
+        String role = userDTO.getRole(); // admin / moderator / member
         if (role != null && role.equalsIgnoreCase("admin")) {
             response.sendRedirect(request.getContextPath() + "/dashboard");
         } else {

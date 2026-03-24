@@ -134,4 +134,24 @@ public class CollectionDAO extends DBContext {
         }
         return list;
     }
+    public List<model.Collection> getAllCollectionsByUserId(long userId) {
+    List<model.Collection> list = new ArrayList<>();
+    String sql = "SELECT * FROM Collections WHERE user_id = ? ORDER BY name ASC";
+    try (Connection conn = getConnection(); 
+         PreparedStatement ps = conn.prepareStatement(sql)) {
+        ps.setLong(1, userId);
+        try (ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                model.Collection c = new model.Collection();
+                c.setCollectionId(rs.getInt("collection_id"));
+                c.setName(rs.getString("name"));
+                // Set thêm các trường khác nếu cần
+                list.add(c);
+            }
+        }
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+    return list;
+}
 }
