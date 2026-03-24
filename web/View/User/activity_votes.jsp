@@ -64,7 +64,7 @@
                     <jsp:include page="../Common/sidebar.jsp" />
                 </nav>
 
-                <main class="col-md-10 px-md-4 pt-4">
+                <main class="col-md-10 px-md-4 pt-4 pb-5">
 
                     <jsp:include page="../Common/profileTemplate.jsp">
                         <jsp:param name="activeTab" value="activity" />
@@ -130,5 +130,6 @@
                 </main>
             </div>
         </div>
+        <jsp:include page="../Common/footer.jsp" />
     </body>
 </html>

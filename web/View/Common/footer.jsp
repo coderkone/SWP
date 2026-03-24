@@ -8,12 +8,11 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
 <style>
-    /* FOOTER STYLES */
     .footer-devquery {
-        background-color: #2c3e50;
-        color: #ecf0f1;
-        margin-top: 60px;
-        padding: 40px 0 20px 0;
+        background-color: #242729;
+        color: #ffffff;
+        margin-top: 40px;
+        padding: 25px 0 15px 0;
         border-top: 1px solid #34495e;
     }
 
@@ -27,15 +26,15 @@
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
         gap: 30px;
-        margin-bottom: 30px;
+        margin-bottom: 15px;
     }
 
     .footer-section h5 {
+        color: #f48024;
         font-size: 14px;
         font-weight: 600;
         text-transform: uppercase;
-        color: #f48024;
-        margin-bottom: 15px;
+        margin-bottom: 10px;
         letter-spacing: 0.5px;
     }
 
@@ -46,11 +45,11 @@
     }
 
     .footer-section ul li {
-        margin-bottom: 10px;
+        margin-bottom: 6px;
     }
 
     .footer-section ul li a {
-        color: #bdc3c7;
+        color: #ffffff;
         text-decoration: none;
         font-size: 13px;
         transition: color 0.3s ease;
@@ -62,7 +61,7 @@
 
     .footer-bottom {
         border-top: 1px solid #34495e;
-        padding-top: 20px;
+        padding-top: 15px;
         display: flex;
         justify-content: space-between;
         align-items: center;
@@ -74,8 +73,6 @@
         display: flex;
         align-items: center;
         gap: 8px;
-        font-weight: bold;
-        color: #f48024;
         font-size: 16px;
     }
 
@@ -86,7 +83,7 @@
 
     .footer-copyright {
         font-size: 12px;
-        color: #95a5a6;
+        color: #ffffff;
     }
 
     .footer-social {
@@ -101,7 +98,7 @@
         width: 36px;
         height: 36px;
         background-color: #34495e;
-        color: #ecf0f1;
+        color: #ffffff;
         border-radius: 4px;
         text-decoration: none;
         transition: all 0.3s ease;
@@ -113,7 +110,6 @@
         color: #ffffff;
     }
 
-    /* Mobile Responsive */
     @media (max-width: 768px) {
         .footer-grid {
             grid-template-columns: repeat(2, 1fr);
@@ -196,8 +192,9 @@
         <!-- Footer Bottom -->
         <div class="footer-bottom">
             <div class="footer-logo">
-                <img src="${pageContext.request.contextPath}/assets/img/logo.png" alt="DevQuery">
-                <span>DevQuery</span>
+                <img src="${pageContext.request.contextPath}/assets/img/LogoDQ.png" 
+                 alt="DevQuery" width="30" height="30" class="d-inline-block align-text-top me-2">
+                <span style="color: #f48024; font-weight: bold;">DevQuery</span>
             </div>
 
             <div class="footer-copyright">

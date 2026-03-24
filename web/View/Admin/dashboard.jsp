@@ -315,6 +315,11 @@
         .status-resolved { color: #2f6f44; background: #E3FCEF; }
         .status-active { color: #0074cc; background: #e1ecf4; }
 
+        .mini-title {
+            font-size: 12px;
+            color: #6a737c;
+        }
+
     </style>
 </head>
 <body>
@@ -359,6 +364,14 @@
         </header>
 
         <div class="dashboard-container">
+
+            <c:if test="${not empty dashboardWarning}">
+                <div class="section-box" style="margin-bottom: 20px; border-color: #f1c40f; background: #fff9e6;">
+                    <div style="color: #8a6d3b; font-size: 13px; font-weight: 600;">
+                        ${dashboardWarning}
+                    </div>
+                </div>
+            </c:if>
 
             <div class="stats-grid">
                 <div class="card">
@@ -447,6 +460,78 @@
                         </tbody>
                     </table>
                 </div>
+            </div>
+
+            <div class="section-box" style="margin-bottom: 30px;">
+                <div class="section-header">
+                    <div class="section-title">Questions In Current Month By Tag</div>
+                    <div class="mini-title">Top 8 tags</div>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Tag</th>
+                            <th>Questions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <c:choose>
+                            <c:when test="${empty questionByTagCurrentMonth}">
+                                <tr>
+                                    <td colspan="2" style="text-align: center; color: #838C95;">
+                                        No question data in current month.
+                                    </td>
+                                </tr>
+                            </c:when>
+                            <c:otherwise>
+                                <c:forEach var="item" items="${questionByTagCurrentMonth}">
+                                    <tr>
+                                        <td><strong>${item.tagName}</strong></td>
+                                        <td>
+                                            <fmt:formatNumber value="${item.questionCount}" pattern="#,###"/>
+                                        </td>
+                                    </tr>
+                                </c:forEach>
+                            </c:otherwise>
+                        </c:choose>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="section-box" style="margin-bottom: 30px;">
+                <div class="section-header">
+                    <div class="section-title">Tag Statistics By Month</div>
+                    <div class="mini-title">Last 6 months</div>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Month</th>
+                            <th>Active Tags</th>
+                            <th>Questions Tagged</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <c:choose>
+                            <c:when test="${empty tagMonthlyStats}">
+                                <tr>
+                                    <td colspan="3" style="text-align: center; color: #838C95;">
+                                        No monthly tag statistics.
+                                    </td>
+                                </tr>
+                            </c:when>
+                            <c:otherwise>
+                                <c:forEach var="row" items="${tagMonthlyStats}">
+                                    <tr>
+                                        <td><strong>${row.monthLabel}</strong></td>
+                                        <td><fmt:formatNumber value="${row.activeTagCount}" pattern="#,###"/></td>
+                                        <td><fmt:formatNumber value="${row.questionCount}" pattern="#,###"/></td>
+                                    </tr>
+                                </c:forEach>
+                            </c:otherwise>
+                        </c:choose>
+                    </tbody>
+                </table>
             </div>
 
             <div class="section-box">
