@@ -1,18 +1,27 @@
-<<<<<<< HEAD
 package control;
 
 import dal.AnswerDAO;
+import dal.CommentDAO;
 import dal.QuestionDAO;
 import dal.VoteDAO;
+import dal.BookmarkQuesDAO;
+
 import dto.AnswerDTO;
 import dto.QuestionDTO;
+import dto.UserDTO;
+
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
-import jakarta.servlet.http.*;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
+
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.List;
+import java.net.URLEncoder;
+import java.util.*;
+
+import model.User;
 
 @WebServlet(name = "QuestionDetailController", urlPatterns = {"/question/detail"})
 public class QuestionDetailController extends HttpServlet {
@@ -20,354 +29,177 @@ public class QuestionDetailController extends HttpServlet {
     private final QuestionDAO questionDao = new QuestionDAO();
     private final AnswerDAO answerDao = new AnswerDAO();
     private final VoteDAO voteDao = new VoteDAO();
+    private final BookmarkQuesDAO bookmarkDao = new BookmarkQuesDAO();
+    private final CommentDAO commentDao = new CommentDAO();
 
-    private void logError(String msg) {
-        try {
-            PrintWriter fw = new PrintWriter(new java.io.FileWriter("C:/debug_question_detail.txt", true));
-            fw.println("[" + new java.util.Date() + "] " + msg);
-            fw.close();
-        } catch (Exception e) {
-        }
-    }
+    private static final int ANSWERS_PER_PAGE = 5;
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        logError("=== Request received for /question/detail ===");
-
-        String idParam = request.getParameter("id");
-        logError("ID parameter: " + idParam);
-
-        if (idParam == null || !idParam.matches("\\d+")) {
-            logError("Invalid ID format");
-            request.setAttribute("error", "Đường dẫn không hợp lệ.");
-            request.getRequestDispatcher("/View/User/home.jsp").forward(request, response);
-            return;
-        }
-
         try {
-            long questionId = Long.parseLong(idParam);
-            logError("Parsed questionId: " + questionId);
+            String questionIdRaw = request.getParameter("id");
+
+            if (questionIdRaw == null) {
+                response.sendRedirect("home");
+                return;
+            }
+
+            long questionId = Long.parseLong(questionIdRaw);
 
             QuestionDTO question = questionDao.getQuestionById(questionId);
-            logError("Got result from getQuestionById: " + (question != null ? "Found" : "Null"));
 
             if (question != null) {
-                logError("Question found: " + question.getTitle());
 
-                try {
-                    questionDao.incrementViewCount(questionId);
-                } catch (Exception e) {
-                    logError("Error incrementing view count: " + e.getMessage());
-                }
-
-                try {
-                    int questionScore = voteDao.getVoteScore(questionId, null);
-                    question.setScore(questionScore);
-                    logError("Question score: " + questionScore);
-                } catch (Exception e) {
-                    logError("Error loading question score: " + e.getMessage());
-                    e.printStackTrace();
-                }
-
-                List<AnswerDTO> answers = new ArrayList<>();
-                try {
-                    answers = answerDao.getAnswersByQuestionId(questionId);
-                    logError("Loaded " + answers.size() + " answers");
-
-                    for (AnswerDTO answer : answers) {
-                        try {
-                            int answerScore = voteDao.getVoteScore(null, answer.getAnswerId());
-                            answer.setScore(answerScore);
-                        } catch (Exception e) {
-                            logError("Error loading answer score: " + e.getMessage());
-                        }
-                    }
-                } catch (Exception e) {
-                    logError("Error loading answers: " + e.getMessage());
-                    e.printStackTrace();
-                }
-
+                // ===== LOAD ANSWERS =====
+                List<AnswerDTO> answers = answerDao.getAnswersByQuestionId(questionId);
                 request.setAttribute("question", question);
                 request.setAttribute("answers", answers);
-                request.getRequestDispatcher("/View/User/question-detail.jsp").forward(request, response);
+
+                // ===== COMMENTS =====
+                try {
+                    Map<Long, List<dto.CommentDTO>> answerComments = new HashMap<>();
+                    Map<Long, Map<Long, List<dto.CommentDTO>>> answerCommentTrees = new HashMap<>();
+
+                    for (AnswerDTO answer : answers) {
+                        List<dto.CommentDTO> comments =
+                                commentDao.getCommentsByAnswerId(answer.getAnswerId());
+
+                        answerComments.put(answer.getAnswerId(), comments);
+
+                        Map<Long, List<dto.CommentDTO>> tree = new HashMap<>();
+                        Map<Long, dto.CommentDTO> byId = new HashMap<>();
+
+                        for (dto.CommentDTO c : comments) {
+                            byId.put(c.getCommentId(), c);
+                        }
+
+                        for (dto.CommentDTO c : comments) {
+                            Long parentId = c.getParentCommentId();
+
+                            if (parentId != null && !byId.containsKey(parentId)) {
+                                parentId = null;
+                            }
+
+                            tree.computeIfAbsent(parentId, k -> new ArrayList<>()).add(c);
+                        }
+
+                        answerCommentTrees.put(answer.getAnswerId(), tree);
+                    }
+
+                    request.setAttribute("answerComments", answerComments);
+                    request.setAttribute("answerCommentTrees", answerCommentTrees);
+
+                } catch (Exception e) {
+                    request.setAttribute("answerComments", new HashMap<>());
+                    request.setAttribute("answerCommentTrees", new HashMap<>());
+                }
+
+                // ===== USER INFO =====
+                try {
+                    HttpSession session = request.getSession(false);
+                    Long currentUserId = session == null ? null : extractUserId(session.getAttribute("user"));
+
+                    request.setAttribute("isQuestionOwner",
+                            currentUserId != null && currentUserId == question.getUserId());
+
+                } catch (Exception e) {
+                    request.setAttribute("isQuestionOwner", false);
+                }
+
+                // ===== VOTE + BOOKMARK =====
+                try {
+                    HttpSession session = request.getSession(false);
+                    Long userId = session == null ? null : extractUserId(session.getAttribute("user"));
+
+                    if (userId != null) {
+
+                        // Question vote
+                        String questionUserVote =
+                                voteDao.getUserVote(userId, questionId, null);
+                        request.setAttribute("questionUserVote", questionUserVote);
+
+                        Map<Long, String> answerVotes = new HashMap<>();
+                        Map<Long, Boolean> answerBookmarks = new HashMap<>();
+
+                        for (AnswerDTO answer : answers) {
+                            Long answerId = answer.getAnswerId();
+
+                            String vote =
+                                    voteDao.getUserVote(userId, null, answerId);
+
+                            if (vote != null) {
+                                answerVotes.put(answerId, vote);
+                            }
+
+                            boolean isBookmarked =
+                                    bookmarkDao.checkIfAnswerBookmarked(userId, answerId);
+
+                            answerBookmarks.put(answerId, isBookmarked);
+                        }
+
+                        request.setAttribute("answerVotes", answerVotes);
+                        request.setAttribute("answerBookmarks", answerBookmarks);
+
+                        boolean isBookmarked =
+                                bookmarkDao.checkIfBookmarked(userId, questionId);
+
+                        request.setAttribute("isBookmarked", isBookmarked);
+                    }
+
+                } catch (Exception e) {
+                    // ignore
+                }
+
+                // ===== RELATED QUESTIONS =====
+                try {
+                    List<QuestionDTO> relatedQuestions =
+                            questionDao.getRelatedQuestions(questionId, 4);
+
+                    request.setAttribute("relatedQuestions", relatedQuestions);
+
+                } catch (Exception e) {
+                    request.setAttribute("relatedQuestions", new ArrayList<>());
+                }
+
+                request.getRequestDispatcher("/View/User/question-detail.jsp")
+                        .forward(request, response);
 
             } else {
-                logError("Question not found, redirecting to home");
                 request.setAttribute("error", "Không tìm thấy câu hỏi này.");
-                request.getRequestDispatcher("/View/User/home.jsp").forward(request, response);
+                request.getRequestDispatcher("/View/User/home.jsp")
+                        .forward(request, response);
             }
 
         } catch (Exception e) {
-            logError("EXCEPTION in doGet: " + e.getMessage() + " / " + e.getClass().getName());
-            try {
-                java.io.StringWriter sw = new java.io.StringWriter();
-                e.printStackTrace(new java.io.PrintWriter(sw));
-                logError(sw.toString());
-            } catch (Exception ignored) {
-            }
+            e.printStackTrace();
             response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-                    "Error: " + e.getClass().getSimpleName() + ": " + e.getMessage());
+                    "Internal Server Error");
         }
     }
+
+    // ===== FIX USER TYPE (User vs UserDTO) =====
+    private Long extractUserId(Object principal) {
+        if (principal instanceof UserDTO) {
+            return ((UserDTO) principal).getUserId();
+        }
+        if (principal instanceof User) {
+            return ((User) principal).getUserId();
+        }
+        return null;
+    }
+
+    private String buildAnswerFilterQuery(String sort) {
+        StringBuilder query = new StringBuilder();
+        try {
+            if (sort != null && !sort.trim().isEmpty()) {
+                query.append("&sort=")
+                     .append(URLEncoder.encode(sort, "UTF-8"));
+            }
+        } catch (Exception e) {
+            return "";
+        }
+        return query.toString();
+    }
 }
-=======
-//package control;
-//
-//import dal.AnswerDAO;
-//import dal.BookmarkDAO;
-//import dal.QuestionDAO;
-//import dal.VoteDAO;
-//import dal.CommentDAO;
-//import dto.QuestionDTO;
-//import jakarta.servlet.ServletException;
-//import jakarta.servlet.annotation.WebServlet;
-//import jakarta.servlet.http.*;
-//import java.io.IOException;
-//import java.net.URLEncoder;
-//import java.util.List;
-//import java.util.ArrayList;
-//import model.User;
-//
-//// Controller này sẽ hứng URL dạng: /question?id=123
-//@WebServlet(name = "QuestionDetailController", urlPatterns = {"/question/detail"})
-//public class QuestionDetailController extends HttpServlet {
-//
-//    private final QuestionDAO questionDao = new QuestionDAO();
-//    private final AnswerDAO answerDao = new AnswerDAO();
-//    private final VoteDAO voteDao = new VoteDAO();
-//    private final BookmarkDAO bookmarkDao = new BookmarkDAO();
-//    private final CommentDAO commentDao = new CommentDAO();
-//    private static final int ANSWERS_PER_PAGE = 5;
-//
-//    @Override
-//    protected void doGet(HttpServletRequest request, HttpServletResponse response)
-//            throws ServletException, IOException {
-//
-//        // 1. Lấy ID từ URL
-//        String idParam = request.getParameter("id");
-//
-//        // Validate ID
-//        if (idParam == null || !idParam.matches("\\d+")) {
-//            // Nếu không có ID hoặc ID không phải số -> Về trang chủ hoặc báo lỗi
-//            request.setAttribute("error", "Đường dẫn không hợp lệ.");
-//            request.getRequestDispatcher("/View/User/home.jsp").forward(request, response);
-//            return;
-//        }
-//
-//        try {
-//            long questionId = Long.parseLong(idParam);
-//
-//            // 2. Gọi DAO lấy thông tin chi tiết câu hỏi
-//            QuestionDTO question = questionDao.getQuestionById(questionId);
-//
-//            if (question != null) {
-//                // Try to load vote score and answers
-//                try {
-//                    int questionScore = voteDao.getVoteScore(questionId, null);
-//                    question.setScore(questionScore);
-//                } catch (Exception e) {
-//                    e.printStackTrace();
-//                }
-//
-//                int answerCurrentPage = 1;
-//                String pageParam = request.getParameter("page");
-//                if (pageParam != null && !pageParam.trim().isEmpty()) {
-//                    try {
-//                        answerCurrentPage = Integer.parseInt(pageParam);
-//                    } catch (NumberFormatException ex) {
-//                        answerCurrentPage = 1;
-//                    }
-//                }
-//
-//                String sort = request.getParameter("sort");
-//                if (!"score_desc".equalsIgnoreCase(sort)
-//                        && !"score_asc".equalsIgnoreCase(sort)
-//                        && !"newest".equalsIgnoreCase(sort)
-//                        && !"oldest".equalsIgnoreCase(sort)) {
-//                    sort = "score_desc";
-//                }
-//                // Try to load answers
-//                List answers = new ArrayList();
-//                int totalAnswers = 0;
-//                int answerTotalPages = 1;
-//                try {
-//                    totalAnswers = answerDao.getTotalAnswersByQuestionId(questionId);
-//                    answerTotalPages = Math.max(1, (int) Math.ceil(totalAnswers / (double) ANSWERS_PER_PAGE));
-//                    if (answerCurrentPage < 1) {
-//                        answerCurrentPage = 1;
-//                    } else if (answerCurrentPage > answerTotalPages) {
-//                        answerCurrentPage = answerTotalPages;
-//                    }
-//
-//                    answers = answerDao.getAnswersByQuestionId(questionId, answerCurrentPage, ANSWERS_PER_PAGE, sort);
-//
-//                    // Set vote scores and accepted status for answers
-//                    Long acceptedId = question.getAcceptedAnswerId();
-//                    for (Object answerObj : answers) {
-//                        try {
-//                            dto.AnswerDTO answer = (dto.AnswerDTO) answerObj;
-//                            int answerScore = voteDao.getVoteScore(null, answer.getAnswerId());
-//                            answer.setScore(answerScore);
-//                            answer.setIsAccepted(acceptedId != null && acceptedId.equals(answer.getAnswerId()));
-//                        } catch (Exception e) {
-//                            // Continue on error
-//                        }
-//                    }
-//                } catch (Exception e) {
-//                    e.printStackTrace();
-//                }
-//
-//                // 3. Đẩy dữ liệu sang JSP
-//                request.setAttribute("question", question);
-//                request.setAttribute("answers", answers);
-//                request.setAttribute("answerCurrentPage", answerCurrentPage);
-//                request.setAttribute("answerTotalPages", answerTotalPages);
-//                request.setAttribute("answerTotalCount", totalAnswers);
-//                request.setAttribute("answerPageSize", ANSWERS_PER_PAGE);
-//                request.setAttribute("answerPaginationPath", request.getContextPath() + request.getServletPath());
-//                request.setAttribute("sort", sort);
-//                request.setAttribute("answerFilterQuery", buildAnswerFilterQuery(sort));
-//
-//                // Load comments for question
-//                try {
-//                    java.util.List<dto.CommentDTO> questionComments = commentDao.getCommentsByQuestionId(question.getQuestionId());
-//                    request.setAttribute("questionComments", questionComments);
-//                } catch (Exception e) {
-//                    request.setAttribute("questionComments", new java.util.ArrayList<>());
-//                }
-//
-//                // Load comments for each answer
-//                try {
-//                    java.util.Map<Long, java.util.List<dto.CommentDTO>> answerComments = new java.util.HashMap<>();
-//                    java.util.Map<Long, java.util.Map<Long, java.util.List<dto.CommentDTO>>> answerCommentTrees = new java.util.HashMap<>();
-//                    for (Object answerObj : answers) {
-//                        dto.AnswerDTO answer = (dto.AnswerDTO) answerObj;
-//                        java.util.List<dto.CommentDTO> comments = commentDao.getCommentsByAnswerId(answer.getAnswerId());
-//                        answerComments.put(answer.getAnswerId(), comments);
-//
-//                        java.util.Map<Long, dto.CommentDTO> byId = new java.util.HashMap<>();
-//                        for (dto.CommentDTO c : comments) {
-//                            byId.put(c.getCommentId(), c);
-//                        }
-//
-//                        java.util.Map<Long, java.util.List<dto.CommentDTO>> tree = new java.util.HashMap<>();
-//                        for (dto.CommentDTO c : comments) {
-//                            Long parentId = c.getParentCommentId();
-//
-//                            // Render orphaned replies as top-level comments to avoid losing data in UI.
-//                            if (parentId != null && !byId.containsKey(parentId)) {
-//                                parentId = null;
-//                            }
-//
-//                            java.util.List<dto.CommentDTO> siblings = tree.get(parentId);
-//                            if (siblings == null) {
-//                                siblings = new java.util.ArrayList<>();
-//                                tree.put(parentId, siblings);
-//                            }
-//                            siblings.add(c);
-//                        }
-//                        answerCommentTrees.put(answer.getAnswerId(), tree);
-//                    }
-//                    request.setAttribute("answerComments", answerComments);
-//                    request.setAttribute("answerCommentTrees", answerCommentTrees);
-//                } catch (Exception e) {
-//                    request.setAttribute("answerComments", new java.util.HashMap<>());
-//                    request.setAttribute("answerCommentTrees", new java.util.HashMap<>());
-//                }
-//
-//                try {
-//                    HttpSession s = request.getSession(false);
-//                    if (s != null && s.getAttribute("user") != null) {
-//                        User u = (User) s.getAttribute("user");
-//                        request.setAttribute("isQuestionOwner", u.getUserId() == question.getUserId());
-//                    } else {
-//                        request.setAttribute("isQuestionOwner", false);
-//                    }
-//                } catch (Exception e) {
-//                    request.setAttribute("isQuestionOwner", false);
-//                }
-//
-//                // Load user's vote (if logged in)
-//                try {
-//                    HttpSession session = request.getSession(false);
-//                    if (session != null && session.getAttribute("user") != null) {
-//                        User user = (User) session.getAttribute("user");
-//                        long userId = user.getUserId();
-//
-//                        // Get user's vote for question
-//                        String questionUserVote = voteDao.getUserVote(userId, questionId, null);
-//                        request.setAttribute("questionUserVote", questionUserVote);
-//
-//                        // Get user's votes for answers
-//                        java.util.Map<Long, String> answerVotes = new java.util.HashMap<>();
-//                        for (Object answerObj : answers) {
-//                            dto.AnswerDTO answer = (dto.AnswerDTO) answerObj;
-//                            String answerUserVote = voteDao.getUserVote(userId, null, answer.getAnswerId());
-//                            if (answerUserVote != null) {
-//                                answerVotes.put(answer.getAnswerId(), answerUserVote);
-//                            }
-//                        }
-//                        request.setAttribute("answerVotes", answerVotes);
-//
-//                        // Check if question is bookmarked
-//                        try {
-//                            boolean isBookmarked = bookmarkDao.checkIfBookmarked(userId, questionId);
-//                            request.setAttribute("isBookmarked", isBookmarked);
-//                        } catch (Exception e) {
-//                            request.setAttribute("isBookmarked", false);
-//                        }
-//
-//                        // Check if answers are bookmarked
-//                        try {
-//                            java.util.Map<Long, Boolean> answerBookmarks = new java.util.HashMap<>();
-//                            for (Object answerObj : answers) {
-//                                dto.AnswerDTO answer = (dto.AnswerDTO) answerObj;
-//                                boolean isAnswerBookmarked = bookmarkDao.checkIfAnswerBookmarked(userId, answer.getAnswerId());
-//                                answerBookmarks.put(answer.getAnswerId(), isAnswerBookmarked);
-//                            }
-//                            request.setAttribute("answerBookmarks", answerBookmarks);
-//                        } catch (Exception e) {
-//                            request.setAttribute("answerBookmarks", new java.util.HashMap<>());
-//                        }
-//                    }
-//                } catch (Exception e) {
-//                    // Continue on error
-//                }
-//
-//                // Load related questions (4 questions max)
-//                try {
-//                    List<QuestionDTO> relatedQuestions = questionDao.getRelatedQuestions(questionId, 4);
-//                    request.setAttribute("relatedQuestions", relatedQuestions);
-//                } catch (Exception e) {
-//                    request.setAttribute("relatedQuestions", new ArrayList<>());
-//                }
-//
-//                // Chuyển hướng đến file JSP giao diện chi tiết
-//                request.getRequestDispatcher("/View/User/question-detail.jsp").forward(request, response);
-//            } else {
-//                // Trường hợp ID hợp lệ nhưng không tìm thấy câu hỏi trong DB
-//                request.setAttribute("error", "Không tìm thấy câu hỏi này.");
-//                request.getRequestDispatcher("/View/User/home.jsp").forward(request, response);
-//            }
-//
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error: " + e.getClass().getSimpleName() + ": " + e.getMessage());
-//        }
-//    }
-//
-//    private String buildAnswerFilterQuery(String sort) {
-//        StringBuilder query = new StringBuilder();
-//        try {
-//            if (sort != null && !sort.trim().isEmpty()) {
-//                query.append("&sort=").append(URLEncoder.encode(sort, "UTF-8"));
-//            }
-//        } catch (Exception ex) {
-//            return "";
-//        }
-//        return query.toString();
-//    }
-//}
->>>>>>> Mai

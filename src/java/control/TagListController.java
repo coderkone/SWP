@@ -43,7 +43,7 @@ public class TagListController extends HttpServlet {
         String keyword = request.getParameter("search");
         String sort = request.getParameter("sort");
         
-        List<TagDTO> list = dao.getAllTags(userId,keyword,sort);
+        List<TagDTO> list = dao.getAllTagsForUser(userId, keyword, sort);
         
         request.setAttribute("tagList", list);
         request.setAttribute("keyword", keyword);

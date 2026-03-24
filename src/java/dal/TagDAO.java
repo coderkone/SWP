@@ -1,16 +1,30 @@
+<<<<<<< HEAD
 package dal;
 
 import config.DBContext;
 import dto.TagDTO;
+=======
+
+>>>>>>> 117e4c82587cd8218540852963737dc72e994f4e
 /*
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
+<<<<<<< HEAD
+=======
+package dal;
+import config.DBContext;
+import dto.TagDTO;
+>>>>>>> 117e4c82587cd8218540852963737dc72e994f4e
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
+<<<<<<< HEAD
+=======
+
+>>>>>>> 117e4c82587cd8218540852963737dc72e994f4e
 
 public class TagDAO {
 
@@ -82,7 +96,7 @@ public class TagDAO {
     public TagDTO getTagById(long tagId) {
         String sql = "SELECT t.tag_id, t.tag_name, t.description, t.IsActive, " +
                      "(SELECT COUNT(*) FROM Question_Tags WHERE tag_id = t.tag_id) as questionCount, " +
-                     "(SELECT COUNT(*) FROM TagFollow WHERE tag_id = t.tag_id) as followerCount " +
+"(SELECT COUNT(*) FROM TagFollow WHERE tag_id = t.tag_id) as followerCount " +
                      "FROM Tags t WHERE t.tag_id = ?";
 
         try (Connection con = db.getConnection();
@@ -164,7 +178,7 @@ public class TagDAO {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return 0;
+return 0;
     }
 
     // Lấy tags với pagination + filter status
@@ -236,7 +250,7 @@ public class TagDAO {
                               "WHERE tag_id = ? AND user_id NOT IN " +
                               "(SELECT user_id FROM TagFollow WHERE tag_id = ?)";
             try (PreparedStatement ps = con.prepareStatement(updateTF)) {
-                ps.setLong(1, targetTagId);
+ps.setLong(1, targetTagId);
                 ps.setLong(2, sourceTagId);
                 ps.setLong(3, targetTagId);
                 ps.executeUpdate();
@@ -320,30 +334,11 @@ public class TagDAO {
                     return rs.getInt(1) > 0;
                 }
             }
-=======
-/**
- *
- * @author Asus
- */
-public class TagDAO extends DBContext {
-    
-    private boolean isFollowed(long userId, long tagId) {
-        String sql = "SELECT COUNT(*) FROM TagFollow "
-                   + "WHERE user_id = ? AND tag_id = ?";
-        try {
-            Connection conn = getConnection();
-            PreparedStatement st = conn.prepareStatement(sql);
-            st.setLong(1, userId);
-            st.setLong(2, tagId);
-            ResultSet rs = st.executeQuery();
-            if (rs.next()) return rs.getInt(1) > 0;
->>>>>>> Mai
-        } catch (Exception e) {
+} catch (Exception e) {
             e.printStackTrace();
         }
         return false;
     }
-<<<<<<< HEAD
 
     // Check tag name exists excluding current tag (for edit validation)
     public boolean tagNameExistsExcluding(String tagName, long excludeId) {
@@ -376,9 +371,23 @@ public class TagDAO extends DBContext {
         tag.setFollowerCount(rs.getInt("followerCount"));
         return tag;
     }
-=======
+    private boolean isFollowed(long userId, long tagId) {
+        String sql = "SELECT COUNT(*) FROM TagFollow "
+                   + "WHERE user_id = ? AND tag_id = ?";
+        try {
+            Connection conn = db.getConnection();
+            PreparedStatement st = conn.prepareStatement(sql);
+            st.setLong(1, userId);
+            st.setLong(2, tagId);
+            ResultSet rs = st.executeQuery();
+            if (rs.next()) return rs.getInt(1) > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
     
-    public List<TagDTO> getAllTags(long userId , String keyword , String sort){
+    public List<TagDTO> getAllTagsForUser(long userId , String keyword , String sort){
         List<TagDTO> list = new ArrayList<>();
         StringBuilder sqlDynamic = new StringBuilder(
             "SELECT t.tag_id, t.tag_name, t.description, t.IsActive, " +
@@ -403,7 +412,7 @@ public class TagDAO extends DBContext {
         }
                      
         try{
-            Connection conn = getConnection();
+            Connection conn = db.getConnection();
             PreparedStatement st = conn.prepareStatement(sqlDynamic.toString());
             int paramIndex = 1;
             st.setLong(paramIndex++, userId);
@@ -434,7 +443,7 @@ public class TagDAO extends DBContext {
         }
         String sql = "INSERT INTO TagFollow (user_id, tag_id) VALUES (?, ?)";
         try{
-            Connection con = getConnection();
+            Connection con = db.getConnection();
             PreparedStatement st = con.prepareStatement(sql);
             st.setLong(1, userId);
             st.setLong(2, tagId);
@@ -449,7 +458,7 @@ public class TagDAO extends DBContext {
     public void unfollowTag(long userId, long tagId){
         String sql = "DELETE FROM TagFollow WHERE user_id = ? AND tag_id = ?";
         try{
-            Connection con = getConnection();
+            Connection con = db.getConnection();
             PreparedStatement st = con.prepareStatement(sql);
             st.setLong(1, userId);
             st.setLong(2, tagId);
@@ -460,7 +469,6 @@ public class TagDAO extends DBContext {
             System.out.println("Error" + e.getMessage());
         }
     }
-    
-       
->>>>>>> Mai
 }
+
+

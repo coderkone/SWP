@@ -12,10 +12,7 @@ import java.util.Map;
 import model.Blog;
 
 public class BlogCommentDAO extends DBContext {
-
-    // ==========================================================
     // GET COMMENTS BY BLOG ID (BUILDS THE PARENT-CHILD TREE)
-    // ==========================================================
     public List<BlogComment> getCommentTreeByBlogId(int blogId) {
         List<BlogComment> rootComments = new ArrayList<>();
         Map<Integer, BlogComment> commentMap = new HashMap<>();
@@ -167,9 +164,6 @@ public class BlogCommentDAO extends DBContext {
     }
 
     // CẬP NHẬT BÌNH LUẬN (EDIT)
-    // ==========================================================
-    // CẬP NHẬT BÌNH LUẬN (Bản An Toàn)
-    // ==========================================================
     public boolean updateComment(int commentId, long userId, String newContent) {
         // Chỉ Update Content, loại bỏ updated_at để tránh lỗi DB
         String sql = "UPDATE BlogComments SET content = ? WHERE comment_id = ? AND user_id = ?";

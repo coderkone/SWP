@@ -1,12 +1,16 @@
 package filter;
 
-import model.User;
+import dto.UserDTO;
 import jakarta.servlet.*;
 import jakarta.servlet.annotation.WebFilter;
 import jakarta.servlet.http.*;
 import java.io.IOException;
 
+<<<<<<< HEAD
 @WebFilter(filterName="Authfilter", urlPatterns={"/dashboard", "/admin/*"})
+=======
+@WebFilter(filterName = "Authfilter", urlPatterns = {"/dashboard", "/admin/*"})
+>>>>>>> 117e4c82587cd8218540852963737dc72e994f4e
 public class AuthFilter implements Filter {
 
     @Override
@@ -17,7 +21,7 @@ public class AuthFilter implements Filter {
         HttpServletResponse response = (HttpServletResponse) res;
 
         HttpSession session = request.getSession(false);
-        User user = (session == null) ? null : (User) session.getAttribute("user");
+        UserDTO user = (session == null) ? null : (UserDTO) session.getAttribute("USER");
 
         if (user == null) {
             response.sendRedirect(request.getContextPath() + "/auth/login");
