@@ -1,58 +1,33 @@
-<<<<<<< HEAD
-=======
 
 package dto;
 
 
->>>>>>> 117e4c82587cd8218540852963737dc72e994f4e
+
 /*
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-<<<<<<< HEAD
-package dto;
-=======
 
 
->>>>>>> 117e4c82587cd8218540852963737dc72e994f4e
+
 /**
  *
  * @author Asus
  */
-<<<<<<< HEAD
-=======
 
->>>>>>> 117e4c82587cd8218540852963737dc72e994f4e
 public class TagDTO {
     private long tagId;
     private String tagName;
     private String description;
     private boolean isActive;
-<<<<<<< HEAD
     private int questionCount;
     private int followerCount;
     private boolean isFollowed; // them moi de check xem user theo doi tag hay chua
-
-    public TagDTO() {
-    }
-    public TagDTO(long tagId, String tagName, String description, boolean isActive) {
-=======
-    public TagDTO(long tagId, String tagName, String description, boolean isActive, boolean isFollowed) {
->>>>>>> Mai
-=======
-
-    private int questionCount;
-    private int followerCount;
-
-    private boolean isFollowed; // them moi de check xem user theo doi tag hay chua
-
-
     public TagDTO() {
     }
 
 
     public TagDTO(long tagId, String tagName, String description, boolean isActive , boolean isFollowed) {
->>>>>>> 117e4c82587cd8218540852963737dc72e994f4e
         this.tagId = tagId;
         this.tagName = tagName;
         this.description = description;

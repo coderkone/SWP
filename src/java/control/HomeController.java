@@ -3,12 +3,10 @@ package control;
 import dal.QuestionDAO;
 import dto.QuestionDTO;
 import jakarta.servlet.ServletException;
-import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
 import java.io.IOException;
 import java.util.*;
 
-@WebServlet(name="HomeController", urlPatterns={"/home"})
 public class HomeController extends HttpServlet {
     
     @Override

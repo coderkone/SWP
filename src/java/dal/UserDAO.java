@@ -7,9 +7,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
-<<<<<<< HEAD
-import java.util.List;
-=======
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -17,11 +14,31 @@ import java.util.UUID;
 import model.GithubUser;
 import model.GoogleUser;
 import model.User;
->>>>>>> 117e4c82587cd8218540852963737dc72e994f4e
 import util.PasswordUtil;
 public class UserDAO {
 
     private final DBContext db = new DBContext();
+
+    public UserDAO() {
+        ensureUsersStatusColumn();
+    }
+
+    private void ensureUsersStatusColumn() {
+        String checkSql = "SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'Users' AND COLUMN_NAME = 'status'";
+        String alterSql = "ALTER TABLE Users ADD status VARCHAR(20) NOT NULL CONSTRAINT DF_Users_status DEFAULT 'active'";
+
+        try (Connection con = db.getConnection();
+             PreparedStatement check = con.prepareStatement(checkSql);
+             ResultSet rs = check.executeQuery()) {
+            if (!rs.next()) {
+                try (Statement st = con.createStatement()) {
+                    st.executeUpdate(alterSql);
+                }
+            }
+        } catch (Exception e) {
+            // Keep app booting even when schema auto-fix cannot run (permissions, legacy DB, etc.)
+        }
+    }
 
     public boolean emailExists(String email) throws Exception {
         String sql = "SELECT 1 FROM Users WHERE email = ?";
@@ -56,8 +73,34 @@ public class UserDAO {
         }
     }
 
+    public User loginModel(String email, String rawPassword) throws Exception {
+        String sql = "SELECT u.*, p.avatar_url FROM Users u LEFT JOIN User_Profile p ON u.user_id = p.user_id "
+                   + "WHERE u.email = ? AND u.password_hash = ?";
+        String hash = PasswordUtil.sha256(rawPassword);
+
+        try (Connection con = db.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setString(1, email);
+            ps.setString(2, hash);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    User user = new User();
+                    user.setUserId(rs.getLong("user_id"));
+                    user.setUsername(rs.getString("username"));
+                    user.setEmail(rs.getString("email"));
+                    user.setRole(rs.getString("role"));
+                    user.setReputation(rs.getInt("Reputation"));
+                    user.setAvatarUrl(rs.getString("avatar_url"));
+                    return user;
+                }
+            }
+        }
+        return null;
+    }
+
     public UserDTO login(String email, String rawPassword) throws Exception {
-        String sql = "SELECT user_id, username, email, role, Reputation FROM Users WHERE email = ? AND password_hash = ?";
+        String sql = "SELECT u.*, p.avatar_url FROM Users u LEFT JOIN User_Profile p ON u.user_id = p.user_id "
+                   + "WHERE u.email = ? AND u.password_hash = ?";
         String hash = PasswordUtil.sha256(rawPassword);
 
         try (Connection con = db.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
@@ -74,6 +117,7 @@ public class UserDAO {
                     );
                     user.setStatus(rs.getString("status"));
                     user.setReputation(rs.getInt("Reputation"));
+                    user.setAvatarUrl(rs.getString("avatar_url"));
                     return user;
                 }
             }
@@ -476,6 +520,36 @@ public class UserDAO {
             e.printStackTrace();
         }
         return 0;
+    }
+
+    // Lấy số câu hỏi trong tháng hiện tại theo tag (cho dashboard widget)
+    public List<Map<String, Object>> getCurrentMonthQuestionCountByTag(int limit) {
+        List<Map<String, Object>> stats = new ArrayList<>();
+        String sql = "SELECT TOP (?) t.tag_name AS tag_name, COUNT(*) AS question_count "
+                + "FROM Questions q "
+                + "JOIN Question_Tags qt ON q.question_id = qt.question_id "
+                + "JOIN Tags t ON qt.tag_id = t.tag_id "
+                + "WHERE YEAR(q.created_at) = YEAR(GETDATE()) AND MONTH(q.created_at) = MONTH(GETDATE()) "
+                + "GROUP BY t.tag_name "
+                + "ORDER BY question_count DESC, t.tag_name ASC";
+
+        try (Connection con = db.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, Math.max(1, limit));
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Map<String, Object> item = new HashMap<>();
+                    item.put("tagName", rs.getString("tag_name"));
+                    item.put("questionCount", rs.getInt("question_count"));
+                    stats.add(item);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return stats;
     }
 
     // Lấy xu hướng đăng ký user theo ngày (cho dashboard chart)

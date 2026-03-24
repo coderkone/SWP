@@ -1,30 +1,15 @@
-<<<<<<< HEAD
-package dal;
-
-import config.DBContext;
-import dto.TagDTO;
-=======
-
->>>>>>> 117e4c82587cd8218540852963737dc72e994f4e
 /*
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-<<<<<<< HEAD
-=======
 package dal;
 import config.DBContext;
 import dto.TagDTO;
->>>>>>> 117e4c82587cd8218540852963737dc72e994f4e
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
-<<<<<<< HEAD
-=======
-
->>>>>>> 117e4c82587cd8218540852963737dc72e994f4e
 
 public class TagDAO {
 
