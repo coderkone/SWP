@@ -9,7 +9,11 @@ import dal.ProfileDAO;
 import model.User;
 import dto.UserDTO;
 import model.UserSocialLink;
-
+import jakarta.servlet.annotation.MultipartConfig;
+import jakarta.servlet.http.Part;
+import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.io.IOException;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -18,6 +22,11 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 
+@MultipartConfig(
+        fileSizeThreshold = 1024 * 1024 * 1,
+        maxFileSize = 1024 * 1024 * 5,
+        maxRequestSize = 1024 * 1024 * 10
+)
 @WebServlet(name = "EditProfileController", urlPatterns = {"/edit-profile"})
 public class EditProfileController extends HttpServlet {
 
@@ -62,30 +71,67 @@ public class EditProfileController extends HttpServlet {
             return;
         }
 
-        // Lấy dữ liệu từ giao diện
-        String displayName = request.getParameter("displayName"); // Thêm dòng này
+        // CHUYỂN DÒNG NÀY LÊN TRÊN CÙNG ĐỂ KHAI BÁO TRƯỚC KHI DÙNG
+        ProfileDAO dao = new ProfileDAO();
+
+        // 1. XỬ LÝ UPLOAD FILE HOẶC XÓA FILE TRƯỚC
+        String avatarUrl = null;
+        Part filePart = request.getPart("avatarFile");
+        String deleteAvatarFlag = request.getParameter("deleteAvatar");
+
+        if ("true".equals(deleteAvatarFlag)) {
+            // Trường hợp user bấm nút DELETE
+            dao.updateAvatar(currentUser.getUserId(), null);
+            currentUser.setAvatarUrl(null);
+        } else if (filePart != null && filePart.getSize() > 0) {
+            // Trường hợp user CHỌN ẢNH MỚI
+            String buildPath = "D:\\SWP391-Group3\\SWP\\build\\web\\assets\\img\\avatar";
+            String srcPath = "D:\\SWP391-Group3\\SWP\\web\\assets\\img\\avatar";
+            File buildDir = new File(buildPath);
+            File srcDir = new File(srcPath);
+            if (!buildDir.exists()) buildDir.mkdirs();
+            if (!srcDir.exists()) srcDir.mkdirs();
+
+            String fileName = "user_" + currentUser.getUserId() + "_" + System.currentTimeMillis() + ".png";
+
+            // Lưu đúp vào 2 nơi
+            filePart.write(buildPath + File.separator + fileName);
+            try {
+                java.nio.file.Files.copy(
+                    new java.io.File(buildPath + File.separator + fileName).toPath(),
+                    new java.io.File(srcPath + File.separator + fileName).toPath(),
+                    java.nio.file.StandardCopyOption.REPLACE_EXISTING
+                );
+            } catch (Exception e) {
+                System.out.println("Error copying file: " + e.getMessage());
+            }
+            avatarUrl = "assets/img/avatar/" + fileName;
+
+            // Cập nhật Database và Session với đường dẫn mới
+            dao.updateAvatar(currentUser.getUserId(), avatarUrl);
+            currentUser.setAvatarUrl(avatarUrl);
+        }
+
+        // 2. LẤY DỮ LIỆU TEXT CẬP NHẬT THÔNG TIN CÁC FIELD KHÁC
+        String displayName = request.getParameter("displayName");
         String bio = request.getParameter("bio");
         String location = request.getParameter("location");
         String github = request.getParameter("github");
         String linkedin = request.getParameter("linkedin");
         String website = request.getParameter("website");
 
-        // Gom link thành JSON
         UserSocialLink linksObj = new UserSocialLink(github, linkedin, website);
         String websiteJson = new Gson().toJson(linksObj);
 
-        // Gọi DAO cập nhật (Truyền thêm tham số displayName)
-        ProfileDAO dao = new ProfileDAO();
+        // 3. Cập nhật thông tin cơ bản
         boolean isSuccess = dao.updateProfile(currentUser.getUserId(), displayName, bio, location, websiteJson);
 
         if (isSuccess) {
-            // *** CỰC KỲ QUAN TRỌNG: Cập nhật lại tên mới vào Session ***
             currentUser.setUsername(displayName);
-            session.setAttribute("user", currentUser);
-
+            // Ghi đè lại object user vào Session để Header nhận diện sự thay đổi
+            session.setAttribute("user", currentUser); 
             response.sendRedirect("profile?id=" + currentUser.getUserId() + "&status=success");
         } else {
-            // Nếu trùng username thì báo lỗi
             request.setAttribute("ERROR", "Update failed! The display name might already be taken.");
             doGet(request, response);
         }
