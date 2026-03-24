@@ -375,6 +375,9 @@ ps.setLong(1, targetTagId);
         return false;
     }
     
+    
+    //========================TAGS FOR USER==============================================
+    
     public List<TagDTO> getAllTagsForUser(long userId , String keyword , String sort){
         List<TagDTO> list = new ArrayList<>();
         StringBuilder sqlDynamic = new StringBuilder(
@@ -559,7 +562,7 @@ ps.setLong(1, targetTagId);
             q.setQuestionId(rs.getLong("question_id"));
             q.setTitle(rs.getString("title"));
             q.setBody(rs.getString("body"));
-            q.setScore(rs.getInt("Score"));           // ✅ 'S' hoa — đúng tên cột DB
+            q.setScore(rs.getInt("Score"));           
             q.setViewCount(rs.getInt("view_count"));
             q.setCreatedAt(rs.getTimestamp("created_at"));
             q.setUpdatedAt(rs.getTimestamp("updated_at"));

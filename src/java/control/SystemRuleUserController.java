@@ -32,7 +32,7 @@ public class SystemRuleUserController extends HttpServlet {
         List<SystemRule> lists = dao.getAllRules();
 
         request.setAttribute("rules", lists);
-        request.getRequestDispatcher("/View/User/systemRules.jsp").forward(request, response);
+        request.getRequestDispatcher("/View/User/systemrule.jsp").forward(request, response);
     } 
 
     

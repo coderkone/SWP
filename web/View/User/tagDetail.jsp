@@ -97,7 +97,7 @@
         /* Question item */
         .question-item {
             display: flex;
-            flex-direction: column;   /* ✅ stats trên, content dưới */
+            flex-direction: column;   /*stats trên, content dưới */
             gap: 8px;
             padding: 16px 0;
             border-bottom: 1px solid var(--border-color);
@@ -106,7 +106,7 @@
         /* Stats */
         .q-stats {
             display: flex;
-            flex-direction: row;      /* ✅ ngang thay vì column */
+            flex-direction: row;      /*ngang thay vì column */
             align-items: center;
             gap: 16px;
             min-width: fit-content;
@@ -206,7 +206,7 @@
         <c:when test="${not isLoggedIn}">
             <a href="${pageContext.request.contextPath}/auth/login"
                class="btn-watch not-followed">
-                <i class="fa-solid fa-eye"></i> Watch tag
+                <i class="fa-solid fa-eye"></i> Follow Tag
             </a>
         </c:when>
         <c:when test="${tag.followed}">
@@ -218,7 +218,7 @@
                 <input type="hidden" name="redirectTo"
                        value="/tagsdetail?id=${tag.tagId}&filter=${filter}&page=${currentPage}" />
                 <button type="submit" class="btn-watch followed">
-                    <i class="fa-solid fa-eye-slash"></i> Unwatch tag
+                    <i class="fa-solid fa-eye-slash"></i> Unfollow Tag
                 </button>
             </form>
         </c:when>
@@ -231,7 +231,7 @@
                 <input type="hidden" name="redirectTo"
                        value="/tagsdetail?id=${tag.tagId}&filter=${filter}&page=${currentPage}" />
                 <button type="submit" class="btn-watch not-followed">
-                    <i class="fa-solid fa-eye"></i> Watch tag
+                    <i class="fa-solid fa-eye"></i> Follow Tag
                 </button>
             </form>
         </c:otherwise>

@@ -32,7 +32,7 @@ public class UserListController extends HttpServlet {
         String sort    = request.getParameter("sort");
         if (sort == null) sort = "name"; // default
 
-        // Top 3 — không bị ảnh hưởng bởi search/filter
+        // Top 10 — không bị ảnh hưởng bởi search/filter
         List<UserDTO> top10 = dao.getTopUsers();
 
         // Danh sách users — bị ảnh hưởng bởi search/filter
