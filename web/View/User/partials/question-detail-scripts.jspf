@@ -426,24 +426,54 @@
     // Define allowed HTML tags and attributes
     const purifyConfig = {
         ALLOWED_TAGS: ['p', 'br', 'strong', 'b', 'em', 'i', 'u', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 
-                      'ul', 'ol', 'li', 'code', 'pre', 'blockquote', 'hr', 'div', 'span'],
-        ALLOWED_ATTR: ['title'],
-        KEEP_CONTENT: true
+                      'ul', 'ol', 'li', 'code', 'pre', 'blockquote', 'hr', 'div', 'span', 'img'],
+        ALLOWED_ATTR: ['title', 'src', 'alt', 'width', 'height'],
+        KEEP_CONTENT: true,
+        ALLOW_DATA_ATTR: false
     };
+
+    // Custom image handler: opens a file picker and inserts image as base64
+    function imageHandler() {
+        const input = document.createElement('input');
+        input.setAttribute('type', 'file');
+        input.setAttribute('accept', 'image/png,image/jpeg,image/gif,image/webp');
+        input.click();
+        input.onchange = function () {
+            if (!input.files || !input.files[0]) return;
+            const file = input.files[0];
+            if (file.size > 5 * 1024 * 1024) {
+                alert('Ảnh quá lớn! Vui lòng chọn ảnh nhỏ hơn 5MB.');
+                return;
+            }
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                const range = quillEditor.getSelection(true);
+                quillEditor.insertEmbed(range.index, 'image', e.target.result);
+                quillEditor.setSelection(range.index + 1);
+            };
+            reader.readAsDataURL(file);
+        };
+    }
 
     // Initialize Quill editor when document is ready
     document.addEventListener('DOMContentLoaded', function() {
         quillEditor = new Quill('#answer-editor', {
             theme: 'snow',
             modules: {
-                toolbar: [
-                    ['bold', 'italic', 'underline', 'strike'],
-                    ['blockquote', 'code-block'],
-                    [{ 'header': 1 }, { 'header': 2 }],
-                    [{ 'list': 'ordered'}, { 'list': 'bullet' }]
-                ]
+                toolbar: {
+                    container: [
+                        ['bold', 'italic', 'underline', 'strike'],
+                        ['blockquote', 'code-block'],
+                        [{ 'header': 1 }, { 'header': 2 }],
+                        [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                        ['image']
+                    ],
+                    handlers: {
+                        image: imageHandler
+                    }
+                }
             },
-            formats: ['bold', 'italic', 'underline', 'strike', 'blockquote', 'code-block', 'header', 'list']
+            formats: ['bold', 'italic', 'underline', 'strike', 'blockquote', 'code-block', 'header', 'list', 'image']
         });
     });
 
@@ -476,8 +506,8 @@
     // Basic HTML sanitization function (fallback)
     function sanitizeHTML(html) {
         const allowedTags = ['p', 'br', 'strong', 'b', 'em', 'i', 'u', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
-                           'ul', 'ol', 'li', 'code', 'pre', 'blockquote', 'hr', 'div', 'span'];
-        const allowedAttrs = ['title'];
+                           'ul', 'ol', 'li', 'code', 'pre', 'blockquote', 'hr', 'div', 'span', 'img'];
+        const allowedAttrs = ['title', 'src', 'alt', 'width', 'height'];
         
         // Create a temporary div to parse the HTML
         const temp = document.createElement('div');
@@ -502,6 +532,16 @@
                         el.removeAttribute(attr.name);
                     }
                 });
+            }
+        });
+        
+        // Sanitize img src: only allow data:image/* base64 or http/https URLs
+        temp.querySelectorAll('img').forEach(function(img) {
+            const src = img.getAttribute('src') || '';
+            const safeData = /^data:image\/(png|jpeg|gif|webp);base64,/.test(src);
+            const safeUrl  = /^https?:\/\//i.test(src);
+            if (!safeData && !safeUrl) {
+                img.remove();
             }
         });
         
