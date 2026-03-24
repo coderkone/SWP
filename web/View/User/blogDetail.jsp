@@ -79,7 +79,12 @@
                     </div>
                 </div>
 
-                <img src="${not empty blog.thumbnailUrl ? blog.thumbnailUrl : 'https://placehold.co/800x400/eeeeee/999999?text=DevQuery+Blog'}" 
+                <c:set var="thumbnailSrc" value="https://placehold.co/800x400/eeeeee/999999?text=DevQuery+Blog" />
+                <c:if test="${not empty blog.thumbnailUrl}">
+                    <c:set var="thumbnailSrc" value="${pageContext.request.contextPath}/${blog.thumbnailUrl}" />
+                </c:if>
+
+                <img src="${thumbnailSrc}" 
                      onerror="this.onerror=null; this.src='https://placehold.co/800x400/eeeeee/999999?text=DevQuery+Blog';" 
                      class="img-fluid rounded mb-4 w-100" alt="Thumbnail">
 

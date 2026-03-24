@@ -37,7 +37,11 @@ public class UserDAO {
                 }
             }
         } catch (Exception e) {
+<<<<<<< HEAD
             // Keep app booting even when schema auto-fix cannot run (permissions, legacy DB, etc.)
+=======
+            // Keep app booting even when schema auto-fix cannot run
+>>>>>>> origin/Hiep
         }
     }
 
@@ -62,14 +66,14 @@ public class UserDAO {
     }
 
     public void register(String username, String email, String rawPassword) throws Exception {
-        String sql = "INSERT INTO Users(username, email, password_hash, role) VALUES (?, ?, ?, ?)";
+        String sql = "INSERT INTO Users(username, email, password_hash, role, status) VALUES (?, ?, ?, ?, 'active')";
         String hash = PasswordUtil.sha256(rawPassword);
 
         try (Connection con = db.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setString(1, username);
             ps.setString(2, email);
             ps.setString(3, hash);
-            ps.setString(4, "member"); // mặc định
+            ps.setString(4, "member");
             ps.executeUpdate();
         }
     }
@@ -78,8 +82,12 @@ public class UserDAO {
         String sql = "SELECT u.*, p.avatar_url FROM Users u LEFT JOIN User_Profile p ON u.user_id = p.user_id "
                    + "WHERE u.email = ? AND u.password_hash = ?";
         String hash = PasswordUtil.sha256(rawPassword);
+<<<<<<< HEAD
 
         try (Connection con = db.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
+=======
+try (Connection con = db.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
+>>>>>>> origin/Hiep
             ps.setString(1, email);
             ps.setString(2, hash);
 
@@ -116,9 +124,19 @@ public class UserDAO {
                             rs.getString("email"),
                             rs.getString("role")
                     );
-                    user.setStatus(rs.getString("status"));
                     user.setReputation(rs.getInt("Reputation"));
                     user.setAvatarUrl(rs.getString("avatar_url"));
+<<<<<<< HEAD
+=======
+                    
+                    // Thử lấy status, nếu lỗi (không có cột) thì mặc định là active
+                    try {
+                        user.setStatus(rs.getString("status"));
+                    } catch (Exception e) {
+                        user.setStatus("active");
+                    }
+                    
+>>>>>>> origin/Hiep
                     return user;
                 }
             }
@@ -143,7 +161,7 @@ public class UserDAO {
             st.setString(1, email);
             try (ResultSet rs = st.executeQuery()) {
                 if (rs.next()) {
-                    User u = new User();
+User u = new User();
                     u.setUserId(rs.getLong("user_id"));
                     u.setUsername(rs.getString("username"));
                     u.setEmail(rs.getString("email"));
@@ -215,7 +233,7 @@ public class UserDAO {
                     user.setUserId(rs.getLong("user_id"));
                     user.setUsername(rs.getString("username"));
                     user.setEmail(rs.getString("email"));
-                    user.setRole(rs.getString("role"));
+user.setRole(rs.getString("role"));
                     user.setReputation(rs.getInt("Reputation"));
                     user.setCreatedAt(rs.getTimestamp("created_at"));
 
@@ -289,7 +307,7 @@ public class UserDAO {
              PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setInt(1, limit);
             ps.setString(2, "%" + keyword + "%");
-            ps.setString(3, "%" + keyword + "%");
+ps.setString(3, "%" + keyword + "%");
 
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
@@ -363,7 +381,7 @@ public class UserDAO {
             ps.setString(1, role);
             ps.setString(2, status);
             ps.setLong(3, userId);
-            return ps.executeUpdate() > 0;
+return ps.executeUpdate() > 0;
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -445,8 +463,7 @@ public class UserDAO {
                     ps.setInt(i + 1, (Integer) param);
                 }
             }
-
-            try (ResultSet rs = ps.executeQuery()) {
+try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     UserDTO user = new UserDTO();
                     user.setUserId(rs.getLong("user_id"));
@@ -555,7 +572,7 @@ public class UserDAO {
 
     // Lấy xu hướng đăng ký user theo ngày (cho dashboard chart)
     public List<Map<String, Object>> getUserRegistrationTrend(int days) {
-        List<Map<String, Object>> trend = new ArrayList<>();
+List<Map<String, Object>> trend = new ArrayList<>();
         String sql = "SELECT CAST(created_at AS DATE) as reg_date, COUNT(*) as count " +
                      "FROM Users WHERE created_at >= DATEADD(DAY, -?, GETDATE()) " +
                      "GROUP BY CAST(created_at AS DATE) ORDER BY reg_date";
@@ -620,7 +637,7 @@ public class UserDAO {
             }
         } catch (Exception e) {
             // If the history table is not deployed yet, return empty list to keep profile functional.
-        }
+}
 
         return changes;
     }
@@ -855,4 +872,5 @@ public int countQuestionsByUser(long userId) {
     return 0;
 }
     
+}
 }

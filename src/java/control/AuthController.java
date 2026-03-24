@@ -2,6 +2,7 @@ package control;
 
 import dal.UserDAO;
 import dto.UserDTO;
+import model.User;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
@@ -73,7 +74,7 @@ public class AuthController extends HttpServlet {
 
         if (dao.emailExists(email)) {
             request.setAttribute("error", "Email đã tồn tại.");
-            request.getRequestDispatcher("/View/User/register.jsp").forward(request, response);
+request.getRequestDispatcher("/View/User/register.jsp").forward(request, response);
             return;
         }
 
@@ -98,6 +99,7 @@ public class AuthController extends HttpServlet {
 
         UserDTO userDTO = dao.login(email, pass);
         model.User userModel = dao.loginModel(email, pass);
+
         
         if (userDTO == null || userModel == null) {
             request.setAttribute("error", "Sai email hoặc password.");
@@ -115,6 +117,7 @@ public class AuthController extends HttpServlet {
         HttpSession session = request.getSession(true);
         session.setAttribute("USER", userDTO);
         session.setAttribute("user", userModel); // Use lowercase "user" for model-based JSPs
+        
 
         String role = userDTO.getRole(); // admin / moderator / member
         if (role != null && role.equalsIgnoreCase("admin")) {
