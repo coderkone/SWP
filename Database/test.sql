@@ -1,4 +1,4 @@
-﻿USE [devquery]
+USE [devquery]
 GO
 
 -- ========================================================
@@ -34,6 +34,7 @@ VALUES
 (18, 4), -- Tặng 1 huy hiệu Bạc (Bug Hunter)
 (18, 1), -- Tặng 1 huy hiệu Đồng (First Question)
 (18, 5); -- Tặng 1 huy hiệu Đồng (Helper)
+
 GO
 
 INSERT INTO [dbo].[Questions] ([user_id], [title], [body], [created_at], [Score]) 
@@ -66,8 +67,6 @@ INSERT INTO [dbo].[Question_Tags] ([question_id], [tag_id])
 SELECT question_id, 2 FROM [dbo].[Questions] WHERE user_id = 18 AND title LIKE N'%MVC%'; -- tag 2 là spring-boot
 GO
 
-USE [devquery]
-GO
 
 -- ========================================================
 -- Tạo 15 bản ghi cho mỗi tab. Với pageSize = 10, giao diện 
@@ -114,3 +113,4 @@ BEGIN
     SET @Counter = @Counter + 1;
 END
 GO
+>>>>>>> master
