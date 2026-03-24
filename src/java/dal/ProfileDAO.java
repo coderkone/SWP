@@ -223,4 +223,47 @@ public class ProfileDAO extends DBContext {
         }
         return false;
     }
+    
+    // Hàm cập nhật Avatar URL
+    public boolean updateAvatar(long userId, String avatarUrl) {
+        Connection conn = null;
+        PreparedStatement stCheck = null;
+        PreparedStatement stUpdate = null;
+        ResultSet rs = null;
+        try {
+            conn = getConnection();
+            
+            // Kiểm tra xem User_Profile đã tồn tại chưa
+            String sqlCheckStr = "SELECT COUNT(*) FROM User_Profile WHERE user_id = ?";
+            boolean exists = false;
+            stCheck = conn.prepareStatement(sqlCheckStr);
+            stCheck.setLong(1, userId);
+            rs = stCheck.executeQuery();
+            if (rs.next() && rs.getInt(1) > 0) {
+                exists = true;
+            }
+
+            String sql;
+            if (exists) {
+                sql = "UPDATE User_Profile SET avatar_url = ? WHERE user_id = ?";
+            } else {
+                sql = "INSERT INTO User_Profile (avatar_url, user_id) VALUES (?, ?)";
+            }
+
+            stUpdate = conn.prepareStatement(sql);
+            stUpdate.setString(1, avatarUrl);
+            stUpdate.setLong(2, userId);
+            int rowsAffected = stUpdate.executeUpdate();
+            
+            return rowsAffected > 0;
+        } catch (Exception e) {
+            System.out.println("Lỗi ở updateAvatar: " + e.getMessage());
+        } finally {
+            if (rs != null) try { rs.close(); } catch (Exception e) {}
+            if (stCheck != null) try { stCheck.close(); } catch (Exception e) {}
+            if (stUpdate != null) try { stUpdate.close(); } catch (Exception e) {}
+            if (conn != null) try { conn.close(); } catch (Exception e) {}
+        }
+        return false;
+    }
 }
