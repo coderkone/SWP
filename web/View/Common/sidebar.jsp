@@ -59,7 +59,6 @@
                     <i class="fa-solid fa-tags me-2"></i> Tags
                 </a>
             </li>
-
             <c:if test="${sessionScope.user != null}">
                 <li class="sidebar-heading">Personal</li>
 
@@ -72,6 +71,11 @@
                 <li class="nav-item">
                     <a class="nav-link ${uri.contains('/saves') ? 'active' : ''}" href="${pageContext.request.contextPath}/saves">
                         <i class="fa-solid fa-bookmark me-2"></i> Saves
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link ${uri.contains('/recommended-questions') ? 'active' : ''}" href="${pageContext.request.contextPath}/recommended-questions">
+                        <i class="fa-solid fa-wand-magic-sparkles me-2"></i> Recommended
                     </a>
                 </li>
                 <li class="nav-item">

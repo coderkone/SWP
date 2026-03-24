@@ -14,6 +14,7 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.*;
 
 import model.User;
@@ -50,7 +51,7 @@ public class ViewQuestionController extends HttpServlet {
                 return;
             }
 
-            HttpSession session = request.getSession(false);
+            HttpSession session = request.getSession();
 
             // ===== VIEW COUNT (ANTI SPAM) =====
             try {
@@ -65,6 +66,8 @@ public class ViewQuestionController extends HttpServlet {
                 }
             } catch (Exception e) {
             }
+
+            recordViewedQuestion(session, questionId);
 
             // ===== PAGINATION =====
             int answerCurrentPage = 1;
@@ -160,6 +163,13 @@ public class ViewQuestionController extends HttpServlet {
                 request.setAttribute("relatedQuestions", new ArrayList<>());
             }
 
+            try {
+                request.setAttribute("popularQuestions",
+                        questionDetailDAO.getPopularQuestions(questionId, 5));
+            } catch (Exception e) {
+                request.setAttribute("popularQuestions", new ArrayList<>());
+            }
+
             // ===== OWNER CHECK =====
             try {
                 Long currentUserId = session == null ? null : extractUserId(session.getAttribute("user"));
@@ -203,5 +213,26 @@ public class ViewQuestionController extends HttpServlet {
             return ((User) principal).getUserId();
         }
         return null;
+    }
+
+    @SuppressWarnings("unchecked")
+    private void recordViewedQuestion(HttpSession session, long questionId) {
+        if (session == null) {
+            return;
+        }
+
+        Object existing = session.getAttribute("viewedQuestionIds");
+        List<Long> viewedIds = existing instanceof List<?>
+                ? new ArrayList<>((List<Long>) existing)
+                : new ArrayList<>();
+
+        viewedIds.remove(questionId);
+        viewedIds.add(0, questionId);
+
+        if (viewedIds.size() > 15) {
+            viewedIds = new ArrayList<>(viewedIds.subList(0, 15));
+        }
+
+        session.setAttribute("viewedQuestionIds", viewedIds);
     }
 }

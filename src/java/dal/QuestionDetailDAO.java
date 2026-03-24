@@ -96,7 +96,6 @@ public class QuestionDetailDAO extends DBContext {
         q.setClosedAt(rs.getTimestamp("closed_at"));
         q.setScore(rs.getInt("Score"));
         q.setCreatedAt(rs.getTimestamp("created_at"));
-        
         q.setAuthorName(rs.getString("username"));
         q.setAuthorReputation(rs.getInt("author_reputation"));
         q.setAuthorAvatar(rs.getString("avatar_url"));
@@ -444,6 +443,34 @@ public class QuestionDetailDAO extends DBContext {
             }
         }
         return relatedQuestions;
+    }
+
+    public List<QuestionDTO> getPopularQuestions(long excludeQuestionId, int limit) throws Exception {
+        List<QuestionDTO> popularQuestions = new ArrayList<>();
+        String sql = "SELECT TOP (?) q.*, u.username, u.Reputation AS author_reputation, "
+                + "(SELECT COUNT(*) FROM Answers a WHERE a.question_id = q.question_id) AS ans_count, "
+                + "CAST((q.Score * 2.0) + (q.view_count / 10.0) - DATEDIFF(DAY, q.created_at, GETDATE()) AS FLOAT) AS popular_score "
+                + "FROM Questions q "
+                + "JOIN Users u ON q.user_id = u.user_id "
+                + "WHERE q.question_id <> ? AND ISNULL(q.is_deleted, 0) = 0 "
+                + "ORDER BY popular_score DESC, q.view_count DESC, q.created_at DESC";
+
+        try (Connection con = getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, limit);
+            ps.setLong(2, excludeQuestionId);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    QuestionDTO q = mapQuestion(rs);
+                    q.setAnswerCount(rs.getInt("ans_count"));
+                    q.setPopularScore(rs.getDouble("popular_score"));
+                    popularQuestions.add(q);
+                }
+            }
+        }
+
+        return popularQuestions;
     }
     
     // Helper: Map ResultSet sang QuestionDTO (cho getQuestionById)
@@ -799,7 +826,4 @@ public class QuestionDetailDAO extends DBContext {
         }
         return null;
     }
-    
-    
-
 }

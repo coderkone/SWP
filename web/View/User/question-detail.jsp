@@ -80,7 +80,6 @@
                     <%= request.getParameter("closeError") %>
                 </div>
                 <% } %>
-
                 <!-- Question -->
                 <div class="question-box">
                     <div class="vote-box">

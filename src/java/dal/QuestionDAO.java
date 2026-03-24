@@ -8,9 +8,27 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class QuestionDAO extends DBContext {
+
+    private static final Set<String> RECOMMENDATION_STOP_WORDS = new java.util.HashSet<>(Arrays.asList(
+            "the", "and", "for", "with", "that", "this", "from", "into", "have", "has",
+            "how", "why", "when", "where", "what", "which", "can", "cannot", "cant", "not",
+            "are", "was", "were", "your", "you", "use", "using", "used", "get", "got",
+            "then", "than", "them", "they", "their", "there", "here", "about", "after",
+            "before", "been", "being", "would", "could", "should", "will", "just", "like",
+            "make", "made", "need", "want", "help", "question", "questions", "code", "error",
+            "java", "jsp", "sql", "html", "css"
+    ));
 
     // 1. Hàm chính lấy danh sách câu hỏi
     public List<QuestionDTO> getQuestions(int pageIndex, int pageSize, String sortBy, String keyword, String filterType, String tag) {
@@ -21,7 +39,7 @@ public class QuestionDAO extends DBContext {
                 .append("FROM Questions q ")
                 .append("JOIN Users u ON q.user_id = u.user_id ")
                 .append("LEFT JOIN User_Profile up ON u.user_id = up.user_id ")
-                .append("WHERE 1=1 ");
+                .append("WHERE ISNULL(q.is_deleted, 0) = 0 ");
 
         if (keyword != null && !keyword.trim().isEmpty()) {
             sql.append(" AND (q.title LIKE ? OR q.body LIKE ?) ");
@@ -151,7 +169,7 @@ public class QuestionDAO extends DBContext {
 
     // 3. Hàm đếm tổng số câu hỏi (Dùng cho phân trang)
     public int getTotalQuestions(String keyword, String filterType, String tag) {
-        StringBuilder sql = new StringBuilder("SELECT COUNT(*) FROM Questions q WHERE 1=1 ");
+        StringBuilder sql = new StringBuilder("SELECT COUNT(*) FROM Questions q WHERE ISNULL(q.is_deleted, 0) = 0 ");
 
         if (keyword != null && !keyword.trim().isEmpty()) {
             sql.append(" AND (q.title LIKE ? OR q.body LIKE ?) ");
@@ -451,6 +469,37 @@ public class QuestionDAO extends DBContext {
     }
 
     // Kiểm tra câu hỏi có bị đóng không
+    public List<QuestionDTO> getPopularQuestions(long excludeQuestionId, int limit) {
+        List<QuestionDTO> list = new ArrayList<>();
+        String sql = "SELECT q.*, u.username, u.Reputation AS author_reputation, up.avatar_url, "
+                + "(SELECT COUNT(*) FROM Answers a WHERE a.question_id = q.question_id) as ans_count, "
+                + "CAST((q.Score * 2.0) + (q.view_count / 10.0) - DATEDIFF(DAY, q.created_at, GETDATE()) AS FLOAT) AS popular_score "
+                + "FROM Questions q "
+                + "JOIN Users u ON q.user_id = u.user_id "
+                + "LEFT JOIN User_Profile up ON u.user_id = up.user_id "
+                + "WHERE q.question_id <> ? AND ISNULL(q.is_deleted, 0) = 0 "
+                + "ORDER BY popular_score DESC, q.view_count DESC, q.created_at DESC "
+                + "OFFSET 0 ROWS FETCH NEXT ? ROWS ONLY";
+        try {
+            Connection conn = getConnection();
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setLong(1, excludeQuestionId);
+            ps.setInt(2, limit);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                QuestionDTO question = mapRow(rs);
+                question.setPopularScore(rs.getDouble("popular_score"));
+                list.add(question);
+            }
+            rs.close();
+            ps.close();
+            conn.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
     public boolean isQuestionClosed(long questionId) {
         String sql = "SELECT is_closed FROM Questions WHERE question_id = ?";
         try {
@@ -752,4 +801,270 @@ private static class AnswerOwner {
             }
         }
     }
+    
+
+
+/**
+ * Extract tags từ danh sách question đã xem
+ */
+public List<String> extractTagsFromViewed(List<Long> viewedIds) {
+    List<String> tags = new ArrayList<>();
+
+    if (viewedIds == null || viewedIds.isEmpty()) {
+        return tags;
+    }
+
+    try {
+        Connection conn = getConnection();
+
+        for (Long qId : viewedIds) {
+            tags.addAll(getTagsByQuestionId(qId));
+        }
+
+        conn.close();
+
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+
+    // remove duplicate + limit
+    return tags.stream()
+            .distinct()
+            .limit(5)
+            .toList();
+}
+
+/**
+ * Remove duplicate question + loại bỏ câu đã xem
+ */
+private List<QuestionDTO> distinctAndLimit(List<QuestionDTO> list, List<Long> excludeIds, int limit) {
+    List<QuestionDTO> result = new ArrayList<>();
+    java.util.Set<Long> seen = new java.util.HashSet<>();
+
+    for (QuestionDTO q : list) {
+        if (seen.contains(q.getQuestionId())) continue;
+        if (excludeIds != null && excludeIds.contains(q.getQuestionId())) continue;
+
+        seen.add(q.getQuestionId());
+        result.add(q);
+
+        if (result.size() >= limit) break;
+    }
+
+    return result;
+}
+
+public List<QuestionDTO> getRecommendedQuestions(List<Long> viewedIds, int limit) {
+    if (viewedIds == null || viewedIds.isEmpty()) {
+        return getPopularQuestions(0, limit);
+    }
+
+    List<String> tags = extractTagsFromViewed(viewedIds);
+    List<String> keywords = extractKeywordsFromViewed(viewedIds, 8);
+    List<QuestionDTO> recommended = findRecommendedByProfile(tags, keywords, viewedIds, limit);
+
+    if (recommended.size() < limit) {
+        List<QuestionDTO> fallback = getPopularQuestions(0, limit * 2);
+        recommended.addAll(fallback);
+        recommended = distinctAndLimit(recommended, viewedIds, limit);
+    }
+
+    return recommended;
+}
+
+public List<String> extractKeywordsFromViewed(List<Long> viewedIds, int limit) {
+    Map<String, Integer> frequencies = new HashMap<>();
+
+    if (viewedIds == null || viewedIds.isEmpty()) {
+        return new ArrayList<>();
+    }
+
+    StringBuilder sql = new StringBuilder();
+    sql.append("SELECT title, body FROM Questions WHERE question_id IN (");
+    appendPlaceholders(sql, viewedIds.size());
+    sql.append(") AND ISNULL(is_deleted, 0) = 0");
+
+    try (Connection conn = getConnection();
+         PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+        int index = 1;
+        for (Long id : viewedIds) {
+            ps.setLong(index++, id);
+        }
+
+        try (ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                collectKeywordFrequency(frequencies, rs.getString("title"));
+                collectKeywordFrequency(frequencies, rs.getString("body"));
+            }
+        }
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+
+    return frequencies.entrySet().stream()
+            .sorted(Map.Entry.<String, Integer>comparingByValue(Comparator.reverseOrder())
+                    .thenComparing(Map.Entry::getKey))
+            .limit(limit)
+            .map(Map.Entry::getKey)
+            .collect(Collectors.toList());
+}
+
+private List<QuestionDTO> findRecommendedByProfile(List<String> tags, List<String> keywords,
+        List<Long> excludeIds, int limit) {
+    List<QuestionDTO> list = new ArrayList<>();
+    boolean hasTags = tags != null && !tags.isEmpty();
+    boolean hasKeywords = keywords != null && !keywords.isEmpty();
+
+    if (!hasTags && !hasKeywords) {
+        return list;
+    }
+
+    StringBuilder sql = new StringBuilder();
+    sql.append("SELECT TOP (?) q.*, u.username, u.Reputation AS author_reputation, up.avatar_url, ")
+            .append("(SELECT COUNT(*) FROM Answers a WHERE a.question_id = q.question_id) as ans_count, ")
+            .append("CAST((");
+
+    List<String> scoreParts = new ArrayList<>();
+    if (hasTags) {
+        StringBuilder tagScore = new StringBuilder();
+        tagScore.append("(SELECT COUNT(DISTINCT qt.tag_id) * 8.0 FROM Question_Tags qt ")
+                .append("JOIN Tags t ON qt.tag_id = t.tag_id ")
+                .append("WHERE qt.question_id = q.question_id AND t.tag_name IN (");
+        appendPlaceholders(tagScore, tags.size());
+        tagScore.append("))");
+        scoreParts.add(tagScore.toString());
+    }
+
+    if (hasKeywords) {
+        for (int i = 0; i < keywords.size(); i++) {
+            scoreParts.add("CASE WHEN q.title LIKE ? THEN 5.0 ELSE 0 END");
+            scoreParts.add("CASE WHEN q.body LIKE ? THEN 2.5 ELSE 0 END");
+        }
+    }
+
+    scoreParts.add("(q.Score * 1.5)");
+    scoreParts.add("(q.view_count * 0.08)");
+    scoreParts.add("CASE WHEN q.accepted_answer_id IS NOT NULL THEN 2.0 ELSE 0 END");
+
+    sql.append(String.join(" + ", scoreParts))
+            .append(") AS FLOAT) AS recommendation_score ")
+            .append("FROM Questions q ")
+            .append("JOIN Users u ON q.user_id = u.user_id ")
+            .append("LEFT JOIN User_Profile up ON u.user_id = up.user_id ")
+            .append("WHERE ISNULL(q.is_deleted, 0) = 0 ");
+
+    if (excludeIds != null && !excludeIds.isEmpty()) {
+        sql.append("AND q.question_id NOT IN (");
+        appendPlaceholders(sql, excludeIds.size());
+        sql.append(") ");
+    }
+
+    sql.append("AND (");
+    List<String> matchParts = new ArrayList<>();
+    if (hasTags) {
+        StringBuilder tagMatch = new StringBuilder();
+        tagMatch.append("EXISTS (SELECT 1 FROM Question_Tags qt ")
+                .append("JOIN Tags t ON qt.tag_id = t.tag_id ")
+                .append("WHERE qt.question_id = q.question_id AND t.tag_name IN (");
+        appendPlaceholders(tagMatch, tags.size());
+        tagMatch.append("))");
+        matchParts.add(tagMatch.toString());
+    }
+    if (hasKeywords) {
+        for (int i = 0; i < keywords.size(); i++) {
+            matchParts.add("q.title LIKE ?");
+            matchParts.add("q.body LIKE ?");
+        }
+    }
+    sql.append(String.join(" OR ", matchParts))
+            .append(") ")
+            .append("ORDER BY recommendation_score DESC, q.view_count DESC, q.created_at DESC");
+
+    try (Connection conn = getConnection();
+         PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+        int index = 1;
+        ps.setInt(index++, limit);
+
+        if (hasTags) {
+            for (String tag : tags) {
+                ps.setString(index++, tag);
+            }
+        }
+
+        if (hasKeywords) {
+            for (String keyword : keywords) {
+                String pattern = "%" + keyword + "%";
+                ps.setString(index++, pattern);
+                ps.setString(index++, pattern);
+            }
+        }
+
+        if (excludeIds != null && !excludeIds.isEmpty()) {
+            for (Long id : excludeIds) {
+                ps.setLong(index++, id);
+            }
+        }
+
+        if (hasTags) {
+            for (String tag : tags) {
+                ps.setString(index++, tag);
+            }
+        }
+
+        if (hasKeywords) {
+            for (String keyword : keywords) {
+                String pattern = "%" + keyword + "%";
+                ps.setString(index++, pattern);
+                ps.setString(index++, pattern);
+            }
+        }
+
+        try (ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                QuestionDTO question = mapRow(rs);
+                question.setPopularScore(rs.getDouble("recommendation_score"));
+                list.add(question);
+            }
+        }
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+
+    return list;
+}
+
+private void collectKeywordFrequency(Map<String, Integer> frequencies, String text) {
+    if (text == null || text.trim().isEmpty()) {
+        return;
+    }
+
+    String normalized = text.toLowerCase(Locale.ENGLISH)
+            .replaceAll("<[^>]+>", " ")
+            .replaceAll("[^a-z0-9#+._-]", " ");
+
+    for (String token : normalized.split("\\s+")) {
+        String clean = token.trim();
+        if (clean.length() < 3 || clean.length() > 24) {
+            continue;
+        }
+        if (RECOMMENDATION_STOP_WORDS.contains(clean)) {
+            continue;
+        }
+        if (!clean.matches(".*[a-z].*")) {
+            continue;
+        }
+        frequencies.merge(clean, 1, Integer::sum);
+    }
+}
+
+private void appendPlaceholders(StringBuilder sql, int count) {
+    for (int i = 0; i < count; i++) {
+        sql.append("?");
+        if (i < count - 1) {
+            sql.append(",");
+        }
+    }
+}
+
+
 }

@@ -10,8 +10,8 @@ import java.util.regex.Pattern;
  * Removes dangerous tags and attributes while preserving safe formatting.
  * 
  * Allowed tags: p, br, strong, b, em, i, u, h1, h2, h3, h4, h5, h6,
- *               ul, ol, li, code, pre, blockquote, hr, div, span
- * Allowed attributes: title, class
+ *               ul, ol, li, code, pre, blockquote, hr, div, span, img
+ * Allowed attributes: title, class, src, alt, width, height
  */
 public class HtmlSanitizer {
     
@@ -22,12 +22,13 @@ public class HtmlSanitizer {
             "p", "br", "strong", "b", "em", "i", "u", 
             "h1", "h2", "h3", "h4", "h5", "h6",
             "ul", "ol", "li", "code", "pre", "blockquote", 
-            "hr", "div", "span"
+            "hr", "div", "span", "img"
         ));
     }
     
     // Define allowed attributes for specific tags
     private static final Set<String> COMMON_ATTRS = new HashSet<>(java.util.Arrays.asList("title", "class"));
+    private static final Set<String> IMAGE_ATTRS = new HashSet<>(java.util.Arrays.asList("src", "alt", "width", "height"));
     
     /**
      * Sanitize HTML content to prevent XSS attacks
@@ -52,8 +53,8 @@ public class HtmlSanitizer {
         html = html.replaceAll("(?i)on\\w+\\s*=\\s*[\"'][^\"']*[\"']", "");
         html = html.replaceAll("(?i)on\\w+\\s*=\\s*[^\\s>]+", "");
         
-        // Remove dangerous protocols (javascript:, data:, vbscript:)
-        html = html.replaceAll("(?i)(href|src|data)\\s*=\\s*[\"']\\s*(javascript|data|vbscript)", "$1=\"");
+        // Remove dangerous protocols (javascript:, vbscript:). Allow data:image/* for Quill images.
+        html = html.replaceAll("(?i)(href|src|data)\\s*=\\s*[\"']\\s*(javascript|vbscript)", "$1=\"");
         html = html.replaceAll("(?i)(href|src|data)\\s*=\\s*([^\\s>]*javascript)", "$1=\"");
         
         // Clean up remaining tags
@@ -78,7 +79,7 @@ public class HtmlSanitizer {
             
             if (ALLOWED_TAGS.contains(tagName)) {
                 // Sanitize attributes for allowed tags
-                String sanitizedAttrs = sanitizeAttributes(attributes);
+                String sanitizedAttrs = sanitizeAttributes(tagName, attributes);
                 String replacement = "<" + isClosing + tagName + sanitizedAttrs + ">";
                 matcher.appendReplacement(sb, Matcher.quoteReplacement(replacement));
             } else {
@@ -94,7 +95,7 @@ public class HtmlSanitizer {
     /**
      * Sanitize attributes for a specific tag
      */
-    private static String sanitizeAttributes(String attributes) {
+    private static String sanitizeAttributes(String tagName, String attributes) {
         if (attributes == null || attributes.trim().isEmpty()) {
             return "";
         }
@@ -114,6 +115,10 @@ public class HtmlSanitizer {
             
             if (COMMON_ATTRS.contains(attrName)) {
                 allowed = true;
+            }
+
+            if ("img".equals(tagName) && IMAGE_ATTRS.contains(attrName)) {
+                allowed = isSafeImageAttribute(attrName, attrValue);
             }
             
             if (allowed) {
@@ -137,5 +142,24 @@ public class HtmlSanitizer {
                     .replace("'", "&#39;")
                     .replace("<", "&lt;")
                     .replace(">", "&gt;");
+    }
+
+    private static boolean isSafeImageAttribute(String attrName, String attrValue) {
+        if (attrValue == null || attrValue.trim().isEmpty()) {
+            return false;
+        }
+
+        String normalizedValue = attrValue.trim();
+
+        if ("src".equals(attrName)) {
+            return normalizedValue.matches("(?i)^data:image/(png|jpeg|jpg|gif|webp);base64,[a-z0-9+/=\\r\\n]+$")
+                    || normalizedValue.matches("(?i)^https?://.+$");
+        }
+
+        if ("width".equals(attrName) || "height".equals(attrName)) {
+            return normalizedValue.matches("^\\d{1,4}$");
+        }
+
+        return true;
     }
 }

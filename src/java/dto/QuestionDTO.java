@@ -19,12 +19,17 @@ public class QuestionDTO extends Question {
     private int authorReputation;
     private int answerCount;
     private boolean hasAcceptedAnswer;
+    private double popularScore;
 
     public QuestionDTO() {
     }
  
-    public QuestionDTO(long questionId, long userId, String title, String body, String codeSnippet, int viewCount, boolean isClosed, String closedReason, Timestamp createdAt, Timestamp updatedAt, int score, String authorName, String authorAvatar, int answerCount) {
-        super(questionId, userId, title, body, codeSnippet, viewCount, isClosed, closedReason, createdAt, updatedAt, score);
+    public QuestionDTO(long questionId, long userId, String title, String body, String codeSnippet,
+            int viewCount, boolean isClosed, Long closedBy, String closedReason, Timestamp closedAt,
+            Timestamp createdAt, Timestamp updatedAt, int score, Long acceptedAnswerId,
+            String authorName, String authorAvatar, int answerCount) {
+        super(questionId, userId, title, body, codeSnippet, viewCount, isClosed, closedBy,
+                closedReason, closedAt, createdAt, updatedAt, score, acceptedAnswerId);
         this.authorName = authorName;
         this.authorAvatar = authorAvatar;
         this.answerCount = answerCount;
@@ -74,5 +79,13 @@ public class QuestionDTO extends Question {
 
     public void setHasAcceptedAnswer(boolean hasAcceptedAnswer) {
         this.hasAcceptedAnswer = hasAcceptedAnswer;
+    }
+
+    public double getPopularScore() {
+        return popularScore;
+    }
+
+    public void setPopularScore(double popularScore) {
+        this.popularScore = popularScore;
     }
 }

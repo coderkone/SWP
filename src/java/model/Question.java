@@ -38,6 +38,25 @@ public class Question {
         this.score = score;
     }
 
+    public Question(long questionId, long userId, String title, String body, String codeSnippet, int viewCount,
+            boolean isClosed, Long closedBy, String closedReason, Timestamp closedAt, Timestamp createdAt,
+            Timestamp updatedAt, int score, Long acceptedAnswerId) {
+        this.questionId = questionId;
+        this.userId = userId;
+        this.title = title;
+        this.body = body;
+        this.codeSnippet = codeSnippet;
+        this.viewCount = viewCount;
+        this.isClosed = isClosed;
+        this.closedBy = closedBy;
+        this.closedReason = closedReason;
+        this.closedAt = closedAt;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
+        this.score = score;
+        this.acceptedAnswerId = acceptedAnswerId;
+    }
+
     public Question() {
     }
 

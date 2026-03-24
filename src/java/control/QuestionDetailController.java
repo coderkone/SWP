@@ -116,6 +116,7 @@ public class QuestionDetailController extends HttpServlet {
                 request.setAttribute("answerPaginationPath", request.getContextPath() + request.getServletPath());
                 request.setAttribute("sort", sort);
                 request.setAttribute("answerFilterQuery", buildAnswerFilterQuery(sort));
+                recordViewedQuestion(request.getSession(), questionId);
 
                 //Load comments for question
                 try {
@@ -230,6 +231,13 @@ public class QuestionDetailController extends HttpServlet {
                     request.setAttribute("relatedQuestions", new ArrayList<>());
                 }
 
+                try {
+                    List<QuestionDTO> popularQuestions = questionDao.getPopularQuestions(questionId, 5);
+                    request.setAttribute("popularQuestions", popularQuestions);
+                } catch (Exception e) {
+                    request.setAttribute("popularQuestions", new ArrayList<>());
+                }
+
                 request.getRequestDispatcher("/View/User/question-detail.jsp").forward(request, response);
             } else {
                 // Trường hợp ID hợp lệ nhưng không tìm thấy câu hỏi trong DB
@@ -254,5 +262,26 @@ public class QuestionDetailController extends HttpServlet {
             return "";
         }
         return query.toString();
+    }
+
+    @SuppressWarnings("unchecked")
+    private void recordViewedQuestion(HttpSession session, long questionId) {
+        if (session == null) {
+            return;
+        }
+
+        Object existing = session.getAttribute("viewedQuestionIds");
+        List<Long> viewedIds = existing instanceof List<?>
+                ? new ArrayList<>((List<Long>) existing)
+                : new ArrayList<>();
+
+        viewedIds.remove(questionId);
+        viewedIds.add(0, questionId);
+
+        if (viewedIds.size() > 15) {
+            viewedIds = new ArrayList<>(viewedIds.subList(0, 15));
+        }
+
+        session.setAttribute("viewedQuestionIds", viewedIds);
     }
 }
