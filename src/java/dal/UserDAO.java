@@ -1,6 +1,7 @@
 package dal;
 
 import config.DBContext;
+import dto.QuestionDTO;
 import dto.UserDTO;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -633,6 +634,7 @@ public class UserDAO {
             ps.executeUpdate();
         }
     }
+    //==================== USER FOR USER===========================
     public List<UserDTO> getTopUsers() {
     List<UserDTO> list = new ArrayList<>();
     String sql = "SELECT TOP 10 u.user_id, u.username, u.Reputation, "
@@ -700,6 +702,157 @@ public List<UserDTO> getAllUsers(String keyword, String sort) {
         System.out.println("getAllUsers LỖI: " + e.getMessage());
     }
     return list;
+}
+// ===== Check đã follow chưa =====
+public boolean isFollowing(long followerId, long followingId) {
+    String sql = "SELECT COUNT(*) FROM UserFollow "
+               + "WHERE follower_id = ? AND following_id = ?";
+    try {
+        Connection conn = db.getConnection();
+        PreparedStatement st = conn.prepareStatement(sql);
+        st.setLong(1, followerId);
+        st.setLong(2, followingId);
+        ResultSet rs = st.executeQuery();
+        if (rs.next()) return rs.getInt(1) > 0;
+    } catch (Exception e) {
+        e.printStackTrace();
+        System.out.println("isFollowing LỖI: " + e.getMessage());
+    }
+    return false;
+}
+
+// ===== Follow user =====
+public void followUser(long followerId, long followingId) {
+    if (isFollowing(followerId, followingId)) return;
+    String sql = "INSERT INTO UserFollow (follower_id, following_id, followed_at) "
+               + "VALUES (?, ?, GETDATE())";
+    try {
+        Connection conn = db.getConnection();
+        PreparedStatement st = conn.prepareStatement(sql);
+        st.setLong(1, followerId);
+        st.setLong(2, followingId);
+        st.executeUpdate();
+    } catch (Exception e) {
+        e.printStackTrace();
+        System.out.println("followUser LỖI: " + e.getMessage());
+    }
+}
+
+// ===== Unfollow user =====
+public void unfollowUser(long followerId, long followingId) {
+    String sql = "DELETE FROM UserFollow "
+               + "WHERE follower_id = ? AND following_id = ?";
+    try {
+        Connection conn = db.getConnection();
+        PreparedStatement st = conn.prepareStatement(sql);
+        st.setLong(1, followerId);
+        st.setLong(2, followingId);
+        st.executeUpdate();
+    } catch (Exception e) {
+        e.printStackTrace();
+        System.out.println("unfollowUser LỖI: " + e.getMessage());
+    }
+}
+
+// ===== Danh sách TÔI đang follow =====
+public List<UserDTO> getFollowingList(long userId) {
+    List<UserDTO> list = new ArrayList<>();
+    String sql = "SELECT u.user_id, u.username, u.Reputation, "
+               + "u.created_at, p.avatar_url "
+               + "FROM UserFollow uf "
+               + "JOIN Users u ON uf.following_id = u.user_id "
+               + "LEFT JOIN User_Profile p ON u.user_id = p.user_id "
+               + "WHERE uf.follower_id = ? "
+               + "ORDER BY uf.followed_at DESC";
+    try {
+        Connection conn = db.getConnection();
+        PreparedStatement st = conn.prepareStatement(sql);
+        st.setLong(1, userId);
+        ResultSet rs = st.executeQuery();
+        while (rs.next()) {
+            UserDTO u = new UserDTO();
+            u.setUserId(rs.getLong("user_id"));
+            u.setUsername(rs.getString("username"));
+            u.setReputation(rs.getInt("Reputation"));
+            u.setCreatedAt(rs.getTimestamp("created_at"));
+            u.setAvatarUrl(rs.getString("avatar_url"));
+            list.add(u);
+        }
+    } catch (Exception e) {
+        e.printStackTrace();
+        System.out.println("getFollowingList LỖI: " + e.getMessage());
+    }
+    return list;
+}
+
+// ===== Câu hỏi của TARGET user =====
+public List<QuestionDTO> getQuestionsByUser(long userId, String filter, int page) {
+    List<QuestionDTO> list = new ArrayList<>();
+    int pageSize = 10;
+    int offset   = (page - 1) * pageSize;
+
+    StringBuilder sql = new StringBuilder(
+        "SELECT q.question_id, q.title, q.body, q.Score, "
+      + "q.view_count, q.created_at, q.is_closed, "
+      + "COUNT(a.answer_id) AS answer_count "
+      + "FROM Questions q "
+      + "LEFT JOIN Answers a ON q.question_id = a.question_id "
+      + "WHERE q.user_id = ? "
+      + "GROUP BY q.question_id, q.title, q.body, q.Score, "
+      + "q.view_count, q.created_at, q.is_closed "
+    );
+
+    if ("newest".equals(filter)) {
+        sql.append("ORDER BY q.created_at DESC ");
+    } else if ("name".equals(filter)) {
+        sql.append("ORDER BY q.title ASC ");
+    } else {
+        // popular = default
+        sql.append("ORDER BY q.Score DESC ");
+    }
+
+    sql.append("OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
+
+    try {
+        Connection conn = db.getConnection();
+        PreparedStatement st = conn.prepareStatement(sql.toString());
+        st.setLong(1, userId);
+        st.setInt(2, offset);
+        st.setInt(3, pageSize);
+        ResultSet rs = st.executeQuery();
+        while (rs.next()) {
+            QuestionDTO q = new QuestionDTO();
+            q.setQuestionId(rs.getLong("question_id"));
+            q.setTitle(rs.getString("title"));
+            q.setBody(rs.getString("body"));
+            q.setScore(rs.getInt("Score"));
+            q.setViewCount(rs.getInt("view_count"));
+            q.setCreatedAt(rs.getTimestamp("created_at"));
+            q.setIsClosed(rs.getBoolean("is_closed"));
+            q.setAnswerCount(rs.getInt("answer_count"));
+            list.add(q);
+        }
+    } catch (Exception e) {
+        e.printStackTrace();
+        System.out.println("getQuestionsByUser LỖI: " + e.getMessage());
+    }
+    return list;
+}
+
+// ===== Đếm câu hỏi của TARGET =====
+public int countQuestionsByUser(long userId) {
+    String sql = "SELECT COUNT(*) FROM Questions WHERE user_id = ?";
+    try {
+        Connection conn = db.getConnection();
+        PreparedStatement st = conn.prepareStatement(sql);
+        st.setLong(1, userId);
+        ResultSet rs = st.executeQuery();
+        if (rs.next()) return rs.getInt(1);
+    } catch (Exception e) {
+        e.printStackTrace();
+        System.out.println("countQuestionsByUser LỖI: " + e.getMessage());
+    }
+    return 0;
 }
     
 }
