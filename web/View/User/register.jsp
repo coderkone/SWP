@@ -3,12 +3,9 @@
 <html>
 <head>
     <meta charset="UTF-8">
-<<<<<<< HEAD
     <title>DevQuery - Sign up</title>
     <link rel="stylesheet" href="<%=request.getContextPath()%>/assets/css/so-auth.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <title>DevQuery - Register</title>
-    <link rel="stylesheet" href="<%=request.getContextPath()%>/assets/css/so-auth.css">
     <style>
         body{font-family:Arial,sans-serif;background:#f6f6f6;}
         .wrap{max-width:420px;margin:60px auto;background:#fff;padding:28px;border-radius:10px;box-shadow:0 6px 20px rgba(0,0,0,.08);}
@@ -56,11 +53,7 @@
 <body>
 <div class="wrap">
     <div class="top">
-<<<<<<< HEAD
         <div class="brand">DevQuery</div>
-=======
-        <div class="brand">DevQuery </div>
->>>>>>> origin/Hiep
         <div class="links">
             <a href="<%=request.getContextPath()%>/auth/login">Login</a>
             <a href="<%=request.getContextPath()%>/auth/register">Register</a>
@@ -72,7 +65,6 @@
         <div class="err"><%=error%></div>
     <% } %>
 
-<<<<<<< HEAD
     <div class="social-buttons">
         <a href="<%=request.getContextPath()%>/auth/google" class="social-btn btn-google">
             <i class="fab fa-google" style="color: #DB4437;"></i> Sign up with Google
@@ -94,30 +86,12 @@
 
         <label>Password</label>
         <input name="password" type="password" placeholder="Min 8 characters" required>
+        <div class="hint">Password tối thiểu 8 ký tự.</div>
 
         <label>Confirm Password</label>
         <input name="confirm" type="password" placeholder="Confirm your password" required>
 
         <button type="submit">Sign up</button>
-=======
-    <h2 style="margin:6px 0 10px;">Sign up</h2>
-
-    <form method="post" action="<%=request.getContextPath()%>/auth/register">
-        <label>Username</label>
-        <input name="username" type="text" placeholder="yourname" required>
-
-        <label>Email</label>
-        <input name="email" type="email" placeholder="you@example.com" required>
-
-        <label>Password</label>
-        <input name="password" type="password" placeholder="min 8 chars" required>
-        <div class="hint">Password tối thiểu 8 ký tự.</div>
-
-        <label>Confirm password</label>
-        <input name="confirm" type="password" placeholder="repeat password" required>
-
-        <button type="submit">Register</button>
->>>>>>> origin/Hiep
     </form>
 
     <div class="small">

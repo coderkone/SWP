@@ -37,11 +37,7 @@ public class UserDAO {
                 }
             }
         } catch (Exception e) {
-<<<<<<< HEAD
-            // Keep app booting even when schema auto-fix cannot run (permissions, legacy DB, etc.)
-=======
             // Keep app booting even when schema auto-fix cannot run
->>>>>>> origin/Hiep
         }
     }
 
@@ -82,12 +78,8 @@ public class UserDAO {
         String sql = "SELECT u.*, p.avatar_url FROM Users u LEFT JOIN User_Profile p ON u.user_id = p.user_id "
                    + "WHERE u.email = ? AND u.password_hash = ?";
         String hash = PasswordUtil.sha256(rawPassword);
-<<<<<<< HEAD
 
         try (Connection con = db.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
-=======
-try (Connection con = db.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
->>>>>>> origin/Hiep
             ps.setString(1, email);
             ps.setString(2, hash);
 
@@ -126,9 +118,7 @@ try (Connection con = db.getConnection(); PreparedStatement ps = con.prepareStat
                     );
                     user.setReputation(rs.getInt("Reputation"));
                     user.setAvatarUrl(rs.getString("avatar_url"));
-<<<<<<< HEAD
-=======
-                    
+
                     // Thử lấy status, nếu lỗi (không có cột) thì mặc định là active
                     try {
                         user.setStatus(rs.getString("status"));
@@ -136,7 +126,6 @@ try (Connection con = db.getConnection(); PreparedStatement ps = con.prepareStat
                         user.setStatus("active");
                     }
                     
->>>>>>> origin/Hiep
                     return user;
                 }
             }
@@ -872,5 +861,4 @@ public int countQuestionsByUser(long userId) {
     return 0;
 }
     
-}
 }

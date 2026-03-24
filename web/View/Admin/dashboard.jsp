@@ -80,22 +80,12 @@
             .nav-item.active {
                 background-color: var(--active-orange);
                 color: white;
-                border-left: 4px solid #cc5e05; /* Optional accent */
+                border-left: 4px solid #cc5e05;
             }
 
             .nav-icon {
                 margin-right: 12px;
                 font-size: 16px;
-            }
-
-            .badge {
-                background-color: #FF0000;
-                color: white;
-                font-size: 10px;
-                font-weight: bold;
-                padding: 2px 6px;
-                border-radius: 50%;
-                margin-left: auto;
             }
 
             .logout-area {
@@ -106,7 +96,7 @@
             /* MAIN CONTENT */
             .main-content {
                 flex-grow: 1;
-                margin-left: 250px; /* Offset sidebar */
+                margin-left: 250px;
                 padding-bottom: 30px;
             }
 
@@ -171,6 +161,15 @@
                 padding: 20px;
                 border: 1px solid var(--border-color);
                 position: relative;
+                display: block;
+                text-decoration: none;
+                color: inherit;
+                transition: transform 0.2s;
+            }
+            
+            .card:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 4px 12px rgba(0,0,0,0.05);
             }
 
             .card-title {
@@ -194,11 +193,7 @@
 
             .card-trend {
                 font-size: 12px;
-                color: #2f6f44; /* Green */
-            }
-
-            .card-trend.red {
-                color: #D0393E;
+                color: #6a737c;
             }
 
             .card-icon-bg {
@@ -242,7 +237,7 @@
                 color: var(--text-main);
             }
 
-            /* FAKE CHART (CSS Only representation) */
+            /* CHART */
             .chart-placeholder {
                 height: 200px;
                 width: 100%;
@@ -252,16 +247,6 @@
                 margin-top: 30px;
             }
 
-            .chart-line {
-                position: absolute;
-                bottom: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                pointer-events: none;
-            }
-
-            /* Using SVG for simple line chart */
             .chart-svg {
                 width: 100%;
                 height: 100%;
@@ -297,18 +282,14 @@
                 border-bottom: 1px solid #e3e6e8;
             }
 
-        .mini-title {
-            font-size: 12px;
-            color: #6a737c;
-        }
-
-    </style>
-</head>
-<body>
-=======
-            tr:last-child td {
-                border-bottom: none;
+            .status-badge {
+                padding: 4px 8px;
+                border-radius: 12px;
+                font-size: 11px;
+                font-weight: 500;
             }
+            .status-active { color: #2f6f44; background: #E3FCEF; }
+            .status-pending { color: #D0393E; background: #FDEDED; }
 
             .btn-link {
                 color: #0074cc;
@@ -316,11 +297,20 @@
                 font-weight: bold;
                 font-size: 12px;
             }
+            .btn-link:hover { text-decoration: underline; }
+
+            .mini-title {
+                font-size: 12px;
+                color: #6a737c;
+            }
+
+        </style>
+    </head>
+    <body>
 
         <aside class="sidebar">
             <div class="logo-area">
                 <b>QUERY</b>&nbsp;ADMIN
-
             </div>
 
             <nav class="nav-menu">
@@ -333,7 +323,7 @@
                 <a href="${pageContext.request.contextPath}/admin/tags" class="nav-item">
                     <span class="nav-icon">🏷️</span> Tag Management
                 </a>
-                <a href="#" class="nav-item">
+                <a href="${pageContext.request.contextPath}/admin/reports" class="nav-item">
                     <span class="nav-icon">📋</span> Content Reports
                 </a>
                 <a href="${pageContext.request.contextPath}/admin/blogs" class="nav-item">
@@ -362,17 +352,16 @@
 
             <div class="dashboard-container">
 
+                <!-- Stats Grid -->
                 <div class="stats-grid">
-                    <div class="card">
+                    <a href="${pageContext.request.contextPath}/admin/users" class="card">
                         <div class="card-title">Total Users</div>
                         <div class="card-value">
                             <fmt:formatNumber value="${totalUsers}" pattern="#,###"/>
                         </div>
-                        <div class="card-trend">
-                            <a href="${pageContext.request.contextPath}/admin/users" style="color: inherit; text-decoration: none;">View all users →</a>
-                        </div>
+                        <div class="card-trend">View all users →</div>
                         <div class="card-icon-bg" style="background-color: #E1ECF4;">👥</div>
-                    </div>
+                    </a>
 
                     <div class="card">
                         <div class="card-title">Questions</div>
@@ -392,27 +381,27 @@
                         <div class="card-icon-bg" style="background-color: #E3FCEF;">💬</div>
                     </div>
 
-                    <div class="card">
+                    <a href="${pageContext.request.contextPath}/admin/reports" class="card">
                         <div class="card-title">Pending Reports</div>
-                        <div class="card-value red">0</div>
-                        <div class="card-trend">No pending reports</div>
+                        <div class="card-value red">${totalReports != null ? totalReports : 0}</div>
+                        <div class="card-trend">Click to view all reports</div>
                         <div class="card-icon-bg" style="background-color: #FDEDED;">⚠️</div>
-                    </div>
+                    </a>
                 </div>
 
+                <!-- Middle Section -->
                 <div class="middle-section">
                     <div class="section-box">
                         <div class="section-header">
                             <div class="section-title">Platform Growth (Last 7 Days)</div>
-                            <div style="font-size: 12px; color: #525960;">? New Users</div>
+                            <div style="font-size: 12px; color: #525960;">Activity Chart</div>
                         </div>
                         <div class="chart-placeholder">
                             <svg class="chart-svg" viewBox="0 0 600 200" preserveAspectRatio="none">
-                            <line x1="0" y1="50" x2="600" y2="50" stroke="#f0f0f0" />
-                            <line x1="0" y1="100" x2="600" y2="100" stroke="#f0f0f0" />
-                            <line x1="0" y1="150" x2="600" y2="150" stroke="#f0f0f0" />
-
-                            <path class="chart-path" d="M0,150 C100,140 200,80 300,60 S500,70 600,20" />
+                                <line x1="0" y1="50" x2="600" y2="50" stroke="#f0f0f0" />
+                                <line x1="0" y1="100" x2="600" y2="100" stroke="#f0f0f0" />
+                                <line x1="0" y1="150" x2="600" y2="150" stroke="#f0f0f0" />
+                                <path class="chart-path" d="M0,150 C100,140 200,80 300,60 S500,70 600,20" />
                             </svg>
                         </div>
                     </div>
@@ -420,7 +409,7 @@
                     <div class="section-box">
                         <div class="section-header">
                             <div class="section-title">Recent Reports</div>
-                            <a href="#" class="btn-link">View All</a>
+                            <a href="${pageContext.request.contextPath}/admin/reports" class="btn-link">View All</a>
                         </div>
                         <table>
                             <thead>
@@ -444,13 +433,65 @@
                                 <tr>
                                     <td>User @Spammer</td>
                                     <td>Fake Account</td>
-                                    <td><span class="status-badge status-resolved">Resolved</span></td>
+                                    <td><span class="status-badge status-active">Resolved</span></td>
                                 </tr>
                             </tbody>
                         </table>
                     </div>
                 </div>
 
+                <!-- Bottom Sections -->
+                <div class="middle-section" style="grid-template-columns: 1fr 1fr; margin-bottom: 30px;">
+                    <div class="section-box">
+                        <div class="section-header">
+                            <div class="section-title">Questions By Tag</div>
+                            <div class="mini-title">Top tags this month</div>
+                        </div>
+                        <table>
+                            <thead>
+                                <tr><th>Tag</th><th>Count</th></tr>
+                            </thead>
+                            <tbody>
+                                <c:choose>
+                                    <c:when test="${empty questionByTagCurrentMonth}">
+                                        <tr><td colspan="2" style="text-align:center;">No data</td></tr>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <c:forEach var="item" items="${questionByTagCurrentMonth}">
+                                            <tr><td><strong>${item.tagName}</strong></td><td>${item.questionCount}</td></tr>
+                                        </c:forEach>
+                                    </c:otherwise>
+                                </c:choose>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="section-box">
+                        <div class="section-header">
+                            <div class="section-title">Tag Monthly Stats</div>
+                            <div class="mini-title">Last 6 months</div>
+                        </div>
+                        <table>
+                            <thead>
+                                <tr><th>Month</th><th>Active</th><th>Questions</th></tr>
+                            </thead>
+                            <tbody>
+                                <c:choose>
+                                    <c:when test="${empty tagMonthlyStats}">
+                                        <tr><td colspan="3" style="text-align:center;">No data</td></tr>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <c:forEach var="row" items="${tagMonthlyStats}">
+                                            <tr><td><strong>${row.monthLabel}</strong></td><td>${row.activeTagCount}</td><td>${row.questionCount}</td></tr>
+                                        </c:forEach>
+                                    </c:otherwise>
+                                </c:choose>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Newest Users Table -->
                 <div class="section-box">
                     <div class="section-header">
                         <div class="section-title">Newest Users</div>
@@ -470,11 +511,7 @@
                         <tbody>
                             <c:choose>
                                 <c:when test="${empty newestUsers}">
-                                    <tr>
-                                        <td colspan="6" style="text-align: center; color: #838C95;">
-                                            No users found.
-                                        </td>
-                                    </tr>
+                                    <tr><td colspan="6" style="text-align:center;">No users found.</td></tr>
                                 </c:when>
                                 <c:otherwise>
                                     <c:forEach var="user" items="${newestUsers}">
@@ -482,20 +519,13 @@
                                             <td>${user.userId}</td>
                                             <td><strong>${user.username}</strong></td>
                                             <td>${user.email}</td>
-                                            <td>${user.role}</td>
+                                            <td><span style="text-transform: capitalize;">${user.role}</span></td>
                                             <td>
-                                                <c:choose>
-                                                    <c:when test="${user.status == 'active'}">
-                                                        <span class="status-badge status-active">Active</span>
-                                                    </c:when>
-                                                    <c:otherwise>
-                                                        <span class="status-badge status-pending">Inactive</span>
-                                                    </c:otherwise>
-                                                </c:choose>
+                                                <span class="status-badge ${user.status == 'active' ? 'status-active' : 'status-pending'}">
+                                                    ${user.status}
+                                                </span>
                                             </td>
-                                            <td>
-                                                <fmt:formatDate value="${user.createdAt}" pattern="dd/MM/yyyy HH:mm"/>
-                                            </td>
+                                            <td><fmt:formatDate value="${user.createdAt}" pattern="dd/MM/yyyy HH:mm"/></td>
                                         </tr>
                                     </c:forEach>
                                 </c:otherwise>
@@ -506,138 +536,5 @@
 
             </div>
         </main>
-
-<<<<<<< HEAD
-            <div class="section-box" style="margin-bottom: 30px;">
-                <div class="section-header">
-                    <div class="section-title">Questions In Current Month By Tag</div>
-                    <div class="mini-title">Top 8 tags</div>
-                </div>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Tag</th>
-                            <th>Questions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <c:choose>
-                            <c:when test="${empty questionByTagCurrentMonth}">
-                                <tr>
-                                    <td colspan="2" style="text-align: center; color: #838C95;">
-                                        No question data in current month.
-                                    </td>
-                                </tr>
-                            </c:when>
-                            <c:otherwise>
-                                <c:forEach var="item" items="${questionByTagCurrentMonth}">
-                                    <tr>
-                                        <td><strong>${item.tagName}</strong></td>
-                                        <td>
-                                            <fmt:formatNumber value="${item.questionCount}" pattern="#,###"/>
-                                        </td>
-                                    </tr>
-                                </c:forEach>
-                            </c:otherwise>
-                        </c:choose>
-                    </tbody>
-                </table>
-            </div>
-
-            <div class="section-box" style="margin-bottom: 30px;">
-                <div class="section-header">
-                    <div class="section-title">Tag Statistics By Month</div>
-                    <div class="mini-title">Last 6 months</div>
-                </div>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Month</th>
-                            <th>Active Tags</th>
-                            <th>Questions Tagged</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <c:choose>
-                            <c:when test="${empty tagMonthlyStats}">
-                                <tr>
-                                    <td colspan="3" style="text-align: center; color: #838C95;">
-                                        No monthly tag statistics.
-                                    </td>
-                                </tr>
-                            </c:when>
-                            <c:otherwise>
-                                <c:forEach var="row" items="${tagMonthlyStats}">
-                                    <tr>
-                                        <td><strong>${row.monthLabel}</strong></td>
-                                        <td><fmt:formatNumber value="${row.activeTagCount}" pattern="#,###"/></td>
-                                        <td><fmt:formatNumber value="${row.questionCount}" pattern="#,###"/></td>
-                                    </tr>
-                                </c:forEach>
-                            </c:otherwise>
-                        </c:choose>
-                    </tbody>
-                </table>
-            </div>
-
-            <div class="section-box">
-                <div class="section-header">
-                    <div class="section-title">Newest Users</div>
-                    <a href="${pageContext.request.contextPath}/admin/users" class="btn-link">View All</a>
-                </div>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Username</th>
-                            <th>Email</th>
-                            <th>Role</th>
-                            <th>Status</th>
-                            <th>Created At</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <c:choose>
-                            <c:when test="${empty newestUsers}">
-                                <tr>
-                                    <td colspan="6" style="text-align: center; color: #838C95;">
-                                        No users found.
-                                    </td>
-                                </tr>
-                            </c:when>
-                            <c:otherwise>
-                                <c:forEach var="user" items="${newestUsers}">
-                                    <tr>
-                                        <td>${user.userId}</td>
-                                        <td><strong>${user.username}</strong></td>
-                                        <td>${user.email}</td>
-                                        <td>${user.role}</td>
-                                        <td>
-                                            <c:choose>
-                                                <c:when test="${user.status == 'active'}">
-                                                    <span class="status-badge status-active">Active</span>
-                                                </c:when>
-                                                <c:otherwise>
-                                                    <span class="status-badge status-pending">Inactive</span>
-                                                </c:otherwise>
-                                            </c:choose>
-                                        </td>
-                                        <td>
-                                            <fmt:formatDate value="${user.createdAt}" pattern="dd/MM/yyyy HH:mm"/>
-                                        </td>
-                                    </tr>
-                                </c:forEach>
-                            </c:otherwise>
-                        </c:choose>
-                    </tbody>
-                </table>
-            </div>
-
-        </div>
-    </main>
-
-</body>
-=======
     </body>
->>>>>>> origin/Hiep
 </html>
