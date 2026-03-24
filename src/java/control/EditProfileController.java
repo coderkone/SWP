@@ -42,10 +42,9 @@ public class EditProfileController extends HttpServlet {
         }
 
         ProfileDAO profileDAO = new ProfileDAO();
-        // ĐỔI TÊN HÀM Ở ĐÂY ĐỂ LẤY ĐẦY ĐỦ DỮ LIỆU
         UserDTO userProfile = profileDAO.getUserFullProfile(currentUser.getUserId());
 
-        // Xử lý chuỗi JSON ra 3 link (Dùng UserSocialLink hoặc UserSocialLinks tùy project của bạn)
+        // Xử lý chuỗi JSON ra 3 link 
         model.UserSocialLink socialLinks = new model.UserSocialLink("", "", "");
         if (userProfile != null && userProfile.getWebsite() != null && userProfile.getWebsite().trim().startsWith("{")) {
             Gson gson = new Gson();
@@ -73,9 +72,7 @@ public class EditProfileController extends HttpServlet {
 
         ProfileDAO dao = new ProfileDAO();
 
-        // =============================================
         // 1. XỬ LÝ AVATAR (XÓA HOẶC UPLOAD ẢNH MỚI)
-        // =============================================
         Part filePart = request.getPart("avatarFile");
         String deleteAvatarFlag = request.getParameter("deleteAvatar");
 
@@ -94,7 +91,6 @@ public class EditProfileController extends HttpServlet {
                 dir.mkdirs();
             }
 
-            // Giữ nguyên extension gốc của file (jpg, jpeg, png, ...)
             String originalName = filePart.getSubmittedFileName();
             String ext = (originalName != null && originalName.contains("."))
                     ? originalName.substring(originalName.lastIndexOf(".")).toLowerCase()
@@ -115,9 +111,7 @@ public class EditProfileController extends HttpServlet {
             session.setAttribute("user", currentUser);
         }
 
-        // =============================================
         // 2. CẬP NHẬT CÁC THÔNG TIN TEXT
-        // =============================================
         String displayName = request.getParameter("displayName");
         String bio = request.getParameter("bio");
         String location = request.getParameter("location");
@@ -132,9 +126,7 @@ public class EditProfileController extends HttpServlet {
         );
         String websiteJson = new Gson().toJson(linksObj);
 
-        // =============================================
         // 3. LƯU VÀO DB VÀ REDIRECT
-        // =============================================
         boolean isSuccess = dao.updateProfile(
                 currentUser.getUserId(), displayName, bio, location, websiteJson);
 
