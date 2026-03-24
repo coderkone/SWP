@@ -66,7 +66,7 @@ public class SavesController extends HttpServlet {
             int totalItemPages = (int) Math.ceil((double) totalItems / 10);
             List<BookmarkDTO> savedList = bmDao.getBookmarksByPage(user.getUserId(), listIdStr, page);
 
-            // 5. Xác định tiêu đề hiện tại (All saves hoặc tên Collection)
+            // 6. Xác định tiêu đề hiện tại (All saves hoặc tên Collection)
             String currentListName = "All saves";
             if (listIdStr != null && !listIdStr.isEmpty() && !listIdStr.equals("null")) {
                 int listId = Integer.parseInt(listIdStr);
@@ -93,6 +93,8 @@ public class SavesController extends HttpServlet {
             request.setAttribute("currentColPage", colPage);
             request.setAttribute("totalColPages", totalColPages == 0 ? 1 : totalColPages);
 
+            List<model.Collection> allMyCollections = colDao.getAllCollectionsByUserId(user.getUserId());
+            request.setAttribute("allMyCollections", allMyCollections);
             request.getRequestDispatcher("/View/User/saves.jsp").forward(request, response);
 
         } catch (Exception e) {
