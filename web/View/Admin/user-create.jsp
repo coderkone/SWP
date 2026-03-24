@@ -256,22 +256,25 @@
     </div>
 
     <nav class="nav-menu">
-        <a href="${pageContext.request.contextPath}/dashboard" class="nav-item">
-            <span class="nav-icon">📊</span> Dashboard
-        </a>
-        <a href="${pageContext.request.contextPath}/admin/users" class="nav-item active">
-            <span class="nav-icon">👥</span> User Management
-        </a>
-        <a href="${pageContext.request.contextPath}/admin/tags" class="nav-item">
-            <span class="nav-icon">🏷️</span> Tag Management
-        </a>
-        <a href="#" class="nav-item">
-            <span class="nav-icon">📋</span> Content Reports
-        </a>
-        <a href="${pageContext.request.contextPath}/admin/rules" class="nav-item">
-            <span class="nav-icon">⚙️</span> System Rules
-        </a>
-    </nav>
+                <a href="${pageContext.request.contextPath}/dashboard" class="nav-item">
+                    <span class="nav-icon">📊</span> Dashboard
+                </a>
+                <a href="${pageContext.request.contextPath}/admin/users" class="nav-item active">
+                    <span class="nav-icon">👥</span> User Management
+                </a>
+                <a href="${pageContext.request.contextPath}/admin/tags" class="nav-item">
+                    <span class="nav-icon">🏷️</span> Tag Management
+                </a>
+                <a href="#" class="nav-item">
+                    <span class="nav-icon">📋</span> Content Reports
+                </a>
+                    <a href="${pageContext.request.contextPath}/admin/blogs" class="nav-item">
+                    <span class="nav-icon">📝</span> Blog Management
+                </a> 
+                <a href="${pageContext.request.contextPath}/admin/rules" class="nav-item">
+                    <span class="nav-icon">⚙️</span> System Rules
+                </a>                
+            </nav>
 
     <div class="logout-area">
         <a href="${pageContext.request.contextPath}/logout" class="nav-item">

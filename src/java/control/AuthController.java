@@ -2,6 +2,7 @@ package control;
 
 import dal.UserDAO;
 import dto.UserDTO;
+import model.User;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
@@ -73,7 +74,7 @@ public class AuthController extends HttpServlet {
 
         if (dao.emailExists(email)) {
             request.setAttribute("error", "Email đã tồn tại.");
-            request.getRequestDispatcher("/View/User/register.jsp").forward(request, response);
+request.getRequestDispatcher("/View/User/register.jsp").forward(request, response);
             return;
         }
 
@@ -96,24 +97,27 @@ public class AuthController extends HttpServlet {
             return;
         }
 
-        UserDTO user = dao.login(email, pass);
-        if (user == null) {
+        UserDTO userDTO = dao.login(email, pass);
+        User userModel = dao.loginModel(email, pass);
+        
+        if (userDTO == null || userModel == null) {
             request.setAttribute("error", "Sai email hoặc password.");
             request.getRequestDispatcher("/View/User/login.jsp").forward(request, response);
             return;
         }
 
         // Check inactive user
-        if ("inactive".equalsIgnoreCase(user.getStatus())) {
+        if ("inactive".equalsIgnoreCase(userDTO.getStatus())) {
             request.setAttribute("error", "Tài khoản của bạn đã bị khóa. Vui lòng liên hệ admin.");
             request.getRequestDispatcher("/View/User/login.jsp").forward(request, response);
             return;
         }
 
         HttpSession session = request.getSession(true);
-        session.setAttribute("USER", user);
+        session.setAttribute("USER", userDTO);
+        session.setAttribute("user", userModel); // Dùng cho các trang hiển thị (Header, Sidebar, Profile...)
 
-        String role = user.getRole(); // admin / moderator / member
+        String role = userDTO.getRole(); // admin / moderator / member
         if (role != null && role.equalsIgnoreCase("admin")) {
             response.sendRedirect(request.getContextPath() + "/dashboard");
         } else {
