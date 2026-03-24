@@ -1,5 +1,6 @@
 ﻿USE [master]
 GO
+
 CREATE DATABASE [devquery]
 GO
 
