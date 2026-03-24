@@ -6,7 +6,6 @@
     <title>DevQuery - Sign up</title>
     <link rel="stylesheet" href="<%=request.getContextPath()%>/assets/css/so-auth.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    
     <style>
         body{font-family:Arial,sans-serif;background:#f6f6f6;}
         .wrap{max-width:420px;margin:60px auto;background:#fff;padding:28px;border-radius:10px;box-shadow:0 6px 20px rgba(0,0,0,.08);}
@@ -42,6 +41,13 @@
         
         .btn-github { background: #24292e; color: #fff; border-color: #24292e; }
         .btn-github:hover { background: #2f363d; }
+        label{display:block;margin:12px 0 6px;font-weight:600;}
+        input{width:100%;padding:10px;border:1px solid #d6d9dc;border-radius:8px;}
+        button{width:100%;margin-top:14px;padding:10px;border:0;border-radius:8px;background:#0a95ff;color:#fff;font-weight:700;cursor:pointer;}
+        button:hover{background:#0074cc;}
+        .small{margin-top:12px;text-align:center;}
+        .small a{color:#0a95ff;text-decoration:none;}
+        .hint{font-size:12px;color:#6a737c;margin-top:6px;}
     </style>
 </head>
 <body>
@@ -80,6 +86,7 @@
 
         <label>Password</label>
         <input name="password" type="password" placeholder="Min 8 characters" required>
+        <div class="hint">Password tối thiểu 8 ký tự.</div>
 
         <label>Confirm Password</label>
         <input name="confirm" type="password" placeholder="Confirm your password" required>

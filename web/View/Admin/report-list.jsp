@@ -207,12 +207,15 @@
         <a href="${pageContext.request.contextPath}/admin/reports" class="nav-item active">
             <span class="nav-icon">📋</span> Content Reports
         </a>
+        <a href="${pageContext.request.contextPath}/admin/blogs" class="nav-item">
+            <span class="nav-icon">📝</span> Blog Management
+        </a> 
         <a href="${pageContext.request.contextPath}/admin/rules" class="nav-item">
             <span class="nav-icon">⚙️</span> System Rules
         </a>
     </nav>
 
-    <div class="logout-area">
+     <div class="logout-area">
         <a href="${pageContext.request.contextPath}/logout" class="nav-item">
             <span class="nav-icon">🚪</span> Log Out
         </a>
@@ -229,20 +232,62 @@
     </header>
 
     <div class="container">
-        <c:if test="${param.success == 'resolved'}">
-            <div class="alert alert-success">Báo cáo đã được xử lý xong!</div>
+
+        <!-- Success/Error messages -->
+        <c:if test="${param.success == 'approved'}">
+            <div class="alert alert-success">Bao cao da duoc xu ly - Noi dung vi pham da bi an!</div>
         </c:if>
+        <c:if test="${param.success == 'rejected'}">
+            <div class="alert alert-success">Bao cao da duoc xu ly - Noi dung khong vi pham!</div>
+        </c:if>
+        <c:if test="${param.error == 'notfound'}">
+            <div class="alert alert-error">Khong tim thay bao cao!</div>
+        </c:if>
+        <c:if test="${param.error == 'approve-failed'}">
+            <div class="alert alert-error">Khong the xu ly bao cao. Vui long thu lai!</div>
+        </c:if>
+        <c:if test="${param.error == 'reject-failed'}">
+            <div class="alert alert-error">Khong the xu ly bao cao. Vui long thu lai!</div>
+        </c:if>
+
+        <!-- Filter Form -->
+        <div class="toolbar">
+            <form action="${pageContext.request.contextPath}/admin/reports" method="get" style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                <label style="font-size: 14px; color: var(--text-sub);">Status:</label>
+                <select name="status" style="padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 4px; font-size: 14px;">
+                    <option value="">Tat ca</option>
+                    <option value="open" ${filterStatus == 'open' ? 'selected' : ''}>Cho xu ly</option>
+                    <option value="resolved" ${filterStatus == 'resolved' ? 'selected' : ''}>Da xu ly</option>
+                    <option value="dismissed" ${filterStatus == 'dismissed' ? 'selected' : ''}>Da tu choi</option>
+                </select>
+
+                <label style="font-size: 14px; color: var(--text-sub); margin-left: 10px;">Tu ngay:</label>
+                <input type="date" name="fromDate" value="${fromDate}"
+                       style="padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 4px; font-size: 14px;">
+
+                <label style="font-size: 14px; color: var(--text-sub);">Den ngay:</label>
+                <input type="date" name="toDate" value="${toDate}"
+                       style="padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 4px; font-size: 14px;">
+
+                <button type="submit" class="btn btn-primary">Loc</button>
+                <c:if test="${not empty filterStatus || not empty fromDate || not empty toDate}">
+                    <a href="${pageContext.request.contextPath}/admin/reports" class="btn btn-secondary">Xoa bo loc</a>
+                </c:if>
+            </form>
+        </div>
 
         <div class="section-box">
             <div class="section-header">
-                <div class="section-title">Danh sách báo cáo mới nhất</div>
-                <span style="color: var(--text-sub); font-size: 13px;">Tổng: ${totalReports} báo cáo</span>
+                <div class="section-title">Danh sach Bao cao Vi pham</div>
+                <span style="color: var(--text-sub); font-size: 13px;">
+                    Tong: ${totalReports} bao cao
+                </span>
             </div>
 
             <c:choose>
                 <c:when test="${empty reports}">
                     <div class="empty-state">
-                        <p>Hiện tại không có báo cáo nào từ người dùng.</p>
+                        <p>Khong co bao cao nao.</p>
                     </div>
                 </c:when>
                 <c:otherwise>
@@ -250,46 +295,54 @@
                         <thead>
                         <tr>
                             <th>ID</th>
-                            <th>Reporter</th>
-                            <th>Target</th>
-                            <th>Reason</th>
-                            <th>Note</th>
-                            <th>Status</th>
-                            <th>Date</th>
-                            <th>Actions</th>
+                            <th>Loai</th>
+                            <th>Nguoi bao cao</th>
+                            <th>Ly do</th>
+                            <th>Trang thai</th>
+                            <th>Ngay tao</th>
+                            <th>Hanh dong</th>
                         </tr>
                         </thead>
                         <tbody>
-                        <c:forEach var="r" items="${reports}">
+                        <c:forEach var="report" items="${reports}">
                             <tr>
-                                <td>${r.reportId}</td>
-                                <td><strong>${r.reporterUsername}</strong></td>
-                                <td>
-                                    <span style="text-transform: capitalize;">${r.targetType}</span> #${r.targetId}
-                                    <br>
-                                    <a href="${pageContext.request.contextPath}/question/detail?id=${r.targetType == 'question' ? r.targetId : '?'}" 
-                                       target="_blank" style="font-size: 11px; color: #0a95ff;">View Content</a>
-                                </td>
-                                <td>${r.reason}</td>
-                                <td class="note-cell" title="${r.note}">${r.note}</td>
+                                <td>${report.reportId}</td>
                                 <td>
                                     <c:choose>
-                                        <c:when test="${r.status == 'open'}">
-                                            <span class="status-badge status-open">Open</span>
+                                        <c:when test="${report.targetType == 'question'}">
+                                            <span class="type-badge type-question">Cau hoi</span>
+                                        </c:when>
+                                        <c:when test="${report.targetType == 'answer'}">
+                                            <span class="type-badge type-answer">Tra loi</span>
+                                        </c:when>
+                                        <c:when test="${report.targetType == 'comment'}">
+                                            <span class="type-badge type-comment">Binh luan</span>
                                         </c:when>
                                         <c:otherwise>
-                                            <span class="status-badge status-resolved">Resolved</span>
+                                            <span class="type-badge">${report.targetType}</span>
                                         </c:otherwise>
                                     </c:choose>
                                 </td>
-                                <td><fmt:formatDate value="${r.createdAt}" pattern="dd/MM/yyyy HH:mm"/></td>
+                                <td>${report.reporterName}</td>
+                                <td class="reason-cell" title="${report.reason}">
+                                    ${report.getReasonTruncated(50)}
+                                </td>
                                 <td>
-                                    <c:if test="${r.status == 'open'}">
-                                        <form action="${pageContext.request.contextPath}/admin/reports/resolve" method="post" style="display:inline;">
-                                            <input type="hidden" name="id" value="${r.reportId}">
-                                            <button type="submit" class="btn btn-success btn-sm">Resolve</button>
-                                        </form>
-                                    </c:if>
+                                    <c:choose>
+                                        <c:when test="${report.status == 'open'}">
+                                            <span class="status-badge status-open">Cho xu ly</span>
+                                        </c:when>
+                                        <c:otherwise>
+                                            <span class="status-badge status-resolved">Da xu ly</span>
+                                        </c:otherwise>
+                                    </c:choose>
+                                </td>
+                                <td>
+                                    <fmt:formatDate value="${report.createdAt}" pattern="dd/MM/yyyy HH:mm"/>
+                                </td>
+                                <td>
+                                    <a href="${pageContext.request.contextPath}/admin/reports/detail?id=${report.reportId}"
+                                       class="btn btn-primary btn-sm">Xem chi tiet</a>
                                 </td>
                             </tr>
                         </c:forEach>
@@ -302,23 +355,26 @@
         <c:if test="${totalPages > 1}">
             <div class="pagination">
                 <c:if test="${currentPage > 1}">
-                    <a href="${pageContext.request.contextPath}/admin/reports?page=${currentPage - 1}">« Prev</a>
+                    <a href="${pageContext.request.contextPath}/admin/reports?page=${currentPage - 1}&status=${filterStatus}&fromDate=${fromDate}&toDate=${toDate}">« Truoc</a>
                 </c:if>
+
                 <c:forEach begin="1" end="${totalPages}" var="i">
                     <c:choose>
                         <c:when test="${i == currentPage}">
                             <span class="active">${i}</span>
                         </c:when>
                         <c:otherwise>
-                            <a href="${pageContext.request.contextPath}/admin/reports?page=${i}">${i}</a>
+                            <a href="${pageContext.request.contextPath}/admin/reports?page=${i}&status=${filterStatus}&fromDate=${fromDate}&toDate=${toDate}">${i}</a>
                         </c:otherwise>
                     </c:choose>
                 </c:forEach>
+
                 <c:if test="${currentPage < totalPages}">
-                    <a href="${pageContext.request.contextPath}/admin/reports?page=${currentPage + 1}">Next »</a>
+                    <a href="${pageContext.request.contextPath}/admin/reports?page=${currentPage + 1}&status=${filterStatus}&fromDate=${fromDate}&toDate=${toDate}">Sau »</a>
                 </c:if>
             </div>
         </c:if>
+
     </div>
 </main>
 

@@ -18,7 +18,7 @@
         box-shadow: 0 1px 2px rgba(0,0,0,0.05), 0 1px 4px rgba(0,0,0,0.05);
         height: 56px;
     }
-    
+
     .search-box {
         transition: all 0.3s ease;
         border: 1px solid #babfc4;
@@ -32,7 +32,7 @@
         font-weight: 500;
         font-size: 0.9rem;
     }
-    
+
     .avatar-img {
         object-fit: cover;
     }
@@ -127,7 +127,7 @@
 
 <nav class="navbar navbar-expand-lg navbar-light fixed-top navbar-devquery">
     <div class="container-fluid">
-        
+
         <a class="navbar-brand d-flex align-items-center me-4 ms-4" href="${pageContext.request.contextPath}/home">
             <img src="${pageContext.request.contextPath}/assets/img/LogoDQ.png" 
                  alt="DevQuery" width="30" height="30" class="d-inline-block align-text-top me-2">
@@ -139,7 +139,7 @@
         </button>
 
         <div class="collapse navbar-collapse" id="navbarContent">
-            
+
             <form class="d-flex mx-auto" style="max-width: 500px; width: 100%;" action="${pageContext.request.contextPath}/SearchController" method="GET">
                 <div class="input-group position-relative w-100">
                     <span class="position-absolute top-50 start-0 translate-middle-y ms-2 text-secondary z-index-1">
@@ -151,21 +151,27 @@
             </form>
 
             <ul class="navbar-nav ms-auto align-items-center gap-2 mt-2 mt-lg-0">
-                
+
                 <c:if test="${sessionScope.user != null}">
-                    
+
                     <li class="nav-item">
                         <a class="nav-link d-flex align-items-center py-0" href="${pageContext.request.contextPath}/profile">
-                            
-                            <c:set var="avatarSrc" value="${sessionScope.user.avatarUrl}" />
-                            <c:if test="${empty avatarSrc}">
-                                <c:set var="avatarSrc" value="${pageContext.request.contextPath}/assets/img/Avatar.png" />
-                            </c:if>
+
+                            <c:choose>
+                                <c:when test="${not empty sessionScope.user.avatarUrl}">
+                                    <c:set var="avatarSrc" value="${pageContext.request.contextPath}/${sessionScope.user.avatarUrl}" />
+                                </c:when>
+                                <c:otherwise>
+                                    <c:set var="avatarSrc" value="${pageContext.request.contextPath}/assets/img/Avatar.png" />
+                                </c:otherwise>
+                            </c:choose>
 
                             <img src="${avatarSrc}" 
-                                 alt="Avatar" width="32" height="32" class="rounded bg-light border avatar-img">
-                            
-                            <span class="ms-2 fw-bold text-dark small">${sessionScope.user.reputation != null ? sessionScope.user.reputation : 0}</span>
+                                 alt="Avatar" width="32" height="32" class="rounded-circle bg-light border avatar-img" style="object-fit: cover;">
+
+                            <span class="ms-2 fw-bold text-dark small">
+                                ${sessionScope.user.reputation != null ? sessionScope.user.reputation : 0}
+                            </span>
                         </a>
                     </li>
 
@@ -220,7 +226,7 @@
                     </li>
                     <li class="nav-item">
                         <a class="btn btn-primary btn-sm btn-auth px-3 me-4" href="${pageContext.request.contextPath}/auth/register">Sign up</a>
-                        </li>
+                    </li>
                 </c:if>
 
             </ul>

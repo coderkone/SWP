@@ -51,20 +51,20 @@ public class BadgeDAO extends DBContext {
     // 2. Lấy danh sách huy hiệu của user (Tab Badges)
     public List<BadgeDTO> getUserBadges(long userId, String sort) {
         List<BadgeDTO> list = new ArrayList<>();
-        
+
         // Mặc định sắp xếp theo ngày nhận mới nhất
-        String orderBy = "ORDER BY ub.created_at DESC"; 
-        
+        String orderBy = "ORDER BY ub.created_at DESC";
+
         // Nếu user chọn lọc theo tên Alphabet
         if ("name".equals(sort)) {
             orderBy = "ORDER BY b.name ASC";
         }
 
         String sql = "SELECT b.name, b.type, b.description, ub.created_at "
-                   + "FROM User_Badges ub "
-                   + "JOIN Badges b ON ub.badge_id = b.badge_id "
-                   + "WHERE ub.user_id = ? "
-                   + orderBy;
+                + "FROM User_Badges ub "
+                + "JOIN Badges b ON ub.badge_id = b.badge_id "
+                + "WHERE ub.user_id = ? "
+                + orderBy;
         try {
             Connection conn = getConnection();
             PreparedStatement ps = conn.prepareStatement(sql);
@@ -138,5 +138,89 @@ public class BadgeDAO extends DBContext {
             e.printStackTrace();
         }
         return list;
+    }
+
+    public List<BadgeDTO> getAllBadgesForAdmin(String search, String typeFilter) {
+        List<BadgeDTO> list = new ArrayList<>();
+        // Truy vấn vào bảng Badges gốc (thay vì bảng User_Badges)
+        String sql = "SELECT * FROM Badges WHERE name LIKE ?";
+        if (typeFilter != null && !typeFilter.isEmpty()) {
+            sql += " AND type = ?";
+        }
+
+        try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, "%" + (search != null ? search : "") + "%");
+            if (typeFilter != null && !typeFilter.isEmpty()) {
+                ps.setString(2, typeFilter);
+            }
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                BadgeDTO b = new BadgeDTO();
+                b.setBadgeId(rs.getInt("badge_id"));
+                b.setName(rs.getString("name")); // Map 'name' từ DB vào 'badgeName' của DTO
+                b.setDescription(rs.getString("description"));
+                b.setType(rs.getString("type"));
+                b.setRequiredReputation(rs.getInt("required_reputation"));
+                list.add(b);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+    // Thêm badge mới
+    public boolean insertBadge(BadgeDTO badge) {
+        String sql = "INSERT INTO Badges (name, type, description, required_reputation) VALUES (?, ?, ?, ?)";
+        try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, badge.getName());
+            ps.setString(2, badge.getType());
+            ps.setString(3, badge.getDescription());
+            ps.setInt(4, badge.getRequiredReputation());
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) { e.printStackTrace(); }
+        return false;
+    }
+
+    // Cập nhật badge
+    public boolean updateBadge(BadgeDTO badge) {
+        String sql = "UPDATE Badges SET name=?, type=?, description=?, required_reputation=? WHERE badge_id=?";
+        try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, badge.getName());
+            ps.setString(2, badge.getType());
+            ps.setString(3, badge.getDescription());
+            ps.setInt(4, badge.getRequiredReputation());
+            ps.setInt(5, badge.getBadgeId());
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) { e.printStackTrace(); }
+        return false;
+    }
+
+    // Xóa badge
+    public boolean deleteBadge(int badgeId) {
+        String sql = "DELETE FROM Badges WHERE badge_id=?";
+        try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, badgeId);
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) { e.printStackTrace(); }
+        return false;
+    }
+
+    // Lấy thông tin 1 badge để đưa lên form Edit
+    public BadgeDTO getBadgeById(int badgeId) {
+        String sql = "SELECT * FROM Badges WHERE badge_id=?";
+        try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, badgeId);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                BadgeDTO b = new BadgeDTO();
+                b.setBadgeId(rs.getInt("badge_id"));
+                b.setName(rs.getString("name"));
+                b.setType(rs.getString("type"));
+                b.setDescription(rs.getString("description"));
+                b.setRequiredReputation(rs.getInt("required_reputation"));
+                return b;
+            }
+        } catch (Exception e) { e.printStackTrace(); }
+        return null;
     }
 }

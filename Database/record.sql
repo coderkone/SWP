@@ -254,3 +254,5 @@ INSERT INTO [dbo].[Privileges] ([name], [description], [required_reputation]) VA
 ('Moderator', 'Access moderation tools and delete posts.', 2000);
 GO
 select * from Privileges
+
+select * from Users
