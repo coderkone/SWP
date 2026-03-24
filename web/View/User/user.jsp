@@ -104,17 +104,15 @@
         /* User card */
         
         .user-card {
-            display: flex;
-            align-items: flex-start;
-            gap: 12px;
-            padding: 12px;
-            border: 1px solid #e3e6e8;
-            border-radius: 4px;
-            text-decoration: none;
-            color: inherit;
-            transition: box-shadow 0.15s;
-            background: #fff;
-        }
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px;
+    border: 1px solid #e3e6e8;
+    border-radius: 4px;
+    background: #fff;
+    transition: box-shadow 0.15s;
+}
         .user-card:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
         
         
@@ -157,7 +155,32 @@
             padding: 40px; color: #6a737c;
         }
         .empty-state i { font-size: 40px; margin-bottom: 12px; display: block; }
-        
+        .user-card-link {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    text-decoration: none;
+    color: inherit;
+    flex: 1;
+    min-width: 0;
+}
+
+/* Nút More */
+.btn-more {
+    font-size: 12px;
+    color: #6a737c;
+    text-decoration: none;
+    padding: 4px 8px;
+    border: 1px solid #d6d9dc;
+    border-radius: 3px;
+    white-space: nowrap;
+    flex-shrink: 0;
+    align-self: flex-start;
+}
+.btn-more:hover {
+    background: #f8f9f9;
+    color: #3b4045;
+}
         
     </style>
 </head>
@@ -214,55 +237,59 @@
             </div>
 
             <%-- Users Grid --%>
-            <div class="users-grid">
-                <c:choose>
-                    <c:when test="${not empty users}">
-                        <c:forEach var="u" items="${users}">
-                            <a href="${pageContext.request.contextPath}/profile?id=${u.userId}"
-                               class="user-card">
+            <%-- Users Grid --%>
+<div class="users-grid">
+    <c:choose>
+        <c:when test="${not empty users}">
+            <c:forEach var="u" items="${users}">
 
-                                <%-- Avatar --%>
-                                <c:choose>
-                                    <c:when test="${not empty u.avatarUrl}">
-                                        <img src="${u.avatarUrl}"
-                                             alt="${u.username}"
-                                             class="user-avatar"
-                                             onerror="this.style.display='none'" />
-                                    </c:when>
-                                    <c:otherwise>
-                                        <div class="user-avatar-default">
-                                            <i class="fa-solid fa-user"></i>
-                                        </div>
-                                    </c:otherwise>
-                                </c:choose>
+                <div class="user-card">
 
-                                <%-- Info --%>
-                                <div class="user-info">
-                                    
-                                        <div class="user-name">${u.username}</div>
-                                        
-                                   
-                                    <div class="user-rep">${u.reputation}</div>
-                                    <div class="user-date">
-                                        <c:if test="${not empty u.createdAt}">
-                                            member since ${u.createdAt.toString().substring(0, 10)}
-                                        </c:if>
-                                    </div>
+                    <%-- Click avatar + tên → /profile --%>
+                    <a href="${pageContext.request.contextPath}/profile?id=${u.userId}"
+                       class="user-card-link">
+
+                        <c:choose>
+                            <c:when test="${not empty u.avatarUrl}">
+                                <img src="${u.avatarUrl}" alt="${u.username}"
+                                     class="user-avatar"
+                                     onerror="this.style.display='none'" />
+                            </c:when>
+                            <c:otherwise>
+                                <div class="user-avatar-default">
+                                    <i class="fa-solid fa-user"></i>
                                 </div>
-                                    
-                            </a>
-                                    
-        
-                        </c:forEach>
-                    </c:when>
-                    <c:otherwise>
-                        <div class="empty-state">
-                            <i class="fa-solid fa-users"></i>
-                            <p>No users found.</p>
+                            </c:otherwise>
+                        </c:choose>
+
+                        <div class="user-info">
+                            <div class="user-name">${u.username}</div>
+                            <div class="user-rep">${u.reputation}</div>
+                            <div class="user-date">
+                                <c:if test="${not empty u.createdAt}">
+                                    member since ${u.createdAt.toString().substring(0, 10)}
+                                </c:if>
+                            </div>
                         </div>
-                    </c:otherwise>
-                </c:choose>
+
+                    </a>
+
+                    <%-- Click More → /userprofile --%>
+                    <a href="${pageContext.request.contextPath}/userprofile?id=${u.userId}"
+                       class="btn-more">More</a>
+
+                </div>
+
+            </c:forEach>
+        </c:when>
+        <c:otherwise>
+            <div class="empty-state">
+                <i class="fa-solid fa-users"></i>
+                <p>No users found.</p>
             </div>
+        </c:otherwise>
+    </c:choose>
+</div>
 
         </main>
     </div>
