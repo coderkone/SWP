@@ -159,27 +159,10 @@
 
                 <main class="col-md-10 ms-sm-auto px-md-4 pt-4">
 
-                    <div class="d-flex align-items-start mb-4">
-                        <div class="me-4">
-                            <img src="${sessionScope.user.avatarUrl != null ? sessionScope.user.avatarUrl : 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png'}" 
-                                 class="user-avatar-lg" alt="Avatar">
-                        </div>
-                        <div class="flex-grow-1">
-                            <h1 class="user-name">${userProfile.username != null ? userProfile.username : 'Developer'}</h1>
-                            <div class="user-meta mb-3">
-                                <i class="fa-solid fa-cake-candles"></i> Member since <fmt:formatDate value="${userProfile.createdAt}" pattern="dd/MM/yyyy" />
-                                <span class="mx-2">|</span> 
-                                <i class="fa-solid fa-star text-warning"></i> ${userProfile.reputation} reputation
-                            </div>
-
-                            <ul class="nav profile-tabs">
-                                <li class="nav-item"><a class="nav-link" href="${pageContext.request.contextPath}/profile">Profile</a></li>
-                                <li class="nav-item"><a class="nav-link" href="${pageContext.request.contextPath}/badge">Badge</a></li>
-                                <li class="nav-item"><a class="nav-link active" href="${pageContext.request.contextPath}/saves">Saves</a></li>
-                                <li class="nav-item"><a class="nav-link" href="#">Settings</a></li>
-                            </ul>
-                        </div>
-                    </div>
+                    <c:set var="uPro" value="${userProfile}" scope="request" />
+                    <jsp:include page="../Common/profileTemplate.jsp">
+                        <jsp:param name="activeTab" value="saves" />
+                    </jsp:include>
 
                     <div class="row">
                         <div class="col-md-2">
