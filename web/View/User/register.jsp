@@ -16,7 +16,6 @@
         .brand{font-weight:700;font-size:20px;}
         .links a{margin-left:10px;color:#0a95ff;text-decoration:none;}
         .err{background:#FDEDED;color:#B42318;padding:10px;border-radius:8px;margin:10px 0;}
-<<<<<<< HEAD
         .ok{background:#E3FCEF;color:#2f6f44;padding:10px;border-radius:8px;margin:10px 0;}
         label{display:block;margin:12px 0 6px;font-weight:600;}
         input{width:100%;padding:10px;border:1px solid #d6d9dc;border-radius:8px;box-sizing: border-box;}
@@ -45,7 +44,6 @@
         
         .btn-github { background: #24292e; color: #fff; border-color: #24292e; }
         .btn-github:hover { background: #2f363d; }
-=======
         label{display:block;margin:12px 0 6px;font-weight:600;}
         input{width:100%;padding:10px;border:1px solid #d6d9dc;border-radius:8px;}
         button{width:100%;margin-top:14px;padding:10px;border:0;border-radius:8px;background:#0a95ff;color:#fff;font-weight:700;cursor:pointer;}

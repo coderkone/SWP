@@ -297,7 +297,6 @@
                 border-bottom: 1px solid #e3e6e8;
             }
 
-<<<<<<< HEAD
         .mini-title {
             font-size: 12px;
             color: #6a737c;
