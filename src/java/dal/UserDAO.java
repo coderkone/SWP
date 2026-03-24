@@ -143,19 +143,22 @@ public class UserDAO {
     }
 
     private User loginOrRegister(String providerId, String email, String name, String providerType) {
-        String sqlCheck = "SELECT * FROM Users WHERE email = ?";
+        String sqlCheck = "SELECT u.*, p.avatar_url FROM Users u "
+                + "LEFT JOIN User_Profile p ON u.user_id = p.user_id "
+                + "WHERE u.email = ?";
 
         try (Connection con = db.getConnection(); PreparedStatement st = con.prepareStatement(sqlCheck)) {
 
             st.setString(1, email);
             try (ResultSet rs = st.executeQuery()) {
                 if (rs.next()) {
-User u = new User();
+                    User u = new User();
                     u.setUserId(rs.getLong("user_id"));
                     u.setUsername(rs.getString("username"));
                     u.setEmail(rs.getString("email"));
                     u.setRole(rs.getString("role"));
                     u.setReputation(rs.getInt("Reputation"));
+                    u.setAvatarUrl(rs.getString("avatar_url"));
                     return u;
                 } else {
                     return createNewUser(providerId, email, name, providerType);

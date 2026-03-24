@@ -71,48 +71,53 @@ public class EditProfileController extends HttpServlet {
             return;
         }
 
-        // CHUYỂN DÒNG NÀY LÊN TRÊN CÙNG ĐỂ KHAI BÁO TRƯỚC KHI DÙNG
         ProfileDAO dao = new ProfileDAO();
 
-        // 1. XỬ LÝ UPLOAD FILE HOẶC XÓA FILE TRƯỚC
-        String avatarUrl = null;
+        // =============================================
+        // 1. XỬ LÝ AVATAR (XÓA HOẶC UPLOAD ẢNH MỚI)
+        // =============================================
         Part filePart = request.getPart("avatarFile");
         String deleteAvatarFlag = request.getParameter("deleteAvatar");
 
         if ("true".equals(deleteAvatarFlag)) {
-            // Trường hợp user bấm nút DELETE
+            // Trường hợp user bấm nút DELETE avatar
             dao.updateAvatar(currentUser.getUserId(), null);
             currentUser.setAvatarUrl(null);
+            session.setAttribute("user", currentUser);
+
         } else if (filePart != null && filePart.getSize() > 0) {
             // Trường hợp user CHỌN ẢNH MỚI
-            String buildPath = "D:\\SWP391-Group3\\SWP\\build\\web\\assets\\img\\avatar";
-            String srcPath = "D:\\SWP391-Group3\\SWP\\web\\assets\\img\\avatar";
-            File buildDir = new File(buildPath);
-            File srcDir = new File(srcPath);
-            if (!buildDir.exists()) buildDir.mkdirs();
-            if (!srcDir.exists()) srcDir.mkdirs();
-
-            String fileName = "user_" + currentUser.getUserId() + "_" + System.currentTimeMillis() + ".png";
-
-            // Lưu đúp vào 2 nơi
-            filePart.write(buildPath + File.separator + fileName);
-            try {
-                java.nio.file.Files.copy(
-                    new java.io.File(buildPath + File.separator + fileName).toPath(),
-                    new java.io.File(srcPath + File.separator + fileName).toPath(),
-                    java.nio.file.StandardCopyOption.REPLACE_EXISTING
-                );
-            } catch (Exception e) {
-                System.out.println("Error copying file: " + e.getMessage());
+            // Dùng getRealPath để tự động lấy đường dẫn thực tế của server, không hardcode
+            String uploadDir = getServletContext().getRealPath("/assets/img/avatar");
+            File dir = new File(uploadDir);
+            if (!dir.exists()) {
+                dir.mkdirs();
             }
-            avatarUrl = "assets/img/avatar/" + fileName;
 
-            // Cập nhật Database và Session với đường dẫn mới
+            // Giữ nguyên extension gốc của file (jpg, jpeg, png, ...)
+            String originalName = filePart.getSubmittedFileName();
+            String ext = (originalName != null && originalName.contains("."))
+                    ? originalName.substring(originalName.lastIndexOf(".")).toLowerCase()
+                    : ".png";
+
+            // Tên file duy nhất theo userId + timestamp
+            String fileName = "user_" + currentUser.getUserId() + "_" + System.currentTimeMillis() + ext;
+
+            // Lưu file vào thư mục deploy
+            filePart.write(uploadDir + File.separator + fileName);
+
+            // Đường dẫn tương đối lưu vào DB
+            String avatarUrl = "assets/img/avatar/" + fileName;
+
+            // Cập nhật DB và session
             dao.updateAvatar(currentUser.getUserId(), avatarUrl);
             currentUser.setAvatarUrl(avatarUrl);
+            session.setAttribute("user", currentUser);
         }
 
-        // 2. LẤY DỮ LIỆU TEXT CẬP NHẬT THÔNG TIN CÁC FIELD KHÁC
+        // =============================================
+        // 2. CẬP NHẬT CÁC THÔNG TIN TEXT
+        // =============================================
         String displayName = request.getParameter("displayName");
         String bio = request.getParameter("bio");
         String location = request.getParameter("location");
@@ -120,16 +125,22 @@ public class EditProfileController extends HttpServlet {
         String linkedin = request.getParameter("linkedin");
         String website = request.getParameter("website");
 
-        UserSocialLink linksObj = new UserSocialLink(github, linkedin, website);
+        UserSocialLink linksObj = new UserSocialLink(
+                github != null ? github : "",
+                linkedin != null ? linkedin : "",
+                website != null ? website : ""
+        );
         String websiteJson = new Gson().toJson(linksObj);
 
-        // 3. Cập nhật thông tin cơ bản
-        boolean isSuccess = dao.updateProfile(currentUser.getUserId(), displayName, bio, location, websiteJson);
+        // =============================================
+        // 3. LƯU VÀO DB VÀ REDIRECT
+        // =============================================
+        boolean isSuccess = dao.updateProfile(
+                currentUser.getUserId(), displayName, bio, location, websiteJson);
 
         if (isSuccess) {
             currentUser.setUsername(displayName);
-            // Ghi đè lại object user vào Session để Header nhận diện sự thay đổi
-            session.setAttribute("user", currentUser); 
+            session.setAttribute("user", currentUser);
             response.sendRedirect("profile?id=" + currentUser.getUserId() + "&status=success");
         } else {
             request.setAttribute("ERROR", "Update failed! The display name might already be taken.");
