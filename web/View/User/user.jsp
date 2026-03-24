@@ -102,6 +102,7 @@
         @media (max-width: 500px)  { .users-grid { grid-template-columns: 1fr; } }
 
         /* User card */
+        
         .user-card {
             display: flex;
             align-items: flex-start;
@@ -112,8 +113,11 @@
             text-decoration: none;
             color: inherit;
             transition: box-shadow 0.15s;
+            background: #fff;
         }
         .user-card:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+        
+        
 
         .user-avatar {
             width: 48px; height: 48px;
@@ -127,7 +131,12 @@
             font-size: 20px; color: #39739d; flex-shrink: 0;
         }
 
-        .user-info { min-width: 0; }
+        .user-info {
+            
+            min-width: 0; 
+        }
+        
+        
         .user-name {
             font-size: 13px; font-weight: 500;
             color: var(--blue); margin-bottom: 4px;
@@ -148,6 +157,8 @@
             padding: 40px; color: #6a737c;
         }
         .empty-state i { font-size: 40px; margin-bottom: 12px; display: block; }
+        
+        
     </style>
 </head>
 <body>
@@ -182,7 +193,7 @@
                 </div>
             </form>
 
-            <%-- Biểu đồ Top 3 --%>
+            <%-- Biểu đồ Top 10 --%>
             <div class="chart-section">
                 <h2>🏆 Top 10 Reputation</h2>
                 <div class="chart-wrapper">
@@ -227,7 +238,10 @@
 
                                 <%-- Info --%>
                                 <div class="user-info">
-                                    <div class="user-name">${u.username}</div>
+                                    
+                                        <div class="user-name">${u.username}</div>
+                                        
+                                   
                                     <div class="user-rep">${u.reputation}</div>
                                     <div class="user-date">
                                         <c:if test="${not empty u.createdAt}">
@@ -235,8 +249,10 @@
                                         </c:if>
                                     </div>
                                 </div>
-
+                                    
                             </a>
+                                    
+        
                         </c:forEach>
                     </c:when>
                     <c:otherwise>
@@ -251,11 +267,11 @@
         </main>
     </div>
 
-    <%-- Chart.js render Top 3 --%>
+    <%-- Chart.js render Top 10 --%>
     <script>
         const ctx = document.getElementById('topChart').getContext('2d');
 
-        // ✅ Data từ Controller qua JSP
+        //  Data từ Controller qua JSP
         const labels = [
             <c:forEach var="u" items="${top10}" varStatus="s">
                 '${u.username}'<c:if test="${!s.last}">,</c:if>
