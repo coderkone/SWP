@@ -35,9 +35,8 @@ public class NotificationController extends HttpServlet {
         }
         String idParam = request.getParameter("id");
         String action = request.getParameter("action");
-        NotificationDAO dao = new NotificationDAO();
         String type = request.getParameter("type");
-        List<Notification> list;
+        NotificationDAO dao = new NotificationDAO();
         try{
             if("allRead".equals(action)){
                 dao.markAllRead(user.getUserId());
@@ -45,13 +44,15 @@ public class NotificationController extends HttpServlet {
                 long notifiId = Long.parseLong(idParam);
                 dao.markAsRead(notifiId, user.getUserId());
             }
+            List<Notification> list;
             if (type != null && !type.equals("All")) {
                 list = dao.getNotificationByType(user.getUserId(), type, 20);
             } else {
                 list = dao.getNotification(user.getUserId(), 20);
             }
                 request.setAttribute("Notification", list);
-                request.setAttribute("currentType", type != null ? type : "All");
+                request.setAttribute("currentType", type != null ? type : "All"); // ← label đúng
+                request.setAttribute("openNoti", true);           // ← signal để JS tự mở dropdown
                 request.getRequestDispatcher("/home").forward(request, response);
                 
                 

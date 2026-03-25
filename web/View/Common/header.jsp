@@ -222,15 +222,17 @@
                                  <!-- FILTER -->
                                             <div class="position-relative" onclick="event.stopPropagation()">
 
-                                                <button class="btn btn-sm btn-light filter-btn">
-                                                    ALL <i class="fa fa-caret-down"></i>
+                                                <button class="btn btn-sm btn-light filter-btn" onclick="toggleFilter(event)">
+                                                    <span id="filterLabel">ALL</span> <i class="fa fa-caret-down"></i>
                                                 </button>
-
                                 <!-- DROP FILTER -->
                                                  <div id="filterBox" class="filter-dropdown d-none">
-                                                 <div class="filter-item" onclick="selectFilter(event,'All')">All</div>
-                                                 <div class="filter-item" onclick="selectFilter(event,'user_post')">User</div>
-                                                 <div class="filter-item" onclick="selectFilter(event,'Tag')">Tag</div>
+                                                        <a class="filter-item text-decoration-none text-dark d-block" 
+                                                        href="${pageContext.request.contextPath}/notification?type=All">All</a>
+                                                        <a class="filter-item text-decoration-none text-dark d-block" 
+                                                        href="${pageContext.request.contextPath}/notification?type=user_post">User</a>
+                                                        <a class="filter-item text-decoration-none text-dark d-block" 
+                                                        href="${pageContext.request.contextPath}/notification?type=tag_post">Tag</a>
                                                  </div>
 
                                             </div>
@@ -238,7 +240,8 @@
                                      </div>
 
 
-                                <a href="${pageContext.request.contextPath}/notification?action=allRead" class="noti-mark-all">MARK ALL READ</a>
+                                <a href="${pageContext.request.contextPath}/notification?action=allRead&type=${requestScope.currentType}" 
+                                    class="noti-mark-all">MARK ALL READ</a>
                             </div>
                             
                             <div class="noti-body">
@@ -281,19 +284,43 @@
         </div>
     </div>
 <script>
+var contextPath = "${pageContext.request.contextPath}";
+
+// ─── 1. Toggle filterBox ───
 function toggleFilter(e) {
     e.stopPropagation();
     document.getElementById("filterBox").classList.toggle("d-none");
 }
 
-var contextPath = "${pageContext.request.contextPath}";
+// ─── 2. Set đúng label từ server sau khi reload ───
+(function setFilterLabel() {
+    var currentType = "${requestScope.currentType != null ? requestScope.currentType : 'All'}";
+    var label = "ALL";
+    if (currentType === "user_post") label = "USER";
+    else if (currentType === "Tag")  label = "TAG";
+    document.getElementById("filterLabel").textContent = label;
+})();
 
-function selectFilter(e, type) {
-    e.stopPropagation();
-    document.querySelector(".filter-btn").innerHTML =
-        type + ' <i class="fa fa-caret-down"></i>';
-    document.getElementById("filterBox").classList.add("d-none");
-    window.location.href = contextPath + "/notification?type=" + type; // Giờ hoạt động
-}
+// ─── 3. Tự động mở dropdown nếu server báo openNoti=true ───
+(function autoOpenDropdown() {
+    var shouldOpen = "${requestScope.openNoti != null}"; // "true" hoặc ""
+    if (shouldOpen === "true") {
+        // Dùng Bootstrap 5 API để mở dropdown
+        var btn = document.getElementById("notiDropdownBtn");
+        if (btn) {
+            // Chờ DOM render xong
+            setTimeout(function() {
+                var dropdown = bootstrap.Dropdown.getOrCreateInstance(btn);
+                dropdown.show();
+            }, 100);
+        }
+    }
+})();
+
+// ─── 4. Click ngoài → đóng filterBox ───
+document.addEventListener("click", function() {
+    var fb = document.getElementById("filterBox");
+    if (fb) fb.classList.add("d-none");
+});
 </script>
 </nav>
