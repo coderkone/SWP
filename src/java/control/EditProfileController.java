@@ -83,12 +83,25 @@ public class EditProfileController extends HttpServlet {
             session.setAttribute("user", currentUser);
 
         } else if (filePart != null && filePart.getSize() > 0) {
-            // Trường hợp user CHỌN ẢNH MỚI
-            // Dùng getRealPath để tự động lấy đường dẫn thực tế của server, không hardcode
-            String uploadDir = getServletContext().getRealPath("/assets/img/avatar");
-            File dir = new File(uploadDir);
-            if (!dir.exists()) {
-                dir.mkdirs();
+
+            // 1. Lấy đường dẫn động của thư mục build/web
+            String buildPath = getServletContext().getRealPath("");
+
+            // 2. Chuyển đổi thành đường dẫn source
+            String sourcePath = buildPath.substring(0, buildPath.indexOf("build")) + "web";
+
+            // 3. Khai báo thư mục lưu ảnh ở cả 2 nơi
+            String buildAvatarDir = buildPath + File.separator + "assets" + File.separator + "img" + File.separator + "avatar";
+            String sourceAvatarDir = sourcePath + File.separator + "assets" + File.separator + "img" + File.separator + "avatar";
+
+            // 4. Tạo thư mục nếu chưa có
+            File bDir = new File(buildAvatarDir);
+            if (!bDir.exists()) {
+                bDir.mkdirs();
+            }
+            File sDir = new File(sourceAvatarDir);
+            if (!sDir.exists()) {
+                sDir.mkdirs();
             }
 
             String originalName = filePart.getSubmittedFileName();
@@ -96,13 +109,18 @@ public class EditProfileController extends HttpServlet {
                     ? originalName.substring(originalName.lastIndexOf(".")).toLowerCase()
                     : ".png";
 
-            // Tên file duy nhất theo userId + timestamp
             String fileName = "user_" + currentUser.getUserId() + "_" + System.currentTimeMillis() + ext;
 
-            // Lưu file vào thư mục deploy
-            filePart.write(uploadDir + File.separator + fileName);
+            // 5. Lưu vào build/web 
+            filePart.write(buildAvatarDir + File.separator + fileName);
 
-            // Đường dẫn tương đối lưu vào DB
+            // 6. Copy sang source gốc
+            Files.copy(
+                    new File(buildAvatarDir + File.separator + fileName).toPath(),
+                    new File(sourceAvatarDir + File.separator + fileName).toPath(),
+                    StandardCopyOption.REPLACE_EXISTING
+            );
+
             String avatarUrl = "assets/img/avatar/" + fileName;
 
             // Cập nhật DB và session
