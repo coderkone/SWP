@@ -48,11 +48,7 @@ public class BadgeController extends HttpServlet {
         BadgeDAO dao = new BadgeDAO();
 
         // RẼ NHÁNH XỬ LÝ THEO TAB
-        if (tab.equals("summary")) {
-            Map<String, Integer> badgeCounts = dao.getBadgeCounts(user.getUserId());
-            request.setAttribute("badgeCounts", badgeCounts);
-
-        } else if (tab.equals("reputation")) {
+        if (tab.equals("reputation")) {
             List<ReputationDTO> repList = dao.getReputationHistory(user.getUserId());
             request.setAttribute("repList", repList);
 
