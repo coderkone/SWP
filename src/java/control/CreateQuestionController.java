@@ -41,7 +41,7 @@ public class CreateQuestionController extends HttpServlet {
         User currentUser = (User) session.getAttribute("user"); 
         
         if (currentUser == null) {
-            response.sendRedirect("login");
+            response.sendRedirect("auth/login");
             return;
         }
 

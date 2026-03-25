@@ -42,10 +42,9 @@ public class EditProfileController extends HttpServlet {
         }
 
         ProfileDAO profileDAO = new ProfileDAO();
-        // ĐỔI TÊN HÀM Ở ĐÂY ĐỂ LẤY ĐẦY ĐỦ DỮ LIỆU
         UserDTO userProfile = profileDAO.getUserFullProfile(currentUser.getUserId());
 
-        // Xử lý chuỗi JSON ra 3 link (Dùng UserSocialLink hoặc UserSocialLinks tùy project của bạn)
+        // Xử lý chuỗi JSON ra 3 link 
         model.UserSocialLink socialLinks = new model.UserSocialLink("", "", "");
         if (userProfile != null && userProfile.getWebsite() != null && userProfile.getWebsite().trim().startsWith("{")) {
             Gson gson = new Gson();
@@ -73,9 +72,7 @@ public class EditProfileController extends HttpServlet {
 
         ProfileDAO dao = new ProfileDAO();
 
-        // =============================================
         // 1. XỬ LÝ AVATAR (XÓA HOẶC UPLOAD ẢNH MỚI)
-        // =============================================
         Part filePart = request.getPart("avatarFile");
         String deleteAvatarFlag = request.getParameter("deleteAvatar");
 
@@ -86,27 +83,44 @@ public class EditProfileController extends HttpServlet {
             session.setAttribute("user", currentUser);
 
         } else if (filePart != null && filePart.getSize() > 0) {
-            // Trường hợp user CHỌN ẢNH MỚI
-            // Dùng getRealPath để tự động lấy đường dẫn thực tế của server, không hardcode
-            String uploadDir = getServletContext().getRealPath("/assets/img/avatar");
-            File dir = new File(uploadDir);
-            if (!dir.exists()) {
-                dir.mkdirs();
+
+            // 1. Lấy đường dẫn động của thư mục build/web
+            String buildPath = getServletContext().getRealPath("");
+
+            // 2. Chuyển đổi thành đường dẫn source
+            String sourcePath = buildPath.substring(0, buildPath.indexOf("build")) + "web";
+
+            // 3. Khai báo thư mục lưu ảnh ở cả 2 nơi
+            String buildAvatarDir = buildPath + File.separator + "assets" + File.separator + "img" + File.separator + "avatar";
+            String sourceAvatarDir = sourcePath + File.separator + "assets" + File.separator + "img" + File.separator + "avatar";
+
+            // 4. Tạo thư mục nếu chưa có
+            File bDir = new File(buildAvatarDir);
+            if (!bDir.exists()) {
+                bDir.mkdirs();
+            }
+            File sDir = new File(sourceAvatarDir);
+            if (!sDir.exists()) {
+                sDir.mkdirs();
             }
 
-            // Giữ nguyên extension gốc của file (jpg, jpeg, png, ...)
             String originalName = filePart.getSubmittedFileName();
             String ext = (originalName != null && originalName.contains("."))
                     ? originalName.substring(originalName.lastIndexOf(".")).toLowerCase()
                     : ".png";
 
-            // Tên file duy nhất theo userId + timestamp
             String fileName = "user_" + currentUser.getUserId() + "_" + System.currentTimeMillis() + ext;
 
-            // Lưu file vào thư mục deploy
-            filePart.write(uploadDir + File.separator + fileName);
+            // 5. Lưu vào build/web 
+            filePart.write(buildAvatarDir + File.separator + fileName);
 
-            // Đường dẫn tương đối lưu vào DB
+            // 6. Copy sang source gốc
+            Files.copy(
+                    new File(buildAvatarDir + File.separator + fileName).toPath(),
+                    new File(sourceAvatarDir + File.separator + fileName).toPath(),
+                    StandardCopyOption.REPLACE_EXISTING
+            );
+
             String avatarUrl = "assets/img/avatar/" + fileName;
 
             // Cập nhật DB và session
@@ -115,9 +129,7 @@ public class EditProfileController extends HttpServlet {
             session.setAttribute("user", currentUser);
         }
 
-        // =============================================
         // 2. CẬP NHẬT CÁC THÔNG TIN TEXT
-        // =============================================
         String displayName = request.getParameter("displayName");
         String bio = request.getParameter("bio");
         String location = request.getParameter("location");
@@ -132,9 +144,7 @@ public class EditProfileController extends HttpServlet {
         );
         String websiteJson = new Gson().toJson(linksObj);
 
-        // =============================================
         // 3. LƯU VÀO DB VÀ REDIRECT
-        // =============================================
         boolean isSuccess = dao.updateProfile(
                 currentUser.getUserId(), displayName, bio, location, websiteJson);
 

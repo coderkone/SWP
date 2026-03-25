@@ -48,15 +48,9 @@
         margin-bottom: 6px;
     }
 
-    .footer-section ul li a {
+    .footer-section ul li span {
         color: #ffffff;
-        text-decoration: none;
         font-size: 13px;
-        transition: color 0.3s ease;
-    }
-
-    .footer-section ul li a:hover {
-        color: #f48024;
     }
 
     .footer-bottom {
@@ -91,7 +85,7 @@
         gap: 15px;
     }
 
-    .footer-social a {
+    .footer-social span {
         display: inline-flex;
         align-items: center;
         justify-content: center;
@@ -100,14 +94,7 @@
         background-color: #34495e;
         color: #ffffff;
         border-radius: 4px;
-        text-decoration: none;
-        transition: all 0.3s ease;
         font-size: 16px;
-    }
-
-    .footer-social a:hover {
-        background-color: #f48024;
-        color: #ffffff;
     }
 
     @media (max-width: 768px) {
@@ -144,11 +131,11 @@
             <div class="footer-section">
                 <h5>Company</h5>
                 <ul>
-                    <li><a href="#">About</a></li>
-                    <li><a href="#">Blog</a></li>
-                    <li><a href="#">Careers</a></li>
-                    <li><a href="#">Press</a></li>
-                    <li><a href="#">Contact</a></li>
+                    <li><span>About</span></li>
+                    <li><span>Blog</span></li>
+                    <li><span>Careers</span></li>
+                    <li><span>Press</span></li>
+                    <li><span>Contact</span></li>
                 </ul>
             </div>
 
@@ -156,11 +143,11 @@
             <div class="footer-section">
                 <h5>Products</h5>
                 <ul>
-                    <li><a href="#">DevQuery</a></li>
-                    <li><a href="#">Documentation</a></li>
-                    <li><a href="#">API Reference</a></li>
-                    <li><a href="#">Status Page</a></li>
-                    <li><a href="#">Roadmap</a></li>
+                    <li><span>DevQuery</span></li>
+                    <li><span>Documentation</span></li>
+                    <li><span>API Reference</span></li>
+                    <li><span>Status Page</span></li>
+                    <li><span>Roadmap</span></li>
                 </ul>
             </div>
 
@@ -168,11 +155,11 @@
             <div class="footer-section">
                 <h5>Community</h5>
                 <ul>
-                    <li><a href="#">Questions</a></li>
-                    <li><a href="#">Tags</a></li>
-                    <li><a href="#">Users</a></li>
-                    <li><a href="#">Badges</a></li>
-                    <li><a href="#">Moderators</a></li>
+                    <li><span>Questions</span></li>
+                    <li><span>Tags</span></li>
+                    <li><span>Users</span></li>
+                    <li><span>Badges</span></li>
+                    <li><span>Moderators</span></li>
                 </ul>
             </div>
 
@@ -180,11 +167,11 @@
             <div class="footer-section">
                 <h5>Resources</h5>
                 <ul>
-                    <li><a href="#">Help Center</a></li>
-                    <li><a href="#">Privacy Policy</a></li>
-                    <li><a href="#">Terms of Service</a></li>
-                    <li><a href="#">Code of Conduct</a></li>
-                    <li><a href="#">Sitemap</a></li>
+                    <li><span>Help Center</span></li>
+                    <li><span>Privacy Policy</span></li>
+                    <li><span>Terms of Service</span></li>
+                    <li><span>Code of Conduct</span></li>
+                    <li><span>Sitemap</span></li>
                 </ul>
             </div>
         </div>
@@ -202,18 +189,10 @@
             </div>
 
             <div class="footer-social">
-                <a href="#" title="GitHub" target="_blank">
-                    <i class="fa-brands fa-github"></i>
-                </a>
-                <a href="#" title="Twitter" target="_blank">
-                    <i class="fa-brands fa-twitter"></i>
-                </a>
-                <a href="#" title="Facebook" target="_blank">
-                    <i class="fa-brands fa-facebook"></i>
-                </a>
-                <a href="#" title="LinkedIn" target="_blank">
-                    <i class="fa-brands fa-linkedin"></i>
-                </a>
+                <span title="GitHub"><i class="fa-brands fa-github"></i></span>
+                <span title="Twitter"><i class="fa-brands fa-twitter"></i></span>
+                <span title="Facebook"><i class="fa-brands fa-facebook"></i></span>
+                <span title="LinkedIn"><i class="fa-brands fa-linkedin"></i></span>
             </div>
         </div>
     </div>
