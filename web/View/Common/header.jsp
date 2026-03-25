@@ -222,14 +222,14 @@
                                  <!-- FILTER -->
                                             <div class="position-relative" onclick="event.stopPropagation()">
 
-                                                <button class="btn btn-sm btn-light filter-btn" onclick="toggleFilter(event)">
-                                                        All <i class="fa fa-caret-down"></i>
+                                                <button class="btn btn-sm btn-light filter-btn">
+                                                    ALL <i class="fa fa-caret-down"></i>
                                                 </button>
 
                                 <!-- DROP FILTER -->
                                                  <div id="filterBox" class="filter-dropdown d-none">
                                                  <div class="filter-item" onclick="selectFilter(event,'All')">All</div>
-                                                 <div class="filter-item" onclick="selectFilter(event,'User')">User</div>
+                                                 <div class="filter-item" onclick="selectFilter(event,'user_post')">User</div>
                                                  <div class="filter-item" onclick="selectFilter(event,'Tag')">Tag</div>
                                                  </div>
 
@@ -286,15 +286,14 @@ function toggleFilter(e) {
     document.getElementById("filterBox").classList.toggle("d-none");
 }
 
+var contextPath = "${pageContext.request.contextPath}";
+
 function selectFilter(e, type) {
     e.stopPropagation();
-
     document.querySelector(".filter-btn").innerHTML =
         type + ' <i class="fa fa-caret-down"></i>';
-
     document.getElementById("filterBox").classList.add("d-none");
-
-    console.log("Filter:", type);
+    window.location.href = contextPath + "/notification?type=" + type; // Giờ hoạt động
 }
 </script>
 </nav>
