@@ -9,7 +9,7 @@
 
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <style>
     /* CUSTOM CSS FOR HEADER */
     .navbar-devquery {
@@ -123,6 +123,31 @@
     .noti-action:hover {
         text-decoration: underline;
     }
+    .filter-dropdown {
+    position: absolute;
+    top: 30px;
+    right: 0;
+    width: 120px;
+    background: white;
+    border: 1px solid #ddd;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    z-index: 9999;
+    }
+
+    .filter-item {
+    padding: 8px 10px;
+    cursor: pointer;
+    font-size: 13px;
+    }
+
+    .filter-item:hover {
+    background: #f1f2f3;
+    }
+
+    .filter-btn {
+    padding: 2px 6px;
+    font-size: 13px;
+    }
 </style>
 
 <nav class="navbar navbar-expand-lg navbar-light fixed-top navbar-devquery">
@@ -175,10 +200,10 @@
                         </a>
                     </li>
 
-                    <li class="nav-item position-relative notification-wrapper">
-                        <a class="nav-link text-secondary" href="#" id="notiDropdownBtn" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <li class="nav-item dropdown position-relative notification-wrapper">
+                        <a class="nav-link text-secondary" href="#" id="notiDropdownBtn" role="button" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
                             <i class="fa-solid fa-inbox fa-lg"></i>
-
+                            
                             <c:if test="${requestScope.unreadNotification != null && requestScope.unreadNotification > 0}">
                                 <span class="noti-badge">
                                     ${requestScope.unreadNotification > 99 ? '99+' : requestScope.unreadNotification}
@@ -187,15 +212,38 @@
                         </a>
 
                         <div class="dropdown-menu dropdown-menu-end shadow noti-dropdown" aria-labelledby="notiDropdownBtn">
+                            
+                            <div class="noti-header d-flex justify-content-between align-items-center">
+                                <!-- LEFT: Notification + Filter -->
+                                    <div class="d-flex align-items-center gap-2">
 
-                            <div class="noti-header">
-                                <span>Notification</span>
-                                <a href="${pageContext.request.contextPath}/notification?action=allRead" class="noti-mark-all">Mark all read</a>
+                                        <span class="fw-bold">NOTIFICATION</span>
+
+                                 <!-- FILTER -->
+                                            <div class="position-relative" onclick="event.stopPropagation()">
+
+                                                <button class="btn btn-sm btn-light filter-btn">
+                                                    ALL <i class="fa fa-caret-down"></i>
+                                                </button>
+
+                                <!-- DROP FILTER -->
+                                                 <div id="filterBox" class="filter-dropdown d-none">
+                                                 <div class="filter-item" onclick="selectFilter(event,'All')">All</div>
+                                                 <div class="filter-item" onclick="selectFilter(event,'user_post')">User</div>
+                                                 <div class="filter-item" onclick="selectFilter(event,'Tag')">Tag</div>
+                                                 </div>
+
+                                            </div>
+
+                                     </div>
+
+
+                                <a href="${pageContext.request.contextPath}/notification?action=allRead" class="noti-mark-all">MARK ALL READ</a>
                             </div>
-
+                            
                             <div class="noti-body">
                                 <c:if test="${empty requestScope.Notification}">
-                                    <div class="noti-empty">You don't have any notifications.</div>
+                                    <div class="noti-empty">YOU DON'T HAVE ANY NOTIFICATION</div>
                                 </c:if>
 
                                 <c:forEach items="${requestScope.Notification}" var="noti">
@@ -204,13 +252,13 @@
                                         <div class="noti-meta">
                                             <span>${noti.createdAt}</span>
                                             <c:if test="${!noti.isRead}">
-                                                <a href="${pageContext.request.contextPath}/notification?id=${noti.notificationId}" class="noti-action">Mark as read</a>
+                                                <a href="${pageContext.request.contextPath}/notification?id=${noti.notificationId}" class="noti-action">MARK AS READ</a>
                                             </c:if>
                                         </div>
                                     </div>
                                 </c:forEach>
                             </div>
-
+                            
                         </div>
                     </li>
                     <li class="nav-item me-4">
@@ -232,4 +280,20 @@
             </ul>
         </div>
     </div>
+<script>
+function toggleFilter(e) {
+    e.stopPropagation();
+    document.getElementById("filterBox").classList.toggle("d-none");
+}
+
+var contextPath = "${pageContext.request.contextPath}";
+
+function selectFilter(e, type) {
+    e.stopPropagation();
+    document.querySelector(".filter-btn").innerHTML =
+        type + ' <i class="fa fa-caret-down"></i>';
+    document.getElementById("filterBox").classList.add("d-none");
+    window.location.href = contextPath + "/notification?type=" + type; // Giờ hoạt động
+}
+</script>
 </nav>
