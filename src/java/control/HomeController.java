@@ -38,11 +38,11 @@ public class HomeController extends HttpServlet {
         List<String> popularTags = dao.getPopularTags(10);
         
         // 4. Gửi dữ liệu sang trang JSP
-        request.setAttribute("questions", list);       // Danh sách câu hỏi
-        request.setAttribute("totalPage", totalPage);  // Tổng số trang
-        request.setAttribute("currentPage", pageIndex);// Trang hiện tại
-        request.setAttribute("totalQuestions", totalRecords); // Tổng số câu hỏi 
-        request.setAttribute("popularTags", popularTags); // Gửi top tags xuống view
+        request.setAttribute("questions", list);     
+        request.setAttribute("totalPage", totalPage);  
+        request.setAttribute("currentPage", pageIndex);
+        request.setAttribute("totalQuestions", totalRecords); 
+        request.setAttribute("popularTags", popularTags); 
         
         // Gửi lại các tham số lọc để giữ trạng thái active cho nút bấm
         request.setAttribute("currentSort", sort);
