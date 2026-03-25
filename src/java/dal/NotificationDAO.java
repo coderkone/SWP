@@ -66,4 +66,35 @@ public class NotificationDAO {
             ps.executeUpdate();
         }
     }
+    public List<Notification> getNotificationByType(long userId, String type, int limit) throws Exception {
+
+    List<Notification> list = new ArrayList<>();
+
+    String sql = "SELECT TOP (?) notification_id, user_id, type, content, is_read, created_at "
+               + "FROM Notifications WHERE user_id = ? AND type = ? ORDER BY created_at DESC";
+
+    try (Connection con = db.getConnection();
+         PreparedStatement ps = con.prepareStatement(sql)) {
+
+        ps.setInt(1, limit);
+        ps.setLong(2, userId);
+        ps.setString(3, type);
+
+        try (ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                Notification n = new Notification(
+                        rs.getLong("notification_id"),
+                        rs.getLong("user_id"),
+                        rs.getString("type"),
+                        rs.getString("content"),
+                        rs.getBoolean("is_read"),
+                        rs.getTimestamp("created_at")
+                );
+                list.add(n);
+            }
+        }
+    }
+
+    return list;
+    }   
 }

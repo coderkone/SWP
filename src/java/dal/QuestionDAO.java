@@ -8,7 +8,11 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public class QuestionDAO extends DBContext {
 
@@ -752,4 +756,161 @@ private static class AnswerOwner {
             }
         }
     }
+    //======================================================
+    public long getLastInsertedQuestionId() {
+
+    String sql = "SELECT TOP 1 question_id FROM Questions ORDER BY question_id DESC";
+
+    try (Connection conn = getConnection();
+         PreparedStatement ps = conn.prepareStatement(sql);
+         ResultSet rs = ps.executeQuery()) {
+
+        if (rs.next()) {
+            return rs.getLong("question_id");
+        }
+
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+
+    return -1;
+}
+    private List<String> getTagNamesByQuestionId(long questionId) {
+
+    List<String> tags = new ArrayList<>();
+
+    String sql = "SELECT t.tag_name FROM Tags t "
+               + "JOIN Question_Tags qt ON t.tag_id = qt.tag_id "
+               + "WHERE qt.question_id = ?";
+
+    try (Connection conn = getConnection();
+         PreparedStatement ps = conn.prepareStatement(sql)) {
+
+        ps.setLong(1, questionId);
+        ResultSet rs = ps.executeQuery();
+
+        while (rs.next()) {
+            tags.add(rs.getString("tag_name"));
+        }
+
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+
+    return tags;
+}
+        // ================= NOTIFICATION =================
+    public void createNotificationForNewQuestion(long authorId, long questionId, String title) {
+
+        Set<Long> userFollowers = new HashSet<>();
+        Set<Long> tagFollowers = new HashSet<>();
+
+        String username = getUsernameById(authorId);
+
+        // USER FOLLOW
+        String sqlUser = "SELECT follower_id FROM UserFollow WHERE following_id = ?";
+
+        try (Connection conn = getConnection();
+             PreparedStatement ps = conn.prepareStatement(sqlUser)) {
+
+            ps.setLong(1, authorId);
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+                long uid = rs.getLong("follower_id");
+                if (uid != authorId) {
+                    userFollowers.add(uid);
+                }
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        // TAG FOLLOW
+        String sqlTag = """
+            SELECT DISTINCT tf.user_id, t.tag_name
+            FROM TagFollow tf
+            JOIN Question_Tags qt ON tf.tag_id = qt.tag_id
+            JOIN Tags t ON t.tag_id = qt.tag_id
+            WHERE qt.question_id = ?
+        """;
+
+        Map<Long, List<String>> tagMap = new HashMap<>();
+
+        try (Connection conn = getConnection();
+             PreparedStatement ps = conn.prepareStatement(sqlTag)) {
+
+            ps.setLong(1, questionId);
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+                long uid = rs.getLong("user_id");
+                String tagName = rs.getString("tag_name");
+
+                if (uid == authorId) continue;
+
+                tagFollowers.add(uid);
+                tagMap.computeIfAbsent(uid, k -> new ArrayList<>()).add(tagName);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        // INSERT
+        String insertSql = "INSERT INTO Notifications (user_id, type, content) VALUES (?, ?, ?)";
+
+        try (Connection conn = getConnection();
+             PreparedStatement ps = conn.prepareStatement(insertSql)) {
+
+            // USER
+            for (Long userId : userFollowers) {
+                String content = "User " + username + " vừa đăng bài mới";
+
+                ps.setLong(1, userId);
+                ps.setString(2, "user_post");
+                ps.setString(3, content);
+                ps.executeUpdate();
+            }
+
+            // TAG
+            for (Long userId : tagFollowers) {
+                List<String> tags = tagMap.get(userId);
+                String tagStr = String.join(", ", tags);
+
+                String content = "Có một bài đăng liên quan đến tag " + tagStr;
+
+                ps.setLong(1, userId);
+                ps.setString(2, "tag_post");
+                ps.setString(3, content);
+                ps.executeUpdate();
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    private String getUsernameById(long userId) {
+
+    String sql = "SELECT username FROM Users WHERE user_id = ?";
+
+    try (Connection conn = getConnection();
+         PreparedStatement ps = conn.prepareStatement(sql)) {
+
+        ps.setLong(1, userId);
+        ResultSet rs = ps.executeQuery();
+
+        if (rs.next()) {
+            return rs.getString("username");
+        }
+
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+
+    return "Unknown";
+}
+    
+
 }

@@ -97,6 +97,11 @@ public class CreateQuestionController extends HttpServlet {
             try {
                 boolean success = qDao.insertQuestionWithTags(currentUser.getUserId(), title, body, tags, userRep);
                 if (success) {
+                    long questionId = qDao.getLastInsertedQuestionId();
+                    qDao.createNotificationForNewQuestion(
+                    currentUser.getUserId(),
+                    questionId,
+                    title);    
                     response.sendRedirect("home"); // Chuyển về trang chủ nếu thành công
                 } else {
                     response.getWriter().print("Có lỗi xảy ra khi lưu Database!");
