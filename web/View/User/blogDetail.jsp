@@ -7,10 +7,12 @@
     <head>
         <meta charset="UTF-8">
         <title>${blog.title} - DevQuery Blog</title>
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
         <link rel="stylesheet" href="https://zurb.github.io/tribute/dist/tribute.css" />
         <script src="https://zurb.github.io/tribute/dist/tribute.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
         <style>
             body {
                 background-color: #f8f9fa;
@@ -104,7 +106,21 @@
                              onerror="this.onerror=null; this.src='https://cdn-icons-png.flaticon.com/512/149/149071.png';" 
                              class="comment-avatar me-3" alt="Your Avatar">
                         <div class="flex-grow-1">
-                            <textarea name="content" class="form-control mb-2" rows="3" placeholder="Write a comment..." required></textarea>
+                            <div class="bg-light border rounded-top p-1 border-bottom-0 d-flex gap-1" style="border-color: #dee2e6;">
+                                <button type="button" class="btn btn-sm btn-light text-secondary" title="Bold" onclick="insertMd('main-cmt', '**', '**')"><i class="fa-solid fa-bold"></i></button>
+                                <button type="button" class="btn btn-sm btn-light text-secondary" title="Italic" onclick="insertMd('main-cmt', '*', '*')"><i class="fa-solid fa-italic"></i></button>
+                                <div class="vr mx-1"></div>
+
+                                <button type="button" class="btn btn-sm btn-light text-secondary" title="List" onclick="insertMd('main-cmt', '\n* ', '')"><i class="fa-solid fa-list"></i></button>
+                                <button type="button" class="btn btn-sm btn-light text-secondary" title="Quote" onclick="insertMd('main-cmt', '\n> ', '')"><i class="fa-solid fa-quote-left"></i></button>
+
+                                <div class="vr mx-1"></div>
+                                <button type="button" class="btn btn-sm btn-light text-secondary" title="Inline Code" onclick="insertMd('main-cmt', '`', '`')"><i class="fa-solid fa-code"></i></button>
+                                <button type="button" class="btn btn-sm btn-light text-secondary" title="Code Block" onclick="insertMd('main-cmt', '\n```java\n', '\n```\n')"><i class="fa-solid fa-file-code"></i></button>
+                            </div>
+
+                            <textarea id="main-cmt" name="content" class="form-control mb-2 rounded-bottom" style="border-top-left-radius: 0; border-top-right-radius: 0;" rows="3" placeholder="Write a comment..." required></textarea>
+
                             <button type="submit" class="btn btn-primary btn-sm px-4">Post Comment</button>
                         </div>
                     </div>
@@ -189,6 +205,64 @@
                     btn.innerHTML = '<i class="fa-solid fa-chevron-down"></i> Show Replies';
                 }
             }
+        </script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-java.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-sql.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-javascript.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+        <script>
+            // Hàm xử lý khi bấm các nút trên thanh công cụ Markdown
+            function insertMd(elementId, prefix, suffix) {
+                const textarea = document.getElementById(elementId);
+                if (!textarea)
+                    return;
+
+                const start = textarea.selectionStart;
+                const end = textarea.selectionEnd;
+                const selectedText = textarea.value.substring(start, end);
+
+                const defaultText = selectedText || "nội_dung";
+                const newText = prefix + defaultText + suffix;
+
+                textarea.value = textarea.value.substring(0, start) + newText + textarea.value.substring(end);
+
+                textarea.focus();
+                textarea.selectionStart = start + prefix.length;
+                textarea.selectionEnd = start + prefix.length + defaultText.length;
+            }
+
+            // Hàm tự động quét và dịch Markdown khi trang vừa tải xong
+            document.addEventListener("DOMContentLoaded", function () {
+                if (typeof marked !== 'undefined') {
+                    marked.use({
+                        breaks: true,
+                        gfm: true
+                    });
+
+                    const commentContents = document.querySelectorAll('.comment-text-content');
+
+                    commentContents.forEach(function (el) {
+                        // 1. Lấy nội dung và dùng .trim() để xóa khoảng trắng thừa do JSP tạo ra
+                        let rawMarkdown = el.textContent.trim();
+
+                        // 2. Dịch Markdown sang HTML
+                        let renderedHtml = marked.parse(rawMarkdown);
+
+                        // 3. Highlight @username (Xử lý ở đây để không bị lỗi thẻ HTML)
+                        renderedHtml = renderedHtml.replace(/(@\w+)/g, '<span class="text-primary fw-bold">$1</span>');
+
+                        // 4. Đổ lại vào giao diện
+                        el.innerHTML = renderedHtml;
+                    });
+                }
+
+                // Highlight code blocks
+                if (typeof Prism !== 'undefined') {
+                    Prism.highlightAll();
+                }
+            });
         </script>
     </body>
 </html>
