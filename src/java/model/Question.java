@@ -23,6 +23,10 @@ public class Question {
     private Timestamp updatedAt;
     private int score;
     private Long acceptedAnswerId;
+    private int bountyAmount;
+    private Long bountyAwarderId;
+    private Timestamp bountyStartedAt;
+    private Timestamp bountyExpiresAt;
 
     public Question(long questionId, long userId, String title, String body, String codeSnippet, int viewCount, boolean isClosed, String closedReason, Timestamp createdAt, Timestamp updatedAt, int score) {
         this.questionId = questionId;
@@ -170,5 +174,46 @@ public class Question {
 
     public void setAcceptedAnswerId(Long acceptedAnswerId) {
         this.acceptedAnswerId = acceptedAnswerId;
+    }
+
+    public int getBountyAmount() {
+        return bountyAmount;
+    }
+
+    public void setBountyAmount(int bountyAmount) {
+        this.bountyAmount = bountyAmount;
+    }
+
+    public Long getBountyAwarderId() {
+        return bountyAwarderId;
+    }
+
+    public void setBountyAwarderId(Long bountyAwarderId) {
+        this.bountyAwarderId = bountyAwarderId;
+    }
+
+    public Timestamp getBountyStartedAt() {
+        return bountyStartedAt;
+    }
+
+    public void setBountyStartedAt(Timestamp bountyStartedAt) {
+        this.bountyStartedAt = bountyStartedAt;
+    }
+
+    public Timestamp getBountyExpiresAt() {
+        return bountyExpiresAt;
+    }
+
+    public void setBountyExpiresAt(Timestamp bountyExpiresAt) {
+        this.bountyExpiresAt = bountyExpiresAt;
+    }
+
+    public boolean hasBounty() {
+        return bountyAmount > 0;
+    }
+
+    public boolean hasActiveBounty() {
+        return bountyAmount > 0 && bountyExpiresAt != null
+                && bountyExpiresAt.after(new Timestamp(System.currentTimeMillis()));
     }
 }

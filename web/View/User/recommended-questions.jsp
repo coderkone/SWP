@@ -489,5 +489,7 @@
                 </div>
             </aside>
         </div>
+
+        <jsp:include page="../Common/footer.jsp" />
     </body>
 </html>

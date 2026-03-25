@@ -7,6 +7,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -384,6 +385,11 @@ public class QuestionDetailDAO extends DBContext {
                 }
             }
 
+            if (newAccepted != null && state.hasActiveBounty() && target.userId == state.questionOwnerId) {
+                con.rollback();
+                throw new IllegalStateException("You cannot accept your own answer while this question has an active bounty");
+            }
+
             if (newAccepted != null && target.userId != state.questionOwnerId) {
                 changeReputation(con, target.userId, 15,
                         "Answer accepted", "accept_answer_owner",
@@ -391,6 +397,16 @@ public class QuestionDetailDAO extends DBContext {
                 changeReputation(con, state.questionOwnerId, 2,
                         "Accepted an answer", "accept_question_owner",
                         "question", questionId, state.questionOwnerId);
+            }
+
+            if (newAccepted != null && state.hasActiveBounty()) {
+                changeReputation(con, target.userId, state.bountyAmount,
+                        "Received bounty award", "bounty_award",
+                        "answer", newAccepted, state.questionOwnerId);
+                if (!clearQuestionBounty(con, questionId)) {
+                    con.rollback();
+                    return false;
+                }
             }
 
             con.commit();
@@ -526,15 +542,18 @@ public class QuestionDetailDAO extends DBContext {
         }
     }
 
-    private QuestionAcceptState getQuestionAcceptState(Connection con, long questionId) throws SQLException {
-        String sql = "SELECT user_id, accepted_answer_id FROM Questions WHERE question_id = ? AND ISNULL(is_deleted, 0) = 0";
+    private QuestionAcceptState getQuestionAcceptState(Connection con, long questionId) throws Exception {
+        String sql = "SELECT user_id, accepted_answer_id, bounty_amount, bounty_expires_at FROM Questions WHERE question_id = ? AND ISNULL(is_deleted, 0) = 0";
         try (PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setLong(1, questionId);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     Long acceptedAnswerId = rs.getObject("accepted_answer_id") != null
                             ? rs.getLong("accepted_answer_id") : null;
-                    return new QuestionAcceptState(rs.getLong("user_id"), acceptedAnswerId);
+                    int bountyAmount = rs.getObject("bounty_amount") != null
+                            ? rs.getInt("bounty_amount") : 0;
+                    Timestamp bountyExpiresAt = rs.getTimestamp("bounty_expires_at");
+                    return new QuestionAcceptState(rs.getLong("user_id"), acceptedAnswerId, bountyAmount, bountyExpiresAt);
                 }
             }
         }
@@ -589,13 +608,30 @@ public class QuestionDetailDAO extends DBContext {
         }
     }
 
+    private boolean clearQuestionBounty(Connection con, long questionId) throws SQLException {
+        String sql = "UPDATE Questions SET bounty_amount = 0, bounty_awarder_id = NULL, bounty_started_at = NULL, bounty_expires_at = NULL WHERE question_id = ?";
+        try (PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setLong(1, questionId);
+            return ps.executeUpdate() > 0;
+        }
+    }
+
     private static final class QuestionAcceptState {
         private final long questionOwnerId;
         private final Long acceptedAnswerId;
+        private final int bountyAmount;
+        private final Timestamp bountyExpiresAt;
 
-        private QuestionAcceptState(long questionOwnerId, Long acceptedAnswerId) {
+        private QuestionAcceptState(long questionOwnerId, Long acceptedAnswerId, int bountyAmount, Timestamp bountyExpiresAt) {
             this.questionOwnerId = questionOwnerId;
             this.acceptedAnswerId = acceptedAnswerId;
+            this.bountyAmount = bountyAmount;
+            this.bountyExpiresAt = bountyExpiresAt;
+        }
+
+        private boolean hasActiveBounty() {
+            return bountyAmount > 0 && bountyExpiresAt != null
+                    && bountyExpiresAt.after(new Timestamp(System.currentTimeMillis()));
         }
     }
 

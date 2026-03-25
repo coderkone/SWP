@@ -18,18 +18,22 @@
     .nav-link {
         color: #525960;
         font-size: 14px;
-        padding: 8px 10px;
+        padding: 8px 12px;
         margin-bottom: 4px;
+        border-radius: 6px;
+        transition: all 0.2s ease;
     }
     .nav-link:hover {
         color: #0c0d0e;
-        background-color: #f8f9fa;
+        background-color: #f1f2f3;
+        transform: translateX(3px);
     }
     .nav-link.active {
-        font-weight: bold;
+        font-weight: 600;
         color: #0c0d0e;
-        background-color: #f1f2f3;
-        border-right: 3px solid #f48024;
+        background-color: #e3e6e8;
+        border-right: none;
+        border-left: 3px solid #f48024;
     }
     .sidebar-heading {
         font-size: 11px;
@@ -62,6 +66,11 @@
             <li class="nav-item">
                 <a class="nav-link ${uri.contains('/user') ? 'active' : ''}" href="${pageContext.request.contextPath}/users">
                     <i class="fa-solid fa-users me-2"></i> Users
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link ${uri.contains('/bounty/questions') ? 'active' : ''}" href="${pageContext.request.contextPath}/bounty/questions">
+                    <i class="fa-solid fa-coins me-2"></i> Bounties
                 </a>
             </li>
 

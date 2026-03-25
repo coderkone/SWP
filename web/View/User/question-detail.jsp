@@ -23,19 +23,9 @@
 
         <jsp:include page="../Common/header.jsp" />
 
-        <div class="sidebar" id="sidebar">
-                <ul class="nav-list">
-                    <li><a href="${pageContext.request.contextPath}/home" class="nav-link"><i class="fa-solid fa-house"></i> Home</a></li>
-                    <li><a href="${pageContext.request.contextPath}/home" class="nav-link"><i class="fa-solid fa-earth-americas"></i> Questions</a></li>                <li><a href="${pageContext.request.contextPath}/ask" class="nav-link"><i class="fa-solid fa-pen"></i> Ask</a></li>
-                    <li><a href="${pageContext.request.contextPath}/tags" class="nav-link"><i class="fa-solid fa-tags"></i> Tags</a></li>
-                    <li><a href="${pageContext.request.contextPath}/saves" class="nav-link"><i class="fa-solid fa-bookmark"></i> Saves</a></li>            </ul>
-            </div>
-
         <div class="container">
-             <div class="left-sidebar">
-                <jsp:include page="../Common/sidebar.jsp">
-                    <jsp:param name="page" value="bookmarks"/>
-                </jsp:include>
+            <div class="left-sidebar">
+                <jsp:include page="../Common/sidebar.jsp" />
             </div>
 
             <div class="main-content">
@@ -56,8 +46,16 @@
                     }
                     boolean isLoggedIn = (sessionPrincipal instanceof UserDTO) || (sessionPrincipal instanceof User);
                     SimpleDateFormat editDateFormat = new SimpleDateFormat("MMM d, yyyy 'at' HH:mm");
+                    int minBountyReputation = request.getAttribute("minBountyReputation") instanceof Integer ? (Integer) request.getAttribute("minBountyReputation") : 100;
+                    int bountyDurationDays = request.getAttribute("bountyDurationDays") instanceof Integer ? (Integer) request.getAttribute("bountyDurationDays") : 7;
                     if (question != null) {
                     boolean isQuestionClosed = question.isIsClosed();
+                    boolean hasAnyBounty = question.getBountyAmount() > 0;
+                    boolean hasActiveBounty = hasAnyBounty && question.getBountyExpiresAt() != null && question.getBountyExpiresAt().after(new java.util.Date());
+                    boolean bountyBlockedByAcceptedAnswer = question.getAcceptedAnswerId() != null;
+                    boolean bountyOwner = currentUserId != null && currentUserId == question.getUserId();
+                    boolean canOpenBountyModal = !isQuestionClosed && bountyOwner && !hasActiveBounty && !bountyBlockedByAcceptedAnswer;
+                    boolean canAddBounty = canOpenBountyModal && currentUserReputation >= minBountyReputation;
                 %>
 
                 <% if ("success".equals(request.getParameter("flag"))) { %>
@@ -78,6 +76,16 @@
                 <% if (request.getParameter("closeError") != null) { %>
                 <div class="flag-notice error" role="alert">
                     <%= request.getParameter("closeError") %>
+                </div>
+                <% } %>
+                <% if ("success".equals(request.getParameter("bounty"))) { %>
+                <div class="flag-notice success" role="status" aria-live="polite">
+                    Bounty has been added successfully. The spent reputation for this bounty is not refundable.
+                </div>
+                <% } %>
+                <% if (request.getParameter("bountyError") != null) { %>
+                <div class="flag-notice error" role="alert">
+                    <%= request.getParameter("bountyError") %>
                 </div>
                 <% } %>
                 <!-- Question -->
@@ -120,6 +128,13 @@
                                 <% } %>
                             </div>
                             <div class="post-actions-group">
+                                <% if (bountyOwner) { %>
+                                <button type="button"
+                                        class="action-btn<%= canAddBounty ? "" : " disabled" %>"
+                                        <%= canAddBounty ? "onclick=\"openBountyModal('" + question.getQuestionId() + "')\"" : "disabled title=\"Bounty requires owner access, enough reputation, no accepted answer, and no active bounty\"" %>>
+                                    <i class="fa-solid fa-coins"></i> Add Bounty
+                                </button>
+                                <% } %>
                                 <div class="share-wrapper">
                                     <% if (!isQuestionClosed) { %>
                                     <button type="button" class="action-btn" onclick="toggleSharePopup(event)">
@@ -171,6 +186,33 @@
                         </div>
 
                         <div class="question-body">
+                            <% if (hasAnyBounty) { %>
+                            <div class="bounty-panel<%= hasActiveBounty ? "" : " expired" %>">
+                                <div class="bounty-summary">
+                                    <span class="bounty-badge"><i class="fa-solid fa-coins"></i> +<%= question.getBountyAmount() %> bounty</span>
+                                    <div class="bounty-meta">
+                                        <% if (hasActiveBounty) { %>
+                                        <span class="bounty-countdown" data-bounty-expiry="<%= question.getBountyExpiresAt().getTime() %>"></span>
+                                        <span class="bounty-hint">Expires at <%= editDateFormat.format(question.getBountyExpiresAt()) %></span>
+                                        <% } else { %>
+                                        <span class="bounty-countdown">Expired</span>
+                                        <span class="bounty-hint">Last bounty ended at <%= question.getBountyExpiresAt() != null ? editDateFormat.format(question.getBountyExpiresAt()) : "unknown time" %></span>
+                                        <% } %>
+                                    </div>
+                                </div>
+                                <% if (bountyOwner && !canAddBounty) { %>
+                                <div class="bounty-hint">
+                                    <% if (currentUserReputation < minBountyReputation) { %>
+                                    Need at least <%= minBountyReputation %> reputation to start a bounty.
+                                    <% } else if (bountyBlockedByAcceptedAnswer) { %>
+                                    Bounty is disabled because this question already has an accepted answer.
+                                    <% } else if (hasActiveBounty) { %>
+                                    You already have an active bounty on this question.
+                                    <% } %>
+                                </div>
+                                <% } %>
+                            </div>
+                            <% } %>
                             <%= question.getBody() %>
                         </div>
 
@@ -341,6 +383,7 @@
                     String answerUpvoteClass = "upvote".equals(answerUserVote) ? " voted-up" : "";
                     String answerDownvoteClass = "downvote".equals(answerUserVote) ? " voted-down" : "";
                     boolean accepted = answer.isIsAccepted();
+                    boolean bountySelfAcceptBlocked = hasActiveBounty && currentUserId != null && currentUserId == answer.getUserId();
                     %>
                     <div class="answer-box<%= accepted ? " accepted" : "" %>" id="answer-<%= answer.getAnswerId() %>">
                         <div class="vote-box">
@@ -412,12 +455,14 @@
                                             <i class="fa-solid fa-flag"></i> Flag
                                         </button>
                                         <% } %>
-                                        <% if (!isQuestionClosed && isQuestionOwner) { %>
+                                        <% if (!isQuestionClosed && isQuestionOwner && !bountySelfAcceptBlocked) { %>
                                         <button type="button" class="accept-btn<%= accepted ? " accepted" : "" %>" 
                                                 data-question-id="<%= question.getQuestionId() %>" data-answer-id="<%= answer.getAnswerId() %>"
                                                 onclick="handleAcceptClick(event, this)" title="<%= accepted ? "Unaccept" : "Accept" %>">
                                             <i class="fa-solid fa-check"></i> <%= accepted ? "Accepted" : "Accept" %>
                                         </button>
+                                        <% } else if (!isQuestionClosed && isQuestionOwner && bountySelfAcceptBlocked) { %>
+                                        <span style="color: #8a6d3b; font-weight: 500;"><i class="fa-solid fa-ban"></i> Cannot accept your own answer while bounty is active</span>
                                         <% } else if (accepted) { %>
                                         <span style="color: #2e7d32; font-weight: 500;"><i class="fa-solid fa-check-circle"></i> Accepted</span>
                                         <% } %>
@@ -586,7 +631,9 @@
                 </div>
                 <% } %>
 
-                <% } else { %>
+                <% } %>
+
+                <% if (question == null) { %>
                 <div class="empty-state">
                     <i class="fa-solid fa-circle-xmark" style="font-size: 48px;"></i>
                     <div style="margin-top: 10px;">
@@ -604,8 +651,12 @@
             <div class="sidebar-right">
                 <% 
                     List<dto.QuestionDTO> relatedQuestions = (List<dto.QuestionDTO>) request.getAttribute("relatedQuestions");
+                    List<dto.QuestionDTO> popularQuestions = (List<dto.QuestionDTO>) request.getAttribute("popularQuestions");
                     if (relatedQuestions == null) {
                         relatedQuestions = new java.util.ArrayList<>();
+                    }
+                    if (popularQuestions == null) {
+                        popularQuestions = new java.util.ArrayList<>();
                     }
             
                     // Split related questions into linked and related
@@ -613,6 +664,17 @@
                     List<dto.QuestionDTO> linkedQuestions = relatedQuestions.subList(0, Math.min(mid, relatedQuestions.size()));
                     List<dto.QuestionDTO> relatedOnlyQuestions = relatedQuestions.subList(Math.min(mid, relatedQuestions.size()), relatedQuestions.size());
                 %>
+
+                <% if (!popularQuestions.isEmpty()) { %>
+                <div class="card">
+                    <div class="card-title"><i class="fa-solid fa-chart-line"></i> Popular Questions</div>
+                    <div class="linked-box">
+                        <% for (dto.QuestionDTO q : popularQuestions) { %>
+                        <a href="${pageContext.request.contextPath}/question/detail?id=<%= q.getQuestionId() %>" class="linked-link"><%= q.getTitle() %></a>
+                        <% } %>
+                    </div>
+                </div>
+                <% } %>
 
                 <% if (!linkedQuestions.isEmpty()) { %>
                 <div class="card">
@@ -715,6 +777,52 @@
                 </div>
             </div>
         </div>
+
+        <div id="bounty-modal" class="simple-modal" aria-hidden="true">
+            <div class="simple-modal-dialog flag-modal-dialog" role="dialog" aria-modal="true" aria-labelledby="bounty-modal-title">
+                <div class="simple-modal-header">
+                    <h3 id="bounty-modal-title">Add Bounty</h3>
+                    <button type="button" class="simple-modal-close" onclick="closeBountyModal()" aria-label="Close">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+                <div class="simple-modal-body flag-modal-body">
+                    <form method="post" action="${pageContext.request.contextPath}/question/bounty" class="flag-form">
+                        <input type="hidden" id="bounty-question-id" name="questionId" value="<%= question != null ? question.getQuestionId() : 0 %>">
+
+                        <div class="bounty-form-copy">
+                            Start a bounty to attract more answers. The bounty lasts <strong><%= bountyDurationDays %> days</strong> and the spent reputation will not be refunded.
+                        </div>
+
+                        <div class="flag-field">
+                            <label for="bounty-amount" class="form-label">Bounty amount</label>
+                            <select id="bounty-amount" name="amount" class="form-input" required>
+                                <option value="50">50 reputation</option>
+                                <option value="100">100 reputation</option>
+                                <option value="150">150 reputation</option>
+                                <option value="200">200 reputation</option>
+                                <option value="250">250 reputation</option>
+                                <option value="500">500 reputation</option>
+                            </select>
+                        </div>
+
+                        <ul class="bounty-rule-list">
+                            <li>Only the question owner can add a bounty.</li>
+                            <li>You need at least <%= minBountyReputation %> reputation before starting one.</li>
+                            <li>Bounty cannot be added when the question already has an accepted answer.</li>
+                            <li>Only one active bounty is allowed on a question at a time.</li>
+                        </ul>
+
+                        <div class="flag-actions">
+                            <button type="submit" class="btn">Start Bounty</button>
+                            <button type="button" class="btn btn-secondary" onclick="closeBountyModal()">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <jsp:include page="../Common/footer.jsp" />
 
         <%@ include file="partials/question-detail-scripts.jspf" %>
     </body>

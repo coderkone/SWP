@@ -7,11 +7,11 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -19,6 +19,9 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 public class QuestionDAO extends DBContext {
+
+    public static final int MIN_BOUNTY_REPUTATION = 100;
+    public static final int BOUNTY_DURATION_DAYS = 7;
 
     private static final Set<String> RECOMMENDATION_STOP_WORDS = new java.util.HashSet<>(Arrays.asList(
             "the", "and", "for", "with", "that", "this", "from", "into", "have", "has",
@@ -29,6 +32,66 @@ public class QuestionDAO extends DBContext {
             "make", "made", "need", "want", "help", "question", "questions", "code", "error",
             "java", "jsp", "sql", "html", "css"
     ));
+
+    public QuestionDAO() {
+        ensureQuestionBountyColumns();
+    }
+
+    public static class BountyPlacementResult {
+
+        private final int updatedReputation;
+        private final Timestamp bountyExpiresAt;
+
+        public BountyPlacementResult(int updatedReputation, Timestamp bountyExpiresAt) {
+            this.updatedReputation = updatedReputation;
+            this.bountyExpiresAt = bountyExpiresAt;
+        }
+
+        public int getUpdatedReputation() {
+            return updatedReputation;
+        }
+
+        public Timestamp getBountyExpiresAt() {
+            return bountyExpiresAt;
+        }
+    }
+
+    private void ensureQuestionBountyColumns() {
+        ensureQuestionColumn(
+                "bounty_amount",
+                "ALTER TABLE Questions ADD bounty_amount INT NOT NULL CONSTRAINT DF_Questions_bounty_amount DEFAULT 0"
+        );
+        ensureQuestionColumn(
+                "bounty_awarder_id",
+                "ALTER TABLE Questions ADD bounty_awarder_id BIGINT NULL"
+        );
+        ensureQuestionColumn(
+                "bounty_started_at",
+                "ALTER TABLE Questions ADD bounty_started_at DATETIME NULL"
+        );
+        ensureQuestionColumn(
+                "bounty_expires_at",
+                "ALTER TABLE Questions ADD bounty_expires_at DATETIME NULL"
+        );
+    }
+
+    private void ensureQuestionColumn(String columnName, String alterSql) {
+        String checkSql = "SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'Questions' AND COLUMN_NAME = ?";
+
+        try (Connection con = getConnection();
+                PreparedStatement check = con.prepareStatement(checkSql)) {
+            check.setString(1, columnName);
+            try (ResultSet rs = check.executeQuery()) {
+                if (!rs.next()) {
+                    try (Statement st = con.createStatement()) {
+                        st.executeUpdate(alterSql);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            // Keep app booting even if schema auto-fix cannot run.
+        }
+    }
 
     // 1. Hàm chính lấy danh sách câu hỏi
     public List<QuestionDTO> getQuestions(int pageIndex, int pageSize, String sortBy, String keyword, String filterType, String tag) {
@@ -110,6 +173,11 @@ public class QuestionDAO extends DBContext {
         q.setCreatedAt(rs.getTimestamp("created_at"));
         q.setUpdatedAt(getNullableTimestamp(rs, "updated_at"));
         q.setAcceptedAnswerId(getNullableLong(rs, "accepted_answer_id"));
+        Integer bountyAmount = getNullableInt(rs, "bounty_amount");
+        q.setBountyAmount(bountyAmount != null ? bountyAmount : 0);
+        q.setBountyAwarderId(getNullableLong(rs, "bounty_awarder_id"));
+        q.setBountyStartedAt(getNullableTimestamp(rs, "bounty_started_at"));
+        q.setBountyExpiresAt(getNullableTimestamp(rs, "bounty_expires_at"));
 
         q.setAuthorName(rs.getString("username"));
         q.setAuthorAvatar(getNullableString(rs, "avatar_url"));
@@ -523,6 +591,150 @@ public class QuestionDAO extends DBContext {
         return false;
     }
 
+    public void incrementViewCount(long questionId) {
+        String sql = "UPDATE Questions SET view_count = ISNULL(view_count, 0) + 1 WHERE question_id = ?";
+        try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setLong(1, questionId);
+            ps.executeUpdate();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public BountyPlacementResult placeBounty(long questionId, long actorUserId, int bountyAmount) throws Exception {
+        Connection conn = null;
+        try {
+            conn = getConnection();
+            conn.setAutoCommit(false);
+
+            String questionSql = "SELECT question_id, user_id, accepted_answer_id, is_closed, bounty_amount, bounty_expires_at "
+                    + "FROM Questions WITH (UPDLOCK, HOLDLOCK) "
+                    + "WHERE question_id = ? AND ISNULL(is_deleted, 0) = 0";
+
+            long questionOwnerId;
+            Long acceptedAnswerId;
+            boolean isClosed;
+            int currentBountyAmount;
+            Timestamp currentBountyExpiresAt;
+
+            try (PreparedStatement ps = conn.prepareStatement(questionSql)) {
+                ps.setLong(1, questionId);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (!rs.next()) {
+                        throw new IllegalArgumentException("Question not found");
+                    }
+                    questionOwnerId = rs.getLong("user_id");
+                    acceptedAnswerId = rs.getObject("accepted_answer_id") != null ? rs.getLong("accepted_answer_id") : null;
+                    isClosed = rs.getBoolean("is_closed");
+                    currentBountyAmount = rs.getObject("bounty_amount") != null ? rs.getInt("bounty_amount") : 0;
+                    currentBountyExpiresAt = rs.getTimestamp("bounty_expires_at");
+                }
+            }
+
+            if (questionOwnerId != actorUserId) {
+                throw new IllegalStateException("Only the question owner can add a bounty");
+            }
+            if (isClosed) {
+                throw new IllegalStateException("Cannot add bounty to a closed question");
+            }
+            if (acceptedAnswerId != null) {
+                throw new IllegalStateException("Cannot add bounty to a question that already has an accepted answer");
+            }
+            if (currentBountyAmount > 0 && currentBountyExpiresAt != null && currentBountyExpiresAt.after(new Timestamp(System.currentTimeMillis()))) {
+                throw new IllegalStateException("This question already has an active bounty");
+            }
+
+            int currentReputation = getUserReputation(conn, actorUserId);
+            if (currentReputation < MIN_BOUNTY_REPUTATION) {
+                throw new IllegalStateException("You need at least " + MIN_BOUNTY_REPUTATION + " reputation to add a bounty");
+            }
+            if (currentReputation < bountyAmount) {
+                throw new IllegalStateException("You do not have enough reputation for this bounty amount");
+            }
+
+            Timestamp newExpiry = new Timestamp(System.currentTimeMillis() + (BOUNTY_DURATION_DAYS * 24L * 60L * 60L * 1000L));
+
+            try (PreparedStatement ps = conn.prepareStatement("UPDATE Users SET Reputation = Reputation - ? WHERE user_id = ?")) {
+                ps.setInt(1, bountyAmount);
+                ps.setLong(2, actorUserId);
+                ps.executeUpdate();
+            }
+
+            try (PreparedStatement ps = conn.prepareStatement(
+                    "UPDATE Questions SET bounty_amount = ?, bounty_awarder_id = ?, bounty_started_at = GETDATE(), bounty_expires_at = ? WHERE question_id = ?")) {
+                ps.setInt(1, bountyAmount);
+                ps.setLong(2, actorUserId);
+                ps.setTimestamp(3, newExpiry);
+                ps.setLong(4, questionId);
+                ps.executeUpdate();
+            }
+
+            insertReputationHistory(conn, actorUserId, -bountyAmount,
+                    "Started a bounty on a question", "bounty_start",
+                    "question", questionId, actorUserId);
+
+            int updatedReputation = getUserReputation(conn, actorUserId);
+            conn.commit();
+            return new BountyPlacementResult(updatedReputation, newExpiry);
+        } catch (Exception e) {
+            if (conn != null) {
+                conn.rollback();
+            }
+            throw e;
+        } finally {
+            if (conn != null) {
+                conn.setAutoCommit(true);
+                conn.close();
+            }
+        }
+    }
+
+    public List<QuestionDTO> getActiveBountyQuestions(String sortBy) {
+        List<QuestionDTO> list = new ArrayList<>();
+        StringBuilder sql = new StringBuilder();
+        sql.append("SELECT q.*, u.username, u.Reputation AS author_reputation, up.avatar_url, ")
+                .append("(SELECT COUNT(*) FROM Answers a WHERE a.question_id = q.question_id) as ans_count ")
+                .append("FROM Questions q ")
+                .append("JOIN Users u ON q.user_id = u.user_id ")
+                .append("LEFT JOIN User_Profile up ON u.user_id = up.user_id ")
+                .append("WHERE ISNULL(q.is_deleted, 0) = 0 ")
+                .append("AND ISNULL(q.bounty_amount, 0) > 0 ")
+                .append("AND q.bounty_expires_at IS NOT NULL ")
+                .append("AND q.bounty_expires_at > GETDATE() ");
+
+        if ("expiring".equalsIgnoreCase(sortBy)) {
+            sql.append("ORDER BY q.bounty_expires_at ASC, q.bounty_amount DESC, q.created_at DESC ");
+        } else if ("newest".equalsIgnoreCase(sortBy)) {
+            sql.append("ORDER BY q.created_at DESC, q.bounty_amount DESC, q.bounty_expires_at ASC ");
+        } else {
+            sql.append("ORDER BY q.bounty_amount DESC, q.bounty_expires_at ASC, q.created_at DESC ");
+        }
+
+        try (Connection conn = getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql.toString());
+                ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                list.add(mapRow(rs));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
+    private int getUserReputation(Connection conn, long userId) throws SQLException {
+        String sql = "SELECT Reputation FROM Users WHERE user_id = ?";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setLong(1, userId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("Reputation");
+                }
+            }
+        }
+        return 0;
+    }
+
     // Cập nhật câu hỏi kèm lịch sử chỉnh sửa và xử lý tags (dùng Transaction)
     public boolean updateQuestionWithHistory(long questionId, long editorId, String title, String body, String codeSnippet, String tags, int userReputation) throws Exception {
         Connection conn = null;
@@ -613,7 +825,7 @@ public class QuestionDAO extends DBContext {
     // Đồng thời cộng/trừ điểm reputation cho tác giả câu trả lời.
     // Toggle chấp nhận câu trả lời
     private QuestionAcceptState getQuestionAcceptState(Connection conn, long questionId) throws SQLException {
-        String sql = "SELECT user_id, accepted_answer_id FROM Questions WHERE question_id = ?";
+        String sql = "SELECT user_id, accepted_answer_id, bounty_amount, bounty_expires_at FROM Questions WHERE question_id = ?";
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setLong(1, questionId);
             try (ResultSet rs = ps.executeQuery()) {
@@ -624,7 +836,12 @@ public class QuestionDAO extends DBContext {
                 Long acceptedId = rs.getObject("accepted_answer_id") != null
                         ? rs.getLong("accepted_answer_id") : null;
 
-                return new QuestionAcceptState(rs.getLong("user_id"), acceptedId);
+                int bountyAmount = rs.getObject("bounty_amount") != null
+                        ? rs.getInt("bounty_amount") : 0;
+
+                Timestamp bountyExpiresAt = rs.getTimestamp("bounty_expires_at");
+
+                return new QuestionAcceptState(rs.getLong("user_id"), acceptedId, bountyAmount, bountyExpiresAt);
             }
         }
     }
@@ -665,6 +882,14 @@ public class QuestionDAO extends DBContext {
         }
     }
 
+    private boolean clearQuestionBounty(Connection conn, long questionId) throws SQLException {
+        String sql = "UPDATE Questions SET bounty_amount = 0, bounty_awarder_id = NULL, bounty_started_at = NULL, bounty_expires_at = NULL WHERE question_id = ?";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setLong(1, questionId);
+            return ps.executeUpdate() > 0;
+        }
+    }
+
     private void updateReputation(Connection conn, long userId, int delta) throws SQLException {
         String sql = "UPDATE Users SET Reputation = Reputation + ? WHERE user_id = ?";
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -698,10 +923,19 @@ public class QuestionDAO extends DBContext {
     private static class QuestionAcceptState {
     private final long questionOwnerId;
     private final Long acceptedAnswerId;
+    private final int bountyAmount;
+    private final Timestamp bountyExpiresAt;
 
-    private QuestionAcceptState(long questionOwnerId, Long acceptedAnswerId) {
+    private QuestionAcceptState(long questionOwnerId, Long acceptedAnswerId, int bountyAmount, Timestamp bountyExpiresAt) {
         this.questionOwnerId = questionOwnerId;
         this.acceptedAnswerId = acceptedAnswerId;
+        this.bountyAmount = bountyAmount;
+        this.bountyExpiresAt = bountyExpiresAt;
+    }
+
+    private boolean hasActiveBounty() {
+        return bountyAmount > 0 && bountyExpiresAt != null
+                && bountyExpiresAt.after(new Timestamp(System.currentTimeMillis()));
     }
 }
 
@@ -736,6 +970,11 @@ private static class AnswerOwner {
             Long currentAccepted = state.acceptedAnswerId;
             boolean isToggleOff = currentAccepted != null && currentAccepted.equals(answerId);
             Long newAccepted = isToggleOff ? null : answerId;
+
+            if (newAccepted != null && state.hasActiveBounty() && targetAnswerOwner.userId == state.questionOwnerId) {
+                conn.rollback();
+                throw new IllegalStateException("You cannot accept your own answer while this question has an active bounty");
+            }
 
             // 3. Bỏ accepted cũ (nếu có)
             if (currentAccepted != null) {
@@ -784,6 +1023,18 @@ private static class AnswerOwner {
                 insertReputationHistory(conn, state.questionOwnerId, 2,
                         "Accepted an answer", "accept_question_owner",
                         "question", questionId, questionOwnerId);
+            }
+
+            if (newAccepted != null && state.hasActiveBounty()) {
+                updateReputation(conn, targetAnswerOwner.userId, state.bountyAmount);
+                insertReputationHistory(conn, targetAnswerOwner.userId, state.bountyAmount,
+                        "Received bounty award", "bounty_award",
+                        "answer", newAccepted, questionOwnerId);
+
+                if (!clearQuestionBounty(conn, questionId)) {
+                    conn.rollback();
+                    return false;
+                }
             }
 
             conn.commit();

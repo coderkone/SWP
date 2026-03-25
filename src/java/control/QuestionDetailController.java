@@ -1,12 +1,12 @@
 package control;
 
 import dal.AnswerDAO;
-import dal.BookmarkDAO;
 import dal.CommentDAO;
 import dal.QuestionDAO;
 import dal.VoteDAO;
 import dto.AnswerDTO;
 import dto.QuestionDTO;
+import dto.UserDTO;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -29,6 +29,7 @@ public class QuestionDetailController extends HttpServlet {
     private final BookmarkQuesDAO BookmqDAO = new  BookmarkQuesDAO();
     private final CommentDAO commentDao = new CommentDAO();
     private static final int ANSWERS_PER_PAGE = 5;
+    private static final long VIEW_COOLDOWN_MS = 30L * 60L * 1000L;
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -50,6 +51,8 @@ public class QuestionDetailController extends HttpServlet {
             QuestionDTO question = questionDao.getQuestionById(questionId);
 
             if (question != null) {
+                trackQuestionView(request.getSession(), question);
+
                 //Try to load vote score and answers
                 try {
                     int questionScore = voteDao.getVoteScore(questionId, null);
@@ -116,6 +119,8 @@ public class QuestionDetailController extends HttpServlet {
                 request.setAttribute("answerPaginationPath", request.getContextPath() + request.getServletPath());
                 request.setAttribute("sort", sort);
                 request.setAttribute("answerFilterQuery", buildAnswerFilterQuery(sort));
+                request.setAttribute("minBountyReputation", QuestionDAO.MIN_BOUNTY_REPUTATION);
+                request.setAttribute("bountyDurationDays", QuestionDAO.BOUNTY_DURATION_DAYS);
                 recordViewedQuestion(request.getSession(), questionId);
 
                 //Load comments for question
@@ -167,9 +172,9 @@ public class QuestionDetailController extends HttpServlet {
 
                 try {
                     HttpSession s = request.getSession(false);
-                    if (s != null && s.getAttribute("user") != null) {
-                        User u = (User) s.getAttribute("user");
-                        request.setAttribute("isQuestionOwner", u.getUserId() == question.getUserId());
+                    Long currentUserId = extractUserId(s == null ? null : s.getAttribute("user"));
+                    if (currentUserId != null) {
+                        request.setAttribute("isQuestionOwner", currentUserId == question.getUserId());
                     } else {
                         request.setAttribute("isQuestionOwner", false);
                     }
@@ -180,9 +185,8 @@ public class QuestionDetailController extends HttpServlet {
                 //Load user's vote (if logged in)
                 try {
                     HttpSession session = request.getSession(false);
-                    if (session != null && session.getAttribute("user") != null) {
-                        User user = (User) session.getAttribute("user");
-                        long userId = user.getUserId();
+                    Long userId = extractUserId(session == null ? null : session.getAttribute("user"));
+                    if (userId != null) {
 
                         //Get user's vote for question
                         String questionUserVote = voteDao.getUserVote(userId, questionId, null);
@@ -262,6 +266,32 @@ public class QuestionDetailController extends HttpServlet {
             return "";
         }
         return query.toString();
+    }
+
+    private void trackQuestionView(HttpSession session, QuestionDTO question) {
+        if (session == null || question == null) {
+            return;
+        }
+
+        String key = "viewed_q_" + question.getQuestionId();
+        Long lastViewTime = (Long) session.getAttribute(key);
+        long now = System.currentTimeMillis();
+
+        if (lastViewTime == null || now - lastViewTime > VIEW_COOLDOWN_MS) {
+            questionDao.incrementViewCount(question.getQuestionId());
+            question.setViewCount(question.getViewCount() + 1);
+            session.setAttribute(key, now);
+        }
+    }
+
+    private Long extractUserId(Object principal) {
+        if (principal instanceof UserDTO) {
+            return ((UserDTO) principal).getUserId();
+        }
+        if (principal instanceof User) {
+            return ((User) principal).getUserId();
+        }
+        return null;
     }
 
     @SuppressWarnings("unchecked")
