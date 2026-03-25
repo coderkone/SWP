@@ -47,10 +47,10 @@ public class CreateQuestionController extends HttpServlet {
 
         String method = request.getMethod();
         if (method.equalsIgnoreCase("GET")) {
-            // LUỒNG GET: Mở giao diện đặt câu hỏi
+            // Mở giao diện đặt câu hỏi
             request.getRequestDispatcher("View/User/createQuestion.jsp").forward(request, response);
         } else if (method.equalsIgnoreCase("POST")) {
-            // LUỒNG POST: Nhận dữ liệu khi Đăng câu hỏi
+            // Nhận dữ liệu khi Đăng câu hỏi
             String title = request.getParameter("title");
             String body = request.getParameter("body");
             String tags = request.getParameter("tags");
@@ -80,7 +80,6 @@ public class CreateQuestionController extends HttpServlet {
             if (userRep < 50) {
                 List<String> newTags = qDao.findNewTags(tags);
                 if (!newTags.isEmpty()) {
-                    // Cảnh báo: Có tag mới nhưng không đủ điểm
                     String errorMsg = "You need at least 50 reputation to create new tags. Invalid tags: " + String.join(", ", newTags);
                     request.setAttribute("errorMessage", errorMsg);
                     // Giữ lại nội dung cũ để người dùng không phải gõ lại từ đầu
@@ -97,7 +96,7 @@ public class CreateQuestionController extends HttpServlet {
             try {
                 boolean success = qDao.insertQuestionWithTags(currentUser.getUserId(), title, body, tags, userRep);
                 if (success) {
-                    response.sendRedirect("home"); // Chuyển về trang chủ nếu thành công
+                    response.sendRedirect("home");
                 } else {
                     response.getWriter().print("Có lỗi xảy ra khi lưu Database!");
                 }
