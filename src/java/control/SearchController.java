@@ -43,7 +43,6 @@ public class SearchController extends HttpServlet {
         if ("unanswered".equals(filter)) {
             tab = "newest"; 
         } 
-        // Nếu người dùng bấm 1 trong 3 tab sắp xếp -> Reset filter về all
         else if ("active".equals(tab) || "newest".equals(tab) || "voted".equals(tab)) {
             filter = "all";
         }
@@ -74,7 +73,7 @@ public class SearchController extends HttpServlet {
         request.setAttribute("questions", list);
         request.setAttribute("totalPage", totalPage);
         request.setAttribute("currentPage", pageIndex);
-        request.setAttribute("totalQuestions", totalRecords); // Gửi tổng số bài thực tế
+        request.setAttribute("totalQuestions", totalRecords);
         request.setAttribute("popularTags", popularTags);
         
         request.setAttribute("currentKeyword", keyword);

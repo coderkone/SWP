@@ -80,7 +80,7 @@ public class QuestionDAO extends DBContext {
         return list;
     }
 
-    // 2. Hàm hỗ trợ Map dữ liệu từ ResultSet sang Object (Giúp code gọn hơn)
+    // 2. Hàm hỗ trợ Map dữ liệu từ ResultSet sang Object
     private QuestionDTO mapRow(ResultSet rs) throws SQLException {
         QuestionDTO q = new QuestionDTO();
         q.setQuestionId(rs.getLong("question_id"));
@@ -104,8 +104,6 @@ public class QuestionDAO extends DBContext {
             q.setAuthorReputation(authorReputation);
         }
         q.setAnswerCount(rs.getInt("ans_count"));
-
-        // Tự động lấy Tags cho câu hỏi này luôn
         q.setTags(getTagsByQuestionId(q.getQuestionId()));
 
         return q;
@@ -153,7 +151,7 @@ public class QuestionDAO extends DBContext {
         }
     }
 
-    // 3. Hàm đếm tổng số câu hỏi (Dùng cho phân trang)
+    // 3. Hàm đếm tổng số câu hỏi 
     public int getTotalQuestions(String keyword, String filterType, String tag) {
         StringBuilder sql = new StringBuilder("SELECT COUNT(*) FROM Questions q WHERE 1=1 ");
 
@@ -191,7 +189,7 @@ public class QuestionDAO extends DBContext {
         return 0;
     }
 
-    // 4. Hàm Search (Optional)
+    // 4. Hàm Search 
     public List<QuestionDTO> searchQuestions(String keyword) {
         return getQuestions(1, 20, "newest", keyword, "all", null);
     }
@@ -219,23 +217,23 @@ public class QuestionDAO extends DBContext {
         return tags;
     }
 
-    // 6. Hàm thêm Câu hỏi mới kèm Tags (Sử dụng Transaction)
+    // 6. Hàm thêm Câu hỏi mới kèm Tags 
     // Hàm quản lý transaction
     public boolean insertQuestionWithTags(long userId, String title, String body, String tagsInput, int userReputation) throws Exception {
         Connection conn = null;
         try {
             conn = getConnection();
-            conn.setAutoCommit(false); // Bắt đầu Transaction
+            conn.setAutoCommit(false); 
 
-            // Bước 1: Gọi hàm phụ để Insert Question
+            // Insert Question
             long questionId = insertQuestionCore(conn, userId, title, body);
 
-            // Bước 2: Gọi hàm phụ để xử lý Tags, truyền thêm userReputation vào
+            // xử lý Tags, truyền thêm userReputation vào
             if (questionId != -1 && tagsInput != null && !tagsInput.trim().isEmpty()) {
                 processTagsForQuestion(conn, questionId, tagsInput, userReputation);
             }
 
-            conn.commit(); // Thành công thì lưu
+            conn.commit();
             return true;
 
         } catch (Exception e) {
@@ -247,7 +245,6 @@ public class QuestionDAO extends DBContext {
                 ex.printStackTrace();
             }
             e.printStackTrace();
-            // Ném lỗi ngược lên Controller để nó biết tại sao lỗi (do database hay do điểm uy tín)
             throw e;
         } finally {
             try {
@@ -264,7 +261,6 @@ public class QuestionDAO extends DBContext {
     // insert câu hỏi mới bảng Questions
     private long insertQuestionCore(Connection conn, long userId, String title, String body) throws SQLException {
         String sql = "INSERT INTO Questions (user_id, title, body) VALUES (?, ?, ?)";
-        // Dùng try-with-resources để tự động đóng PreparedStatement và ResultSet
         try (PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setLong(1, userId);
             ps.setString(2, title);
@@ -329,19 +325,17 @@ public class QuestionDAO extends DBContext {
 
                 long tagId = -1;
 
-                // A. Check xem tag này đã tồn tại trong DB chưa
+                // Check xem tag này đã tồn tại trong DB chưa
                 psCheck.setString(1, tagName);
                 try (ResultSet rsCheck = psCheck.executeQuery()) {
                     if (rsCheck.next()) {
-                        tagId = rsCheck.getLong("tag_id"); // Tag cũ, ai cũng dùng được
+                        tagId = rsCheck.getLong("tag_id"); // Tag cũ
                     }
                 }
 
-                // B. Nếu là TAG MỚI HOÀN TOÀN -> Bắt đầu check uy tín
+                // TAG MỚI HOÀN TOÀN 
                 if (tagId == -1) {
-                    // Giả sử mốc uy tín cần thiết là 50 điểm (bạn có thể thay đổi số này)
                     if (userReputation < 50) {
-                        // Ném ra Exception để Rollback toàn bộ và báo lỗi
                         throw new Exception("NOT_ENOUGH_REP:" + tagName);
                     }
 
@@ -355,7 +349,7 @@ public class QuestionDAO extends DBContext {
                     }
                 }
 
-                // C. Link Question và Tag
+                // Link Question và Tag
                 if (tagId != -1) {
                     psInsertQT.setLong(1, questionId);
                     psInsertQT.setLong(2, tagId);
@@ -420,7 +414,7 @@ public class QuestionDAO extends DBContext {
         return tags;
     }
 
-    // Lấy các câu hỏi liên quan (cùng tag) với câu hỏi cho trước
+    // Lấy các câu hỏi cùng tag với câu hỏi cho trước
     public List<QuestionDTO> getRelatedQuestions(long questionId, int limit) {
         List<QuestionDTO> list = new ArrayList<>();
         String sql = "SELECT q.*, u.username, u.Reputation AS author_reputation, up.avatar_url, "
@@ -454,7 +448,7 @@ public class QuestionDAO extends DBContext {
         return list;
     }
 
-    // Kiểm tra câu hỏi có bị đóng không
+    // Kiểm tra status 
     public boolean isQuestionClosed(long questionId) {
         String sql = "SELECT is_closed FROM Questions WHERE question_id = ?";
         try {
@@ -478,14 +472,14 @@ public class QuestionDAO extends DBContext {
         return false;
     }
 
-    // Cập nhật câu hỏi kèm lịch sử chỉnh sửa và xử lý tags (dùng Transaction)
+    // Cập nhật câu hỏi kèm lịch sử chỉnh sửa và xử lý tags
     public boolean updateQuestionWithHistory(long questionId, long editorId, String title, String body, String codeSnippet, String tags, int userReputation) throws Exception {
         Connection conn = null;
         try {
             conn = getConnection();
             conn.setAutoCommit(false);
 
-            // Bước 1: Tải dữ liệu cũ để lưu vào lịch sử
+            // Tải dữ liệu cũ để lưu vào lịch sử
             String loadSql = "SELECT title, body FROM Questions WHERE question_id = ?";
             String oldTitle = null, oldBody = null;
             try (PreparedStatement ps = conn.prepareStatement(loadSql)) {
@@ -500,7 +494,7 @@ public class QuestionDAO extends DBContext {
                 }
             }
 
-            // Bước 2: Lưu lịch sử chỉnh sửa
+            // Lưu lịch sử chỉnh sửa
             String oldTags = String.join(",", getTagsByQuestionId(questionId));
             String editedContent = "title=" + (oldTitle != null ? oldTitle : "")
                     + "\nbody=" + (oldBody != null ? oldBody : "")
@@ -519,7 +513,7 @@ public class QuestionDAO extends DBContext {
                 ps.executeUpdate();
             }
 
-            // Bước 3: Cập nhật nội dung câu hỏi
+            // Cập nhật nội dung câu hỏi
             String updateSql = "UPDATE Questions SET title = ?, body = ?, updated_at = GETDATE() WHERE question_id = ?";
             try (PreparedStatement ps = conn.prepareStatement(updateSql)) {
                 ps.setString(1, title);
@@ -531,7 +525,7 @@ public class QuestionDAO extends DBContext {
                 }
             }
 
-            // Bước 4: Cập nhật tags nếu được cung cấp
+            // Cập nhật tags nếu được cung cấp
             if (tags != null && !tags.trim().isEmpty()) {
                 String deleteTagsSql = "DELETE FROM Question_Tags WHERE question_id = ?";
                 try (PreparedStatement ps = conn.prepareStatement(deleteTagsSql)) {
