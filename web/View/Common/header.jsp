@@ -9,7 +9,7 @@
 
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <style>
     /* CUSTOM CSS FOR HEADER */
     .navbar-devquery {
@@ -175,10 +175,10 @@
                         </a>
                     </li>
 
-                    <li class="nav-item position-relative notification-wrapper">
+                    <li class="nav-item dropdown position-relative notification-wrapper">
                         <a class="nav-link text-secondary" href="#" id="notiDropdownBtn" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                             <i class="fa-solid fa-inbox fa-lg"></i>
-
+                            
                             <c:if test="${requestScope.unreadNotification != null && requestScope.unreadNotification > 0}">
                                 <span class="noti-badge">
                                     ${requestScope.unreadNotification > 99 ? '99+' : requestScope.unreadNotification}
@@ -187,15 +187,15 @@
                         </a>
 
                         <div class="dropdown-menu dropdown-menu-end shadow noti-dropdown" aria-labelledby="notiDropdownBtn">
-
+                            
                             <div class="noti-header">
-                                <span>Notification</span>
-                                <a href="${pageContext.request.contextPath}/notification?action=allRead" class="noti-mark-all">Mark all read</a>
+                                <span>Thông báo</span>
+                                <a href="${pageContext.request.contextPath}/notification?action=allRead" class="noti-mark-all">Đánh dấu đã đọc tất cả</a>
                             </div>
-
+                            
                             <div class="noti-body">
                                 <c:if test="${empty requestScope.Notification}">
-                                    <div class="noti-empty">You don't have any notifications.</div>
+                                    <div class="noti-empty">Bạn không có thông báo nào.</div>
                                 </c:if>
 
                                 <c:forEach items="${requestScope.Notification}" var="noti">
@@ -204,13 +204,13 @@
                                         <div class="noti-meta">
                                             <span>${noti.createdAt}</span>
                                             <c:if test="${!noti.isRead}">
-                                                <a href="${pageContext.request.contextPath}/notification?id=${noti.notificationId}" class="noti-action">Mark as read</a>
+                                                <a href="${pageContext.request.contextPath}/notification?id=${noti.notificationId}" class="noti-action">Đánh dấu đã đọc</a>
                                             </c:if>
                                         </div>
                                     </div>
                                 </c:forEach>
                             </div>
-
+                            
                         </div>
                     </li>
                     <li class="nav-item me-4">
