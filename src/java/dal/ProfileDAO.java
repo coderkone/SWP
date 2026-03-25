@@ -122,7 +122,7 @@ public class ProfileDAO extends DBContext {
         return list;
     }
 
-    // 5. Hàm rút gọn: Chỉ lấy thông tin cần thiết cho trang Edit Profile
+    // 5. Lấy thông tin cần thiết cho trang Edit Profile
     public dto.UserDTO getUserFullProfile(long userId) {
         String sql = "SELECT u.user_id, u.username, u.email, u.role, u.Reputation, u.created_at, "
                 + "p.bio, p.avatar_url, p.location, p.website "
@@ -166,7 +166,7 @@ public class ProfileDAO extends DBContext {
         return null;
     }
 
-    // 6. Hàm cập nhật profile (không thay đổi)
+    // 6. Hàm cập nhật profile 
     public boolean updateProfile(long userId, String username, String bio, String location, String websiteJson) {
         Connection conn = null;
         PreparedStatement st1 = null;
@@ -177,7 +177,7 @@ public class ProfileDAO extends DBContext {
             conn = getConnection();
             conn.setAutoCommit(false);
 
-            // 1. Cập nhật bảng Users (luôn tồn tại)
+            // 1. Cập nhật bảng Users
             String sqlUser = "UPDATE Users SET username = ? WHERE user_id = ?";
             st1 = conn.prepareStatement(sqlUser);
             st1.setString(1, username);
