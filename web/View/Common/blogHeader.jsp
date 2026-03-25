@@ -59,16 +59,22 @@
                     
                     <li class="nav-item">
                         <a class="nav-link d-flex align-items-center py-0" href="${pageContext.request.contextPath}/profile">
-                            
-                            <c:set var="avatarSrc" value="${sessionScope.user.avatarUrl}" />
-                            <c:if test="${empty avatarSrc}">
-                                <c:set var="avatarSrc" value="${pageContext.request.contextPath}/assets/img/Avatar.png" />
-                            </c:if>
+
+                            <c:choose>
+                                <c:when test="${not empty sessionScope.user.avatarUrl}">
+                                    <c:set var="avatarSrc" value="${pageContext.request.contextPath}/${sessionScope.user.avatarUrl}" />
+                                </c:when>
+                                <c:otherwise>
+                                    <c:set var="avatarSrc" value="${pageContext.request.contextPath}/assets/img/Avatar.png" />
+                                </c:otherwise>
+                            </c:choose>
 
                             <img src="${avatarSrc}" 
-                                 alt="Avatar" width="32" height="32" class="rounded bg-light border avatar-img">
-                            
-                            <span class="ms-2 fw-bold text-dark small">${sessionScope.user.reputation != null ? sessionScope.user.reputation : 0}</span>
+                                 alt="Avatar" width="32" height="32" class="rounded-circle bg-light border avatar-img" style="object-fit: cover;">
+
+                            <span class="ms-2 fw-bold text-dark small">
+                                ${sessionScope.user.reputation != null ? sessionScope.user.reputation : 0}
+                            </span>
                         </a>
                     </li>
 

@@ -14,18 +14,42 @@
                 <span class="text-muted fw-normal small"><fmt:formatDate value="${node.createdAt}" pattern="dd/MM/yyyy HH:mm" /></span>
             </div>
 
-            <div id="commentText${node.commentId}" class="mb-0 text-dark" style="font-size: 15px;">
-                ${node.content.replaceAll("(@\\w+)", "<span class='text-primary fw-bold'>$1</span>")}
-            </div>
+            <div id="commentText${node.commentId}" class="comment-text-content mb-0 text-dark" style="font-size: 15px;"><c:out value="${node.content}" /></div>
 
             <form id="editForm${node.commentId}" action="${pageContext.request.contextPath}/blog/comment" method="post" class="d-none mt-2">
                 <input type="hidden" name="action" value="edit">
                 <input type="hidden" name="commentId" value="${node.commentId}">
                 <input type="hidden" name="blogId" value="${blog.blogId}">
-                <textarea name="content" class="form-control mb-2" rows="2" required>${node.content}</textarea>
+
+                <div class="border rounded overflow-hidden mb-2">
+                    <div class="bg-light border-bottom p-1 d-flex gap-1">
+                        <button type="button" class="btn btn-sm btn-light p-0 px-1 text-secondary" title="Bold" 
+                                onclick="insertMd('edit-text-${node.commentId}', '**', '**')">
+                            <i class="fa-solid fa-bold" style="font-size: 11px;"></i>
+                        </button>
+                        <button type="button" class="btn btn-sm btn-light p-0 px-1 text-secondary" title="Italic" 
+                                onclick="insertMd('edit-text-${node.commentId}', '*', '*')">
+                            <i class="fa-solid fa-italic" style="font-size: 11px;"></i>
+                        </button>
+                        <div class="vr mx-1"></div>
+                        <button type="button" class="btn btn-sm btn-light p-0 px-1 text-secondary" title="Code" 
+                                onclick="insertMd('edit-text-${node.commentId}', '`', '`')">
+                            <i class="fa-solid fa-code" style="font-size: 11px;"></i>
+                        </button>
+                        <button type="button" class="btn btn-sm btn-light text-secondary" title="Code Block" 
+                                onclick="insertMd('edit-text-${node.commentId}', '\n```java\n', '\n```\n')">
+                            <i class="fa-solid fa-file-code" style="font-size: 11px;"></i>
+                        </button>
+                    </div>
+
+                    <textarea id="edit-text-${node.commentId}" name="content" 
+                              class="form-control border-0 shadow-none" 
+                              rows="3" required>${node.content}</textarea>
+                </div>
+
                 <div class="text-end">
                     <button type="button" class="btn btn-link btn-sm text-muted" onclick="toggleEditForm('${node.commentId}')">Cancel</button>
-                    <button type="submit" class="btn btn-primary btn-sm">Save</button>
+                    <button type="submit" class="btn btn-primary btn-sm px-3">Save</button>
                 </div>
             </form>
         </div>
@@ -58,9 +82,35 @@
             <input type="hidden" name="action" value="add">
             <input type="hidden" name="blogId" value="${blog.blogId}">
             <input type="hidden" name="parentId" value="${node.commentId}"> 
-            <div class="d-flex">
-                <textarea name="content" class="form-control form-control-sm me-2" rows="1" placeholder="Write a reply..." required></textarea>
-                <button type="submit" class="btn btn-secondary btn-sm text-nowrap">Reply</button>
+
+            <div class="border rounded overflow-hidden">
+                <div class="bg-light border-bottom p-1 d-flex gap-1">
+                    <button type="button" class="btn btn-sm btn-light p-0 px-1 text-secondary" title="Bold" 
+                            onclick="insertMd('reply-text-${node.commentId}', '**', '**')">
+                        <i class="fa-solid fa-bold" style="font-size: 11px;"></i>
+                    </button>
+                    <button type="button" class="btn btn-sm btn-light p-0 px-1 text-secondary" title="Italic" 
+                            onclick="insertMd('reply-text-${node.commentId}', '*', '*')">
+                        <i class="fa-solid fa-italic" style="font-size: 11px;"></i>
+                    </button>
+                    <div class="vr mx-1"></div>
+                    <button type="button" class="btn btn-sm btn-light p-0 px-1 text-secondary" title="Code" 
+                            onclick="insertMd('reply-text-${node.commentId}', '`', '`')">
+                        <i class="fa-solid fa-code" style="font-size: 11px;"></i>
+                    </button>
+                    <button type="button" class="btn btn-sm btn-light p-0 px-1 text-secondary" title="Code Block" 
+                            onclick="insertMd('reply-text-${node.commentId}', '\n```java\n', '\n```\n')">
+                        <i class="fa-solid fa-file-code" style="font-size: 11px;"></i>
+                    </button>
+                </div>
+
+                <textarea id="reply-text-${node.commentId}" name="content" 
+                          class="form-control form-control-sm border-0 shadow-none" 
+                          rows="2" placeholder="Write a reply... (Markdown supported)" required></textarea>
+            </div>
+
+            <div class="d-flex justify-content-end mt-2">
+                <button type="submit" class="btn btn-secondary btn-sm px-3">Reply</button>
             </div>
         </form>
 

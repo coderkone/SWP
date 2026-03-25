@@ -20,8 +20,12 @@
                 --font-stack: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
             }
 
-            * { margin: 0; padding: 0; box-sizing: border-box; }
-            
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+
             body {
                 font-family: var(--font-stack);
                 background-color: var(--body-bg);
@@ -31,39 +35,103 @@
 
             /* 2. Sidebar */
             .sidebar {
-                width: 250px; background-color: var(--sidebar-bg); color: #AAB7C4;
-                display: flex; flex-direction: column; position: fixed; height: 100%;
+                width: 250px;
+                background-color: var(--sidebar-bg);
+                color: #AAB7C4;
+                display: flex;
+                flex-direction: column;
+                position: fixed;
+                height: 100%;
             }
             .logo-area {
-                height: 60px; background-color: #233140; display: flex; align-items: center;
-                justify-content: center; color: white; font-size: 18px; letter-spacing: 1px;
+                height: 60px;
+                background-color: #233140;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: white;
+                font-size: 18px;
+                letter-spacing: 1px;
             }
-            .nav-menu { list-style: none; margin-top: 20px; }
+            .nav-menu {
+                list-style: none;
+                margin-top: 20px;
+            }
             .nav-item {
-                display: flex; align-items: center; padding: 15px 25px; font-size: 14px;
-                cursor: pointer; transition: 0.2s; text-decoration: none; color: inherit;
+                display: flex;
+                align-items: center;
+                padding: 15px 25px;
+                font-size: 14px;
+                cursor: pointer;
+                transition: 0.2s;
+                text-decoration: none;
+                color: inherit;
             }
-            .nav-item:hover { background-color: var(--sidebar-hover); color: white; }
-            .nav-item.active { background-color: var(--active-orange); color: white; border-left: 4px solid #cc5e05; }
-            .nav-icon { margin-right: 12px; font-size: 16px; }
-            .logout-area { margin-top: auto; margin-bottom: 20px; }
+            .nav-item:hover {
+                background-color: var(--sidebar-hover);
+                color: white;
+            }
+            .nav-item.active {
+                background-color: var(--active-orange);
+                color: white;
+                border-left: 4px solid #cc5e05;
+            }
+            .nav-icon {
+                margin-right: 12px;
+                font-size: 16px;
+            }
+            .logout-area {
+                margin-top: auto;
+                margin-bottom: 20px;
+            }
 
             /* 3. Main Content & Header */
             .main-content {
-                flex-grow: 1; margin-left: 250px; padding-bottom: 30px;
+                flex-grow: 1;
+                margin-left: 250px;
+                padding-bottom: 30px;
             }
             .top-header {
-                height: 60px; background-color: white; border-bottom: 1px solid var(--border-color);
-                display: flex; align-items: center; justify-content: space-between; padding: 0 30px;
-                position: sticky; top: 0; z-index: 10;
+                height: 60px;
+                background-color: white;
+                border-bottom: 1px solid var(--border-color);
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                padding: 0 30px;
+                position: sticky;
+                top: 0;
+                z-index: 10;
             }
-            .page-title { font-size: 20px; font-weight: bold; color: var(--text-main); }
-            .admin-profile { display: flex; align-items: center; gap: 10px; }
-            .admin-name { font-size: 14px; font-weight: bold; color: var(--text-main); }
-            .admin-avatar { width: 35px; height: 35px; border-radius: 50%; background-color: #e1ecf4; padding: 2px; }
+            .page-title {
+                font-size: 20px;
+                font-weight: bold;
+                color: var(--text-main);
+            }
+            .admin-profile {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            }
+            .admin-name {
+                font-size: 14px;
+                font-weight: bold;
+                color: var(--text-main);
+            }
+            .admin-avatar {
+                width: 35px;
+                height: 35px;
+                border-radius: 50%;
+                background-color: #e1ecf4;
+                padding: 2px;
+            }
 
             /* 4. Layout Container */
-            .container { padding: 30px; max-width: 1200px; margin: 0 auto; }
+            .container {
+                padding: 30px;
+                max-width: 1200px;
+                margin: 0 auto;
+            }
 
             /* 5. Form Box Styling (Dành riêng cho Blog form rộng hơn) */
             .form-card {
@@ -76,49 +144,99 @@
                 box-shadow: 0 4px 6px rgba(0,0,0,0.05);
             }
             .form-title {
-                font-size: 22px; color: var(--text-main); margin-bottom: 25px; font-weight: bold;
-                border-bottom: 1px solid var(--border-color); padding-bottom: 10px;
+                font-size: 22px;
+                color: var(--text-main);
+                margin-bottom: 25px;
+                font-weight: bold;
+                border-bottom: 1px solid var(--border-color);
+                padding-bottom: 10px;
             }
-            .form-group { margin-bottom: 20px; }
-            
+            .form-group {
+                margin-bottom: 20px;
+            }
+
             .form-label {
-                display: block; font-weight: 600; margin-bottom: 8px;
-                color: var(--text-main); font-size: 14px;
+                display: block;
+                font-weight: 600;
+                margin-bottom: 8px;
+                color: var(--text-main);
+                font-size: 14px;
             }
-            
+
             /* Inputs */
             .form-control {
-                width: 100%; padding: 10px 14px; border: 1px solid #babfc4;
-                border-radius: 5px; font-size: 14px; color: #3b4045;
-                transition: all 0.2s ease-in-out; font-family: inherit;
+                width: 100%;
+                padding: 10px 14px;
+                border: 1px solid #babfc4;
+                border-radius: 5px;
+                font-size: 14px;
+                color: #3b4045;
+                transition: all 0.2s ease-in-out;
+                font-family: inherit;
             }
             .form-control:focus {
-                outline: none; border-color: #0a95ff;
+                outline: none;
+                border-color: #0a95ff;
                 box-shadow: 0 0 0 4px rgba(0, 116, 204, 0.15);
             }
-            textarea.form-control { resize: vertical; min-height: 350px; line-height: 1.6; }
+            textarea.form-control {
+                resize: vertical;
+                min-height: 350px;
+                line-height: 1.6;
+            }
 
             /* 6. Buttons */
             .form-actions {
-                display: flex; gap: 15px; margin-top: 30px;
+                display: flex;
+                gap: 15px;
+                margin-top: 30px;
                 border-top: 1px solid var(--border-color);
                 padding-top: 20px;
             }
             .btn {
-                padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer;
-                font-size: 14px; font-weight: bold; text-decoration: none;
-                display: inline-flex; align-items: center; justify-content: center;
+                padding: 10px 20px;
+                border: none;
+                border-radius: 4px;
+                cursor: pointer;
+                font-size: 14px;
+                font-weight: bold;
+                text-decoration: none;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
                 transition: 0.2s;
             }
-            .btn-primary { background-color: #0a95ff; color: white; }
-            .btn-primary:hover { background-color: #0074cc; }
-            .btn-secondary { background-color: white; color: var(--text-main); border: 1px solid var(--border-color); }
-            .btn-secondary:hover { background-color: #f8f9f9; }
-            
+            .btn-primary {
+                background-color: #0a95ff;
+                color: white;
+            }
+            .btn-primary:hover {
+                background-color: #0074cc;
+            }
+            .btn-secondary {
+                background-color: white;
+                color: var(--text-main);
+                border: 1px solid var(--border-color);
+            }
+            .btn-secondary:hover {
+                background-color: #f8f9f9;
+            }
+
             /* Tiện ích text */
-            .text-danger { color: #dc3545; }
-            .text-muted { font-size: 13px; color: var(--text-sub); margin-bottom: 5px; }
-            .image-preview { margin-top: 10px; width: 150px; border-radius: 4px; border: 1px solid var(--border-color); }
+            .text-danger {
+                color: #dc3545;
+            }
+            .text-muted {
+                font-size: 13px;
+                color: var(--text-sub);
+                margin-bottom: 5px;
+            }
+            .image-preview {
+                margin-top: 10px;
+                width: 150px;
+                border-radius: 4px;
+                border: 1px solid var(--border-color);
+            }
         </style>
     </head>
     <body>
@@ -223,5 +341,17 @@
                 </div>
             </div>
         </main>
+        <script src="https://cdn.ckeditor.com/4.22.1/standard-all/ckeditor.js"></script>
+
+        <script>
+            // Gắn CKEditor vào thẻ textarea có id="content"
+            CKEDITOR.replace('content', {
+                versionCheck: false,
+                extraPlugins: 'codesnippet', // Bật tính năng chèn code
+                codeSnippet_theme: 'monokai_sublime', // Giao diện nền tối cho code
+                height: 400,
+                removeButtons: 'PasteFromWord' // Xóa bớt nút thừa cho gọn
+            });
+        </script>
     </body>
 </html>
