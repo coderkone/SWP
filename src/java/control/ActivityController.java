@@ -32,12 +32,11 @@ public class ActivityController extends HttpServlet {
         if (userIdStr != null && !userIdStr.trim().isEmpty()) {
             targetUserId = Long.parseLong(userIdStr);
         } else {
-            // Nếu không có ID trên URL, lấy ID của người đang đăng nhập (từ Session)
+            // Nếu không có ID trên URL, lấy ID của người đang đăng nhập
             model.User currentUser = (model.User) request.getSession().getAttribute("user");
             if (currentUser != null) {
                 targetUserId = currentUser.getUserId();
             } else {
-                // Nếu chưa đăng nhập mà cứ cố vào, đá về trang chủ
                 response.sendRedirect(request.getContextPath() + "/home");
                 return;
             }
