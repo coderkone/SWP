@@ -8,12 +8,11 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
 <style>
-    /* FOOTER STYLES */
     .footer-devquery {
-        background-color: #2c3e50;
-        color: #ecf0f1;
-        margin-top: 60px;
-        padding: 40px 0 20px 0;
+        background-color: #242729;
+        color: #ffffff;
+        margin-top: 40px;
+        padding: 25px 0 15px 0;
         border-top: 1px solid #34495e;
     }
 
@@ -27,15 +26,15 @@
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
         gap: 30px;
-        margin-bottom: 30px;
+        margin-bottom: 15px;
     }
 
     .footer-section h5 {
+        color: #f48024;
         font-size: 14px;
         font-weight: 600;
         text-transform: uppercase;
-        color: #f48024;
-        margin-bottom: 15px;
+        margin-bottom: 10px;
         letter-spacing: 0.5px;
     }
 
@@ -46,23 +45,17 @@
     }
 
     .footer-section ul li {
-        margin-bottom: 10px;
+        margin-bottom: 6px;
     }
 
-    .footer-section ul li a {
-        color: #bdc3c7;
-        text-decoration: none;
+    .footer-section ul li span {
+        color: #ffffff;
         font-size: 13px;
-        transition: color 0.3s ease;
-    }
-
-    .footer-section ul li a:hover {
-        color: #f48024;
     }
 
     .footer-bottom {
         border-top: 1px solid #34495e;
-        padding-top: 20px;
+        padding-top: 15px;
         display: flex;
         justify-content: space-between;
         align-items: center;
@@ -74,8 +67,6 @@
         display: flex;
         align-items: center;
         gap: 8px;
-        font-weight: bold;
-        color: #f48024;
         font-size: 16px;
     }
 
@@ -86,7 +77,7 @@
 
     .footer-copyright {
         font-size: 12px;
-        color: #95a5a6;
+        color: #ffffff;
     }
 
     .footer-social {
@@ -94,26 +85,18 @@
         gap: 15px;
     }
 
-    .footer-social a {
+    .footer-social span {
         display: inline-flex;
         align-items: center;
         justify-content: center;
         width: 36px;
         height: 36px;
         background-color: #34495e;
-        color: #ecf0f1;
+        color: #ffffff;
         border-radius: 4px;
-        text-decoration: none;
-        transition: all 0.3s ease;
         font-size: 16px;
     }
 
-    .footer-social a:hover {
-        background-color: #f48024;
-        color: #ffffff;
-    }
-
-    /* Mobile Responsive */
     @media (max-width: 768px) {
         .footer-grid {
             grid-template-columns: repeat(2, 1fr);
@@ -148,11 +131,11 @@
             <div class="footer-section">
                 <h5>Company</h5>
                 <ul>
-                    <li><a href="#">About</a></li>
-                    <li><a href="#">Blog</a></li>
-                    <li><a href="#">Careers</a></li>
-                    <li><a href="#">Press</a></li>
-                    <li><a href="#">Contact</a></li>
+                    <li><span>About</span></li>
+                    <li><span>Blog</span></li>
+                    <li><span>Careers</span></li>
+                    <li><span>Press</span></li>
+                    <li><span>Contact</span></li>
                 </ul>
             </div>
 
@@ -160,11 +143,11 @@
             <div class="footer-section">
                 <h5>Products</h5>
                 <ul>
-                    <li><a href="#">DevQuery</a></li>
-                    <li><a href="#">Documentation</a></li>
-                    <li><a href="#">API Reference</a></li>
-                    <li><a href="#">Status Page</a></li>
-                    <li><a href="#">Roadmap</a></li>
+                    <li><span>DevQuery</span></li>
+                    <li><span>Documentation</span></li>
+                    <li><span>API Reference</span></li>
+                    <li><span>Status Page</span></li>
+                    <li><span>Roadmap</span></li>
                 </ul>
             </div>
 
@@ -172,11 +155,11 @@
             <div class="footer-section">
                 <h5>Community</h5>
                 <ul>
-                    <li><a href="#">Questions</a></li>
-                    <li><a href="#">Tags</a></li>
-                    <li><a href="#">Users</a></li>
-                    <li><a href="#">Badges</a></li>
-                    <li><a href="#">Moderators</a></li>
+                    <li><span>Questions</span></li>
+                    <li><span>Tags</span></li>
+                    <li><span>Users</span></li>
+                    <li><span>Badges</span></li>
+                    <li><span>Moderators</span></li>
                 </ul>
             </div>
 
@@ -184,11 +167,11 @@
             <div class="footer-section">
                 <h5>Resources</h5>
                 <ul>
-                    <li><a href="#">Help Center</a></li>
-                    <li><a href="#">Privacy Policy</a></li>
-                    <li><a href="#">Terms of Service</a></li>
-                    <li><a href="#">Code of Conduct</a></li>
-                    <li><a href="#">Sitemap</a></li>
+                    <li><span>Help Center</span></li>
+                    <li><span>Privacy Policy</span></li>
+                    <li><span>Terms of Service</span></li>
+                    <li><span>Code of Conduct</span></li>
+                    <li><span>Sitemap</span></li>
                 </ul>
             </div>
         </div>
@@ -196,8 +179,9 @@
         <!-- Footer Bottom -->
         <div class="footer-bottom">
             <div class="footer-logo">
-                <img src="${pageContext.request.contextPath}/assets/img/logo.png" alt="DevQuery">
-                <span>DevQuery</span>
+                <img src="${pageContext.request.contextPath}/assets/img/LogoDQ.png" 
+                 alt="DevQuery" width="30" height="30" class="d-inline-block align-text-top me-2">
+                <span style="color: #f48024; font-weight: bold;">DevQuery</span>
             </div>
 
             <div class="footer-copyright">
@@ -205,18 +189,10 @@
             </div>
 
             <div class="footer-social">
-                <a href="#" title="GitHub" target="_blank">
-                    <i class="fa-brands fa-github"></i>
-                </a>
-                <a href="#" title="Twitter" target="_blank">
-                    <i class="fa-brands fa-twitter"></i>
-                </a>
-                <a href="#" title="Facebook" target="_blank">
-                    <i class="fa-brands fa-facebook"></i>
-                </a>
-                <a href="#" title="LinkedIn" target="_blank">
-                    <i class="fa-brands fa-linkedin"></i>
-                </a>
+                <span title="GitHub"><i class="fa-brands fa-github"></i></span>
+                <span title="Twitter"><i class="fa-brands fa-twitter"></i></span>
+                <span title="Facebook"><i class="fa-brands fa-facebook"></i></span>
+                <span title="LinkedIn"><i class="fa-brands fa-linkedin"></i></span>
             </div>
         </div>
     </div>

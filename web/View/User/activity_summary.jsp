@@ -181,5 +181,6 @@
                 }
             });
         </script>
+        <jsp:include page="../Common/footer.jsp" />
     </body>
 </html>

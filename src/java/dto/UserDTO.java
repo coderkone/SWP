@@ -66,6 +66,6 @@ public class UserDTO {
             return avatarUrl;
         }
         // Link ảnh mặc định (bạn nhớ copy 1 ảnh default.png vào thư mục assets/img)
-        return "assets/img/default-avatar.png"; 
+        return "assets/img/Avatar.png"; 
     }
 }

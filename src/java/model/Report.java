@@ -17,6 +17,7 @@ public class Report {
     private String note;
     private String status; // "open", "resolved"
     private Timestamp createdAt;
+    private String reporterUsername; // Added for display in admin
 
     public Report() {
     }
@@ -101,6 +102,14 @@ public class Report {
 
     public void setCreatedAt(Timestamp createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public String getReporterUsername() {
+        return reporterUsername;
+    }
+
+    public void setReporterUsername(String reporterUsername) {
+        this.reporterUsername = reporterUsername;
     }
     
 }

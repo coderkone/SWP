@@ -11,8 +11,9 @@
 <div class="d-flex justify-content-between mb-5">
     <div class="d-flex">
         <div class="me-4">
-            <img src="${not empty uPro.avatarUrl ? uPro.avatarUrl : 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png'}" 
-                 alt="Avatar" style="width: 144px; height: 144px; border-radius: 5px; box-shadow: 0 1px 2px rgba(0,0,0,0.15); object-fit: cover;">
+            <img src="${pageContext.request.contextPath}/${uPro.avatarUrl != null ? uPro.avatarUrl : 'assets/img/Avatar.png'}" 
+            alt="Avatar" 
+            style="width: 144px; height: 144px; border-radius: 50%; box-shadow: 0 1px 2px rgba(0,0,0,0.15); object-fit: cover;">
         </div>
 
         <div class="pt-1">

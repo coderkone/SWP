@@ -2,10 +2,12 @@
 package dto;
 
 
+
 /*
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
+
 
 
 /**
@@ -18,13 +20,9 @@ public class TagDTO {
     private String tagName;
     private String description;
     private boolean isActive;
-
     private int questionCount;
     private int followerCount;
-
     private boolean isFollowed; // them moi de check xem user theo doi tag hay chua
-
-
     public TagDTO() {
     }
 
@@ -111,7 +109,16 @@ public class TagDTO {
     public void setIsFollowed(boolean isFollowed) {
         this.isFollowed = isFollowed;
     }
-
+public String getShortDescription() {
+    if (description == null || description.trim().isEmpty()) {
+        return "";
+    }
+    int dot = description.indexOf('.');
+    if (dot != -1) {
+        return description.substring(0, dot + 1); // "Java là ngôn ngữ."
+    }
+    return description; // Không có dấu chấm → trả nguyên
+}
     
     
     
