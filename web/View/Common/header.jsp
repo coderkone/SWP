@@ -9,7 +9,7 @@
 
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <style>
     /* CUSTOM CSS FOR HEADER */
     .navbar-devquery {
@@ -37,92 +37,117 @@
         object-fit: cover;
     }
     .noti-badge {
-    position: absolute; 
-    top: 2px; 
-    right: 2px; 
-    background: #d0393e; 
-    color: white; 
-    border-radius: 50%; 
-    padding: 2px 5px; 
-    font-size: 10px; 
-    font-weight: bold;
-}
+        position: absolute;
+        top: 2px;
+        right: 2px;
+        background: #d0393e;
+        color: white;
+        border-radius: 50%;
+        padding: 2px 5px;
+        font-size: 10px;
+        font-weight: bold;
+    }
 
-.noti-dropdown {
-    width: 350px; 
-    padding: 0;
-}
+    .noti-dropdown {
+        width: 350px;
+        padding: 0;
+    }
 
-.noti-header {
-    padding: 10px 15px; 
-    background: #f8f9f9; 
-    font-weight: bold; 
-    border-bottom: 1px solid #d6d9dc; 
-    display: flex; 
-    justify-content: space-between;
-}
+    .noti-header {
+        padding: 10px 15px;
+        background: #f8f9f9;
+        font-weight: bold;
+        border-bottom: 1px solid #d6d9dc;
+        display: flex;
+        justify-content: space-between;
+    }
 
-.noti-mark-all {
-    font-weight: normal; 
-    color: #0074cc; 
-    text-decoration: none; 
+    .noti-mark-all {
+        font-weight: normal;
+        color: #0074cc;
+        text-decoration: none;
+        font-size: 13px;
+    }
+
+    .noti-mark-all:hover {
+        text-decoration: underline;
+    }
+
+    .noti-body {
+        max-height: 350px;
+        overflow-y: auto;
+    }
+
+    .noti-empty {
+        padding: 15px;
+        text-align: center;
+        color: #666;
+    }
+
+    .noti-item {
+        padding: 12px 15px;
+        border-bottom: 1px solid #e3e6e8;
+        transition: background-color 0.2s ease;
+    }
+
+    .noti-item:hover {
+        background-color: #f1f2f3; /* Hiệu ứng di chuột */
+    }
+
+    .noti-unread {
+        background-color: #f0f8ff; /* Nền xanh nhạt cho tin chưa đọc */
+    }
+
+    .noti-read {
+        background-color: #ffffff; /* Nền trắng cho tin đã đọc */
+    }
+
+    .noti-content-text {
+        font-size: 13px;
+        color: #3b4045;
+        margin-bottom: 5px;
+    }
+
+    .noti-meta {
+        font-size: 11px;
+        color: #838c95;
+        display: flex;
+        justify-content: space-between;
+    }
+
+    .noti-action {
+        color: #0074cc;
+        text-decoration: none;
+    }
+
+    .noti-action:hover {
+        text-decoration: underline;
+    }
+    .filter-dropdown {
+    position: absolute;
+    top: 30px;
+    right: 0;
+    width: 120px;
+    background: white;
+    border: 1px solid #ddd;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    z-index: 9999;
+    }
+
+    .filter-item {
+    padding: 8px 10px;
+    cursor: pointer;
     font-size: 13px;
-}
+    }
 
-.noti-mark-all:hover {
-    text-decoration: underline;
-}
+    .filter-item:hover {
+    background: #f1f2f3;
+    }
 
-.noti-body {
-    max-height: 350px; 
-    overflow-y: auto;
-}
-
-.noti-empty {
-    padding: 15px; 
-    text-align: center; 
-    color: #666;
-}
-
-.noti-item {
-    padding: 12px 15px; 
-    border-bottom: 1px solid #e3e6e8;
-    transition: background-color 0.2s ease;
-}
-
-.noti-item:hover {
-    background-color: #f1f2f3; /* Hiệu ứng di chuột */
-}
-
-.noti-unread {
-    background-color: #f0f8ff; /* Nền xanh nhạt cho tin chưa đọc */
-}
-
-.noti-read {
-    background-color: #ffffff; /* Nền trắng cho tin đã đọc */
-}
-
-.noti-content-text {
-    font-size: 13px; 
-    color: #3b4045; 
-    margin-bottom: 5px;
-}
-
-.noti-meta {
-    font-size: 11px; 
-    color: #838c95; 
-    display: flex; 
-    justify-content: space-between;
-}
-
-.noti-action {
-    color: #0074cc; 
-    text-decoration: none;
-}
-
-.noti-action:hover {
-    text-decoration: underline;
-}
+    .filter-btn {
+    padding: 2px 6px;
+    font-size: 13px;
+    }
 </style>
 
 <nav class="navbar navbar-expand-lg navbar-light fixed-top navbar-devquery">
@@ -175,8 +200,8 @@
                         </a>
                     </li>
 
-                    <li class="nav-item position-relative notification-wrapper">
-                        <a class="nav-link text-secondary" href="#" id="notiDropdownBtn" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <li class="nav-item dropdown position-relative notification-wrapper">
+                        <a class="nav-link text-secondary" href="#" id="notiDropdownBtn" role="button" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
                             <i class="fa-solid fa-inbox fa-lg"></i>
                             
                             <c:if test="${requestScope.unreadNotification != null && requestScope.unreadNotification > 0}">
@@ -188,14 +213,37 @@
 
                         <div class="dropdown-menu dropdown-menu-end shadow noti-dropdown" aria-labelledby="notiDropdownBtn">
                             
-                            <div class="noti-header">
-                                <span>Notification</span>
-                                <a href="${pageContext.request.contextPath}/notification?action=allRead" class="noti-mark-all">Mark all read</a>
+                            <div class="noti-header d-flex justify-content-between align-items-center">
+                                <!-- LEFT: Notification + Filter -->
+                                    <div class="d-flex align-items-center gap-2">
+
+                                        <span class="fw-bold">NOTIFICATION</span>
+
+                                 <!-- FILTER -->
+                                            <div class="position-relative" onclick="event.stopPropagation()">
+
+                                                <button class="btn btn-sm btn-light filter-btn">
+                                                    ALL <i class="fa fa-caret-down"></i>
+                                                </button>
+
+                                <!-- DROP FILTER -->
+                                                 <div id="filterBox" class="filter-dropdown d-none">
+                                                 <div class="filter-item" onclick="selectFilter(event,'All')">All</div>
+                                                 <div class="filter-item" onclick="selectFilter(event,'user_post')">User</div>
+                                                 <div class="filter-item" onclick="selectFilter(event,'Tag')">Tag</div>
+                                                 </div>
+
+                                            </div>
+
+                                     </div>
+
+
+                                <a href="${pageContext.request.contextPath}/notification?action=allRead" class="noti-mark-all">MARK ALL READ</a>
                             </div>
                             
                             <div class="noti-body">
                                 <c:if test="${empty requestScope.Notification}">
-                                    <div class="noti-empty">You don't have any notifications.</div>
+                                    <div class="noti-empty">YOU DON'T HAVE ANY NOTIFICATION</div>
                                 </c:if>
 
                                 <c:forEach items="${requestScope.Notification}" var="noti">
@@ -204,7 +252,7 @@
                                         <div class="noti-meta">
                                             <span>${noti.createdAt}</span>
                                             <c:if test="${!noti.isRead}">
-                                                <a href="${pageContext.request.contextPath}/notification?id=${noti.notificationId}" class="noti-action">Mark as read</a>
+                                                <a href="${pageContext.request.contextPath}/notification?id=${noti.notificationId}" class="noti-action">MARK AS READ</a>
                                             </c:if>
                                         </div>
                                     </div>
@@ -232,6 +280,20 @@
             </ul>
         </div>
     </div>
-</nav>
+<script>
+function toggleFilter(e) {
+    e.stopPropagation();
+    document.getElementById("filterBox").classList.toggle("d-none");
+}
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+var contextPath = "${pageContext.request.contextPath}";
+
+function selectFilter(e, type) {
+    e.stopPropagation();
+    document.querySelector(".filter-btn").innerHTML =
+        type + ' <i class="fa fa-caret-down"></i>';
+    document.getElementById("filterBox").classList.add("d-none");
+    window.location.href = contextPath + "/notification?type=" + type; // Giờ hoạt động
+}
+</script>
+</nav>

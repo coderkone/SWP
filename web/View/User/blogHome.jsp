@@ -66,13 +66,14 @@
 
             /* Cắt ngắn nội dung (Excerpt) thành 3 dòng */
             .blog-excerpt {
-                color: #6a737c;
-                font-size: 0.95rem;
                 display: -webkit-box;
-                -webkit-line-clamp: 3;
+                -webkit-line-clamp: 3; /* Giới hạn đúng 3 dòng */
                 -webkit-box-orient: vertical;
                 overflow: hidden;
-                margin-bottom: 15px;
+                text-overflow: ellipsis;
+                word-break: break-word;
+                line-height: 1.5; /* Khoảng cách dòng để tính toán chiều cao */
+                max-height: 4.5em; /* line-height * số dòng */
             }
 
             /* Meta info (Tác giả, Ngày tháng) */

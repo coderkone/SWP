@@ -18,7 +18,7 @@
             }
             header, .navbar {
                 z-index: 99999 !important;
-                position: fixed; 
+                position: fixed;
                 top: 0;
                 width: 100%;
             }
@@ -31,24 +31,24 @@
             .editor-preview-side {
                 top: 106px !important;
                 z-index: 9999 !important;
-                height: calc(100vh - 106px) !important; 
+                height: calc(100vh - 106px) !important;
             }
         </style>
     </head>
     <body class="bg-light">
         <jsp:include page="../Common/header.jsp"></jsp:include>
 
-        <div class="container mt-5 mb-4">
-            <div class="row justify-content-center">
-                <div class="col-md-9">
-                    <h2 class="mb-4">Ask Question</h2>
-                    
+            <div class="container mt-5 mb-4">
+                <div class="row justify-content-center">
+                    <div class="col-md-9">
+                        <h2 class="mb-4">Ask Question</h2>
+
                     <% if (request.getAttribute("errorMessage") != null) { %>
-                        <div class="alert alert-danger" role="alert">
-                            <%= request.getAttribute("errorMessage") %>
-                        </div>
+                    <div class="alert alert-danger" role="alert">
+                        <%= request.getAttribute("errorMessage") %>
+                    </div>
                     <% } %>
-                    
+
                     <form action="${pageContext.request.contextPath}/create" method="POST">
 
                         <div class="mb-3">
@@ -83,18 +83,57 @@
 
         <script src="https://unpkg.com/easymde/dist/easymde.min.js"></script>
         <script>
-            // Khởi tạo Markdown Editor cho thẻ textarea có id="body"
+            // 1. Khởi tạo Markdown Editor
             var easyMDE = new EasyMDE({
                 element: document.getElementById('body'),
-                spellChecker: false, // Tắt check lỗi chính tả tiếng Anh
+                spellChecker: false,
                 placeholder: "Describe your problem or share your code snippet here",
                 toolbar: [
                     "bold", "italic", "heading", "|",
                     "quote", "unordered-list", "ordered-list", "|",
-                    "link", "image", "code", "|", // Nút code sẽ nằm cạnh nút ảnh
+                    "link", "image", "code", "|",
                     "preview", "side-by-side", "fullscreen", "|",
                     "guide"
                 ]
+            });
+
+            // 2. LƯU NHÁP VÀO LOCALSTORAGE
+            const TITLE_KEY = "draft_question_title";
+            const BODY_KEY = "draft_question_body";
+            const TAGS_KEY = "draft_question_tags";
+
+            const titleInput = document.getElementById('title');
+            const tagsInput = document.getElementById('tags');
+
+            // Chỉ điền bản nháp nếu ô input đang trống
+            document.addEventListener("DOMContentLoaded", function () {
+                if (!titleInput.value && localStorage.getItem(TITLE_KEY)) {
+                    titleInput.value = localStorage.getItem(TITLE_KEY);
+                }
+                if (!tagsInput.value && localStorage.getItem(TAGS_KEY)) {
+                    tagsInput.value = localStorage.getItem(TAGS_KEY);
+                }
+                if (!easyMDE.value() && localStorage.getItem(BODY_KEY)) {
+                    easyMDE.value(localStorage.getItem(BODY_KEY));
+                }
+            });
+
+            // TỰ ĐỘNG LƯU 
+            titleInput.addEventListener('input', function () {
+                localStorage.setItem(TITLE_KEY, this.value);
+            });
+            tagsInput.addEventListener('input', function () {
+                localStorage.setItem(TAGS_KEY, this.value);
+            });
+            easyMDE.codemirror.on("change", function () {
+                localStorage.setItem(BODY_KEY, easyMDE.value());
+            });
+
+            // Xóa BẢN NHÁP KHI ĐĂNG BÀI
+            document.querySelector('form').addEventListener('submit', function () {
+                localStorage.removeItem(TITLE_KEY);
+                localStorage.removeItem(BODY_KEY);
+                localStorage.removeItem(TAGS_KEY);
             });
         </script>
     </body>

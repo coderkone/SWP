@@ -275,7 +275,7 @@
                     <div class="row mt-4">
 
                         <div class="col-md-2">
-                            <nav class="nav flex-column mt-2"> <a class="inner-nav-item ${currentTab == 'summary' ? 'active' : ''}" href="?tab=summary">Summary</a>
+                            <nav class="nav flex-column mt-2">
                                 <a class="inner-nav-item ${currentTab == 'reputation' ? 'active' : ''}" href="?tab=reputation">Reputation</a>
                                 <a class="inner-nav-item ${currentTab == 'badges' ? 'active' : ''}" href="?tab=badges">Badges</a>
                                 <a class="inner-nav-item ${currentTab == 'privileges' ? 'active' : ''}" href="?tab=privileges">Privileges</a>
@@ -285,29 +285,6 @@
                         <div class="col-md-10 ps-4">
 
                             <c:choose>
-
-                                <%-- 1. TAB SUMMARY --%>
-                                <c:when test="${currentTab == 'summary'}">
-                                    <div class="row">
-                                        <div class="col-md-4">
-                                            <div class="summary-box">
-                                                <h4>Reputation</h4>
-                                                <i class="fa-solid fa-chart-line fa-3x text-secondary opacity-25 mt-3 mb-3"></i>
-                                                <p style="font-size: 13px;">Reputation is how the community thanks you. When users upvote your posts, you earn reputation.</p>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-4">
-                                            <div class="summary-box">
-                                                <h4>Badges</h4>
-                                                <div style="background: #f8f9f9; padding: 10px; border: 1px solid #e3e6e8; border-radius: 3px; display: flex; align-items: center; margin-bottom: 10px;">
-                                                    <span class="badge-dot gold"></span> <span class="me-3 fw-bold">${badgeCounts['gold']}</span>
-                                                    <span class="badge-dot silver"></span> <span class="me-3 fw-bold">${badgeCounts['silver']}</span>
-                                                    <span class="badge-dot bronze"></span> <span class="fw-bold">${badgeCounts['bronze']}</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </c:when>
 
                                 <%-- 2. TAB REPUTATION HISTORY --%>
                                 <c:when test="${currentTab == 'reputation'}">

@@ -36,6 +36,8 @@ public class NotificationController extends HttpServlet {
         String idParam = request.getParameter("id");
         String action = request.getParameter("action");
         NotificationDAO dao = new NotificationDAO();
+        String type = request.getParameter("type");
+        List<Notification> list;
         try{
             if("allRead".equals(action)){
                 dao.markAllRead(user.getUserId());
@@ -43,16 +45,21 @@ public class NotificationController extends HttpServlet {
                 long notifiId = Long.parseLong(idParam);
                 dao.markAsRead(notifiId, user.getUserId());
             }
+            if (type != null && !type.equals("All")) {
+                list = dao.getNotificationByType(user.getUserId(), type, 20);
+            } else {
+                list = dao.getNotification(user.getUserId(), 20);
+            }
+                request.setAttribute("Notification", list);
+                request.setAttribute("currentType", type != null ? type : "All");
+                request.getRequestDispatcher("/home").forward(request, response);
+                
+                
             
         }catch(Exception e){
             e.printStackTrace();
         }
-        String referer = request.getHeader("Referer");
-        if (referer != null) {
-            response.sendRedirect(referer);
-        } else {
-            response.sendRedirect(request.getContextPath() + "/home");
-        }
+        
     } 
 
     
