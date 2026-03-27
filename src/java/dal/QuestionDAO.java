@@ -1,5 +1,4 @@
 package dal;
-
 import config.DBContext;
 import dto.QuestionDTO;
 import java.sql.Connection;
@@ -9,7 +8,16 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class QuestionDAO extends DBContext {
 
@@ -1218,6 +1226,7 @@ private List<QuestionDTO> distinctAndLimit(List<QuestionDTO> list, List<Long> ex
     return result;
 }
 
+
 public List<QuestionDTO> getRecommendedQuestions(List<Long> viewedIds, int limit) {
     if (viewedIds == null || viewedIds.isEmpty()) {
         return getPopularQuestions(0, limit);
@@ -1429,6 +1438,35 @@ private void appendPlaceholders(StringBuilder sql, int count) {
         }
     }
 }
-
+ public List<QuestionDTO> getPopularQuestions(long excludeQuestionId, int limit) {
+        List<QuestionDTO> list = new ArrayList<>();
+        String sql = "SELECT q.*, u.username, u.Reputation AS author_reputation, up.avatar_url, "
+                + "(SELECT COUNT(*) FROM Answers a WHERE a.question_id = q.question_id) as ans_count, "
+                + "CAST((q.Score * 2.0) + (q.view_count / 10.0) - DATEDIFF(DAY, q.created_at, GETDATE()) AS FLOAT) AS popular_score "
+                + "FROM Questions q "
+                + "JOIN Users u ON q.user_id = u.user_id "
+                + "LEFT JOIN User_Profile up ON u.user_id = up.user_id "
+                + "WHERE q.question_id <> ? AND ISNULL(q.is_deleted, 0) = 0 "
+                + "ORDER BY popular_score DESC, q.view_count DESC, q.created_at DESC "
+                + "OFFSET 0 ROWS FETCH NEXT ? ROWS ONLY";
+        try {
+            Connection conn = getConnection();
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setLong(1, excludeQuestionId);
+            ps.setInt(2, limit);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                QuestionDTO question = mapRow(rs);
+                question.setPopularScore(rs.getDouble("popular_score"));
+                list.add(question);
+            }
+            rs.close();
+            ps.close();
+            conn.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
 
 }
