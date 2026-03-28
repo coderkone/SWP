@@ -6,13 +6,26 @@
     }
 
     function openFlagModal(postType, postId, questionId, answerId) {
-        const params = new URLSearchParams();
-        if (postType) params.append('postType', postType);
-        if (postId) params.append('postId', postId);
-        if (questionId) params.append('questionId', questionId);
-        if (answerId) params.append('answerId', answerId);
-        window.location.href = '${pageContext.request.contextPath}/flag/report?' + params.toString();
-    }
+        const modal = document.getElementById('flag-modal');
+        if (!modal) return;
+
+        const postTypeInput = document.getElementById('flag-post-type');
+        const postIdInput = document.getElementById('flag-post-id');
+        const questionIdInput = document.getElementById('flag-question-id');
+        const answerIdInput = document.getElementById('flag-answer-id');
+        const reasonSelect = document.getElementById('flag-reason');
+        const noteArea = document.getElementById('flag-note');
+
+        if (postTypeInput) postTypeInput.value = postType || '';
+        if (postIdInput) postIdInput.value = postId || '';
+        if (questionIdInput) questionIdInput.value = questionId || '';
+        if (answerIdInput) answerIdInput.value = answerId || '';
+        if (reasonSelect) reasonSelect.value = '';
+        if (noteArea) noteArea.value = '';
+
+        modal.classList.add('active');
+        modal.setAttribute('aria-hidden', 'false');
+        document.body.style.overflow = 'hidden';    }
 
     function closeFlagModal() {
         const modal = document.getElementById('flag-modal');
