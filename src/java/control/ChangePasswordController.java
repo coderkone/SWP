@@ -29,14 +29,20 @@ public class ChangePasswordController extends HttpServlet {
     throws ServletException, IOException {
         HttpSession session = request.getSession();
         User user = (User) session.getAttribute("user");
-        if(user==null){
+        if (user == null) {
             response.sendRedirect(request.getContextPath() + "/auth/login");
+            return;
+        }
+        String provider = user.getProvider();
+        if (provider != null && !provider.equalsIgnoreCase("local")) {
+            request.setAttribute("error", "Your account is linked with " + provider + ". Password change is not applicable.");
+            request.getRequestDispatcher("/View/User/changepassword.jsp").forward(request, response);
             return;
         }
         request.setAttribute("email", user.getEmail());
         request.getRequestDispatcher("/View/User/changepassword.jsp").forward(request, response);
-         
-    } 
+
+    }
 
     
     @Override

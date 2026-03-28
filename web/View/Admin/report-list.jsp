@@ -207,6 +207,9 @@
         <a href="${pageContext.request.contextPath}/admin/reports" class="nav-item active">
             <span class="nav-icon">📋</span> Content Reports
         </a>
+        <a href="${pageContext.request.contextPath}/admin/badges" class="nav-item">
+            <span class="nav-icon">🏅</span> Badge Management
+        </a>
         <a href="${pageContext.request.contextPath}/admin/blogs" class="nav-item">
             <span class="nav-icon">📝</span> Blog Management
         </a> 
@@ -215,7 +218,7 @@
         </a>
     </nav>
 
-     <div class="logout-area">
+    <div class="logout-area">
         <a href="${pageContext.request.contextPath}/logout" class="nav-item">
             <span class="nav-icon">🚪</span> Log Out
         </a>

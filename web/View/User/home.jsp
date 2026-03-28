@@ -50,7 +50,7 @@
             .left-sidebar {
                 width: 164px;
                 flex-shrink: 0;
-                padding-top: 25px;
+                padding-top: 0;
                 border-right: 1px solid var(--border-color);
             }
 
@@ -210,7 +210,7 @@
                 -webkit-line-clamp: 2;
                 -webkit-box-orient: vertical;
                 overflow: hidden;
-                word-wrap: break-word; 
+                word-wrap: break-word;
                 word-break: break-all;
             }
 
@@ -463,11 +463,23 @@
                     </div>
                 </c:if>
                 <c:if test="${totalPage > 1}">
-                    <div class="pagination">
-                        <c:forEach begin="1" end="${totalPage}" var="i">
+                    <div class="pagination d-flex justify-content-center mt-4 mb-5">
+
+                        <%-- Nút Previous chỉ hiện nếu không phải trang 1 --%>
+                        <c:if test="${currentPage > 1}">
+                            <a href="${pageContext.request.contextPath}/home?page=${currentPage - 1}&tab=${currentSort}&q=${currentKeyword}&tag=${currentTag}">&laquo; Prev</a>
+                        </c:if>
+
+                        <c:forEach begin="${startPage}" end="${endPage}" var="i">
                             <a href="${pageContext.request.contextPath}/home?page=${i}&tab=${currentSort}&q=${currentKeyword}&tag=${currentTag}" 
-                                accesskey=""class="${currentPage == i ? 'active' : ''}">${i}</a>
+                               class="${currentPage == i ? 'active' : ''}">${i}</a>
                         </c:forEach>
+
+                        <%-- Nút Next chỉ hiện nếu không phải trang cuối --%>
+                        <c:if test="${currentPage < totalPage}">
+                            <a href="${pageContext.request.contextPath}/home?page=${currentPage + 1}&tab=${currentSort}&q=${currentKeyword}&tag=${currentTag}">Next &raquo;</a>
+                        </c:if>
+
                     </div>
                 </c:if>
             </main>

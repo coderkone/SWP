@@ -7,6 +7,8 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>DevQuery Admin Dashboard</title>
+        <!-- Chart.js -->
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
         <style>
             /* BASE & RESET */
             :root {
@@ -96,7 +98,7 @@
             /* MAIN CONTENT */
             .main-content {
                 flex-grow: 1;
-                margin-left: 250px;
+margin-left: 250px;
                 padding-bottom: 30px;
             }
 
@@ -204,7 +206,7 @@
                 align-items: center;
                 justify-content: center;
                 font-size: 20px;
-                position: absolute;
+position: absolute;
                 top: 20px;
                 right: 20px;
             }
@@ -237,28 +239,6 @@
                 color: var(--text-main);
             }
 
-            /* CHART */
-            .chart-placeholder {
-                height: 200px;
-                width: 100%;
-                border-left: 1px solid #d6d9dc;
-                border-bottom: 1px solid #d6d9dc;
-                position: relative;
-                margin-top: 30px;
-            }
-
-            .chart-svg {
-                width: 100%;
-                height: 100%;
-                overflow: visible;
-            }
-
-            .chart-path {
-                fill: none;
-                stroke: #0A95FF;
-                stroke-width: 3;
-                stroke-linecap: round;
-            }
 
             /* TABLE STYLES */
             table {
@@ -323,7 +303,7 @@
                 <a href="${pageContext.request.contextPath}/admin/tags" class="nav-item">
                     <span class="nav-icon">🏷️</span> Tag Management
                 </a>
-                <a href="${pageContext.request.contextPath}/admin/reports" class="nav-item">
+<a href="${pageContext.request.contextPath}/admin/reports" class="nav-item">
                     <span class="nav-icon">📋</span> Content Reports
                 </a>
                 <a href="${pageContext.request.contextPath}/admin/badges" class="nav-item">
@@ -382,7 +362,7 @@
                         </div>
                         <div class="card-trend">Total answers posted</div>
                         <div class="card-icon-bg" style="background-color: #E3FCEF;">💬</div>
-                    </div>
+</div>
 
                     <a href="${pageContext.request.contextPath}/admin/reports" class="card">
                         <div class="card-title">Pending Reports</div>
@@ -399,13 +379,8 @@
                             <div class="section-title">Platform Growth (Last 7 Days)</div>
                             <div style="font-size: 12px; color: #525960;">Activity Chart</div>
                         </div>
-                        <div class="chart-placeholder">
-                            <svg class="chart-svg" viewBox="0 0 600 200" preserveAspectRatio="none">
-                                <line x1="0" y1="50" x2="600" y2="50" stroke="#f0f0f0" />
-                                <line x1="0" y1="100" x2="600" y2="100" stroke="#f0f0f0" />
-                                <line x1="0" y1="150" x2="600" y2="150" stroke="#f0f0f0" />
-                                <path class="chart-path" d="M0,150 C100,140 200,80 300,60 S500,70 600,20" />
-                            </svg>
+                        <div class="chart-area" style="height: 250px; padding-top: 10px;">
+                            <canvas id="growthChart"></canvas>
                         </div>
                     </div>
 
@@ -423,76 +398,29 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr>
-                                    <td>Question #102</td>
-                                    <td>Spam content</td>
-                                    <td><span class="status-badge status-pending">Pending</span></td>
-                                </tr>
-                                <tr>
-                                    <td>Answer #55</td>
-                                    <td>Harassment</td>
-                                    <td><span class="status-badge status-pending">Pending</span></td>
-                                </tr>
-                                <tr>
-                                    <td>User @Spammer</td>
-                                    <td>Fake Account</td>
-                                    <td><span class="status-badge status-active">Resolved</span></td>
-                                </tr>
+                                <c:choose>
+                                    <c:when test="${empty recentReports}">
+                                        <tr><td colspan="3" style="text-align:center;">No reports found.</td></tr>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <c:forEach var="r" items="${recentReports}">
+                                            <tr>
+                                                <td style="text-transform: capitalize;">${r.targetType} #${r.targetId}</td>
+                                                <td>${r.reason}</td>
+                                                <td>
+                                                    <span class="status-badge ${r.status == 'open' ? 'status-pending' : 'status-active'}">
+                                                        ${r.status}
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        </c:forEach>
+                                    </c:otherwise>
+</c:choose>
                             </tbody>
                         </table>
                     </div>
                 </div>
 
-                <!-- Bottom Sections -->
-                <div class="middle-section" style="grid-template-columns: 1fr 1fr; margin-bottom: 30px;">
-                    <div class="section-box">
-                        <div class="section-header">
-                            <div class="section-title">Questions By Tag</div>
-                            <div class="mini-title">Top tags this month</div>
-                        </div>
-                        <table>
-                            <thead>
-                                <tr><th>Tag</th><th>Count</th></tr>
-                            </thead>
-                            <tbody>
-                                <c:choose>
-                                    <c:when test="${empty questionByTagCurrentMonth}">
-                                        <tr><td colspan="2" style="text-align:center;">No data</td></tr>
-                                    </c:when>
-                                    <c:otherwise>
-                                        <c:forEach var="item" items="${questionByTagCurrentMonth}">
-                                            <tr><td><strong>${item.tagName}</strong></td><td>${item.questionCount}</td></tr>
-                                        </c:forEach>
-                                    </c:otherwise>
-                                </c:choose>
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <div class="section-box">
-                        <div class="section-header">
-                            <div class="section-title">Tag Monthly Stats</div>
-                            <div class="mini-title">Last 6 months</div>
-                        </div>
-                        <table>
-                            <thead>
-                                <tr><th>Month</th><th>Active</th><th>Questions</th></tr>
-                            </thead>
-                            <tbody>
-                                <c:choose>
-                                    <c:when test="${empty tagMonthlyStats}">
-                                        <tr><td colspan="3" style="text-align:center;">No data</td></tr>
-                                    </c:when>
-                                    <c:otherwise>
-                                        <c:forEach var="row" items="${tagMonthlyStats}">
-                                            <tr><td><strong>${row.monthLabel}</strong></td><td>${row.activeTagCount}</td><td>${row.questionCount}</td></tr>
-                                        </c:forEach>
-                                    </c:otherwise>
-                                </c:choose>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
 
                 <!-- Newest Users Table -->
                 <div class="section-box">
@@ -539,5 +467,78 @@
 
             </div>
         </main>
+        <script>
+            // Data from Java
+            const userLabels = [];
+            const userCounts = [];
+            <c:forEach var="item" items="${userTrend}">
+                userLabels.push('<fmt:formatDate value="${item.date}" pattern="dd/MM"/>');
+                userCounts.push(${item.count});
+            </c:forEach>
+
+            const questionLabels = [];
+            const questionCounts = [];
+            <c:forEach var="item" items="${questionTrend}">
+questionLabels.push('<fmt:formatDate value="${item.date}" pattern="dd/MM"/>');
+                questionCounts.push(${item.count});
+            </c:forEach>
+
+            // Ensure all dates are present in both if needed, but for simplicity we'll just use questonLabels
+            const labels = questionLabels.length > userLabels.length ? questionLabels : userLabels;
+
+            const ctx = document.getElementById('growthChart').getContext('2d');
+            const growthChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'New Questions',
+                            data: questionCounts,
+                            borderColor: '#0A95FF',
+                            backgroundColor: 'rgba(10, 149, 255, 0.1)',
+                            fill: true,
+                            tension: 0.4,
+                            borderWidth: 3
+                        },
+                        {
+                            label: 'New Users',
+                            data: userCounts,
+                            borderColor: '#F48024',
+                            backgroundColor: 'rgba(244, 128, 36, 0.1)',
+                            fill: true,
+                            tension: 0.4,
+                            borderWidth: 3
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                usePointStyle: true,
+                                padding: 20
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: '#f0f0f0'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+        </script>
     </body>
 </html>

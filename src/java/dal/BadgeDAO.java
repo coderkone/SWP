@@ -82,7 +82,6 @@ public class BadgeDAO extends DBContext {
                 badge.setDescription(rs.getString("description"));
                 badge.setRequiredReputation(rs.getInt("required_reputation"));
 
-                // Vì không còn bảng User_Badges, ta không có ngày Earned cụ thể nữa
                 badge.setEarnedAt(null);
 
                 list.add(badge);

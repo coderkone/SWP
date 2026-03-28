@@ -3,6 +3,7 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
 package dal;
+
 import config.DBContext;
 import dto.QuestionDTO;
 import dto.TagDTO;
@@ -19,9 +20,7 @@ public class TagDAO {
     // Lấy tổng số tags
     public int getTagCount() {
         String sql = "SELECT COUNT(*) FROM Tags";
-        try (Connection con = db.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
+        try (Connection con = db.getConnection(); PreparedStatement ps = con.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
             if (rs.next()) {
                 return rs.getInt(1);
             }
@@ -34,14 +33,13 @@ public class TagDAO {
     // Lấy danh sách tags với pagination + questionCount + followerCount
     public List<TagDTO> getAllTags(int page, int pageSize) {
         List<TagDTO> tags = new ArrayList<>();
-        String sql = "SELECT t.tag_id, t.tag_name, t.description, t.IsActive, " +
-                     "(SELECT COUNT(*) FROM Question_Tags qt WHERE qt.tag_id = t.tag_id) as questionCount, " +
-                     "(SELECT COUNT(*) FROM TagFollow tf WHERE tf.tag_id = t.tag_id) as followerCount " +
-                     "FROM Tags t ORDER BY t.tag_name ASC " +
-                     "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
+        String sql = "SELECT t.tag_id, t.tag_name, t.description, t.IsActive, "
+                + "(SELECT COUNT(*) FROM Question_Tags qt WHERE qt.tag_id = t.tag_id) as questionCount, "
+                + "(SELECT COUNT(*) FROM TagFollow tf WHERE tf.tag_id = t.tag_id) as followerCount "
+                + "FROM Tags t ORDER BY t.tag_name ASC "
+                + "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
 
-        try (Connection con = db.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
+        try (Connection con = db.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setInt(1, (page - 1) * pageSize);
             ps.setInt(2, pageSize);
 
@@ -60,14 +58,12 @@ public class TagDAO {
     // Lấy tất cả tags active (cho dropdown merge)
     public List<TagDTO> getAllActiveTags() {
         List<TagDTO> tags = new ArrayList<>();
-        String sql = "SELECT tag_id, tag_name, description, IsActive, " +
-                     "(SELECT COUNT(*) FROM Question_Tags qt WHERE qt.tag_id = t.tag_id) as questionCount, " +
-                     "0 as followerCount " +
-                     "FROM Tags t WHERE IsActive = 1 ORDER BY tag_name ASC";
+        String sql = "SELECT tag_id, tag_name, description, IsActive, "
+                + "(SELECT COUNT(*) FROM Question_Tags qt WHERE qt.tag_id = t.tag_id) as questionCount, "
+                + "0 as followerCount "
+                + "FROM Tags t WHERE IsActive = 1 ORDER BY tag_name ASC";
 
-        try (Connection con = db.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
+        try (Connection con = db.getConnection(); PreparedStatement ps = con.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
                 TagDTO tag = mapResultSetToTagDTO(rs);
                 tags.add(tag);
@@ -80,13 +76,12 @@ public class TagDAO {
 
     // Lấy tag theo ID
     public TagDTO getTagById(long tagId) {
-        String sql = "SELECT t.tag_id, t.tag_name, t.description, t.IsActive, " +
-                     "(SELECT COUNT(*) FROM Question_Tags WHERE tag_id = t.tag_id) as questionCount, " +
-"(SELECT COUNT(*) FROM TagFollow WHERE tag_id = t.tag_id) as followerCount " +
-                     "FROM Tags t WHERE t.tag_id = ?";
+        String sql = "SELECT t.tag_id, t.tag_name, t.description, t.IsActive, "
+                + "(SELECT COUNT(*) FROM Question_Tags WHERE tag_id = t.tag_id) as questionCount, "
+                + "(SELECT COUNT(*) FROM TagFollow WHERE tag_id = t.tag_id) as followerCount "
+                + "FROM Tags t WHERE t.tag_id = ?";
 
-        try (Connection con = db.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
+        try (Connection con = db.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setLong(1, tagId);
 
             try (ResultSet rs = ps.executeQuery()) {
@@ -104,8 +99,7 @@ public class TagDAO {
     public boolean createTag(String tagName, String description) {
         String sql = "INSERT INTO Tags(tag_name, description, IsActive) VALUES (?, ?, 1)";
 
-        try (Connection con = db.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
+        try (Connection con = db.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setString(1, tagName.trim());
             ps.setString(2, description != null ? description.trim() : null);
             return ps.executeUpdate() > 0;
@@ -119,8 +113,7 @@ public class TagDAO {
     public boolean updateTag(long tagId, String tagName, String description, boolean isActive) {
         String sql = "UPDATE Tags SET tag_name = ?, description = ?, IsActive = ? WHERE tag_id = ?";
 
-        try (Connection con = db.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
+        try (Connection con = db.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setString(1, tagName.trim());
             ps.setString(2, description != null ? description.trim() : null);
             ps.setBoolean(3, isActive);
@@ -136,8 +129,7 @@ public class TagDAO {
     public boolean toggleTagStatus(long tagId) {
         String sql = "UPDATE Tags SET IsActive = CASE WHEN IsActive = 1 THEN 0 ELSE 1 END WHERE tag_id = ?";
 
-        try (Connection con = db.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
+        try (Connection con = db.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setLong(1, tagId);
             return ps.executeUpdate() > 0;
         } catch (Exception e) {
@@ -155,26 +147,24 @@ public class TagDAO {
             sql.append(" WHERE IsActive = 0");
         }
 
-        try (Connection con = db.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql.toString());
-             ResultSet rs = ps.executeQuery()) {
+        try (Connection con = db.getConnection(); PreparedStatement ps = con.prepareStatement(sql.toString()); ResultSet rs = ps.executeQuery()) {
             if (rs.next()) {
                 return rs.getInt(1);
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
-return 0;
+        return 0;
     }
 
     // Lấy tags với pagination + filter status
     public List<TagDTO> getTagsByStatus(String status, int page, int pageSize) {
         List<TagDTO> tags = new ArrayList<>();
         StringBuilder sql = new StringBuilder(
-            "SELECT t.tag_id, t.tag_name, t.description, t.IsActive, " +
-            "(SELECT COUNT(*) FROM Question_Tags qt WHERE qt.tag_id = t.tag_id) as questionCount, " +
-            "(SELECT COUNT(*) FROM TagFollow tf WHERE tf.tag_id = t.tag_id) as followerCount " +
-            "FROM Tags t"
+                "SELECT t.tag_id, t.tag_name, t.description, t.IsActive, "
+                + "(SELECT COUNT(*) FROM Question_Tags qt WHERE qt.tag_id = t.tag_id) as questionCount, "
+                + "(SELECT COUNT(*) FROM TagFollow tf WHERE tf.tag_id = t.tag_id) as followerCount "
+                + "FROM Tags t"
         );
 
         if ("active".equals(status)) {
@@ -185,8 +175,7 @@ return 0;
 
         sql.append(" ORDER BY t.tag_name ASC OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
 
-        try (Connection con = db.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql.toString())) {
+        try (Connection con = db.getConnection(); PreparedStatement ps = con.prepareStatement(sql.toString())) {
             ps.setInt(1, (page - 1) * pageSize);
             ps.setInt(2, pageSize);
 
@@ -214,9 +203,9 @@ return 0;
             con.setAutoCommit(false);
 
             // 1. Update Question_Tags: source → target (skip duplicates)
-            String updateQT = "UPDATE Question_Tags SET tag_id = ? " +
-                              "WHERE tag_id = ? AND question_id NOT IN " +
-                              "(SELECT question_id FROM Question_Tags WHERE tag_id = ?)";
+            String updateQT = "UPDATE Question_Tags SET tag_id = ? "
+                    + "WHERE tag_id = ? AND question_id NOT IN "
+                    + "(SELECT question_id FROM Question_Tags WHERE tag_id = ?)";
             try (PreparedStatement ps = con.prepareStatement(updateQT)) {
                 ps.setLong(1, targetTagId);
                 ps.setLong(2, sourceTagId);
@@ -232,11 +221,11 @@ return 0;
             }
 
             // 3. Update TagFollow: source → target (skip duplicates)
-            String updateTF = "UPDATE TagFollow SET tag_id = ? " +
-                              "WHERE tag_id = ? AND user_id NOT IN " +
-                              "(SELECT user_id FROM TagFollow WHERE tag_id = ?)";
+            String updateTF = "UPDATE TagFollow SET tag_id = ? "
+                    + "WHERE tag_id = ? AND user_id NOT IN "
+                    + "(SELECT user_id FROM TagFollow WHERE tag_id = ?)";
             try (PreparedStatement ps = con.prepareStatement(updateTF)) {
-ps.setLong(1, targetTagId);
+                ps.setLong(1, targetTagId);
                 ps.setLong(2, sourceTagId);
                 ps.setLong(3, targetTagId);
                 ps.executeUpdate();
@@ -283,14 +272,13 @@ ps.setLong(1, targetTagId);
     // Search tags
     public List<TagDTO> searchTags(String keyword, int limit) {
         List<TagDTO> tags = new ArrayList<>();
-        String sql = "SELECT TOP (?) t.tag_id, t.tag_name, t.description, t.IsActive, " +
-                     "(SELECT COUNT(*) FROM Question_Tags qt WHERE qt.tag_id = t.tag_id) as questionCount, " +
-                     "(SELECT COUNT(*) FROM TagFollow tf WHERE tf.tag_id = t.tag_id) as followerCount " +
-                     "FROM Tags t WHERE t.tag_name LIKE ? OR t.description LIKE ? " +
-                     "ORDER BY t.tag_name";
+        String sql = "SELECT TOP (?) t.tag_id, t.tag_name, t.description, t.IsActive, "
+                + "(SELECT COUNT(*) FROM Question_Tags qt WHERE qt.tag_id = t.tag_id) as questionCount, "
+                + "(SELECT COUNT(*) FROM TagFollow tf WHERE tf.tag_id = t.tag_id) as followerCount "
+                + "FROM Tags t WHERE t.tag_name LIKE ? OR t.description LIKE ? "
+                + "ORDER BY t.tag_name";
 
-        try (Connection con = db.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
+        try (Connection con = db.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setInt(1, limit);
             ps.setString(2, "%" + keyword + "%");
             ps.setString(3, "%" + keyword + "%");
@@ -311,8 +299,7 @@ ps.setLong(1, targetTagId);
     public boolean tagNameExists(String tagName) {
         String sql = "SELECT COUNT(*) FROM Tags WHERE tag_name = ?";
 
-        try (Connection con = db.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
+        try (Connection con = db.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setString(1, tagName.trim());
 
             try (ResultSet rs = ps.executeQuery()) {
@@ -320,7 +307,7 @@ ps.setLong(1, targetTagId);
                     return rs.getInt(1) > 0;
                 }
             }
-} catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return false;
@@ -330,8 +317,7 @@ ps.setLong(1, targetTagId);
     public boolean tagNameExistsExcluding(String tagName, long excludeId) {
         String sql = "SELECT COUNT(*) FROM Tags WHERE tag_name = ? AND tag_id != ?";
 
-        try (Connection con = db.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
+        try (Connection con = db.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setString(1, tagName.trim());
             ps.setLong(2, excludeId);
 
@@ -357,238 +343,240 @@ ps.setLong(1, targetTagId);
         tag.setFollowerCount(rs.getInt("followerCount"));
         return tag;
     }
+
     private boolean isFollowed(long userId, long tagId) {
         String sql = "SELECT COUNT(*) FROM TagFollow "
-                   + "WHERE user_id = ? AND tag_id = ?";
+                + "WHERE user_id = ? AND tag_id = ?";
         try {
             Connection conn = db.getConnection();
             PreparedStatement st = conn.prepareStatement(sql);
             st.setLong(1, userId);
             st.setLong(2, tagId);
             ResultSet rs = st.executeQuery();
-            if (rs.next()) return rs.getInt(1) > 0;
+            if (rs.next()) {
+                return rs.getInt(1) > 0;
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
         return false;
     }
-    
-    
+
     //========================TAGS FOR USER==============================================
-    
-    public List<TagDTO> getAllTagsForUser(long userId , String keyword , String sort){
+    public List<TagDTO> getAllTagsForUser(long userId, String keyword, String sort) {
         List<TagDTO> list = new ArrayList<>();
         StringBuilder sqlDynamic = new StringBuilder(
-    "SELECT t.tag_id, t.tag_name, t.description, t.IsActive, " +
-    "CASE WHEN tf.user_id IS NOT NULL THEN 1 ELSE 0 END AS is_followed, " +
-    "COUNT(DISTINCT qt.question_id)  AS question_count, " +  
-    "COUNT(DISTINCT tf2.user_id)     AS follower_count, " +  
-    "MAX(q.created_at)               AS newest_at " +        
-    "FROM Tags t " +
-    "LEFT JOIN TagFollow tf  ON t.tag_id = tf.tag_id  AND tf.user_id = ? " +  
-    "LEFT JOIN TagFollow tf2 ON t.tag_id = tf2.tag_id " +                      
-    "LEFT JOIN Question_Tags qt ON t.tag_id = qt.tag_id " +
-    "LEFT JOIN Questions q      ON qt.question_id = q.question_id " +          
-    "WHERE t.IsActive = 1 "
-);
-        if(keyword != null && !keyword.trim().isEmpty()){
-            sqlDynamic.append("AND t.tag_name LIKE ? ");  
+                "SELECT t.tag_id, t.tag_name, t.description, t.IsActive, "
+                + "CASE WHEN tf.user_id IS NOT NULL THEN 1 ELSE 0 END AS is_followed, "
+                + "COUNT(DISTINCT qt.question_id)  AS question_count, "
+                + "COUNT(DISTINCT tf2.user_id)     AS follower_count, "
+                + "MAX(q.created_at)               AS newest_at "
+                + "FROM Tags t "
+                + "LEFT JOIN TagFollow tf  ON t.tag_id = tf.tag_id  AND tf.user_id = ? "
+                + "LEFT JOIN TagFollow tf2 ON t.tag_id = tf2.tag_id "
+                + "LEFT JOIN Question_Tags qt ON t.tag_id = qt.tag_id "
+                + "LEFT JOIN Questions q      ON qt.question_id = q.question_id "
+                + "WHERE t.IsActive = 1 "
+        );
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            sqlDynamic.append("AND t.tag_name LIKE ? ");
         }
         sqlDynamic.append(
-    "GROUP BY t.tag_id, t.tag_name, t.description, t.IsActive, tf.user_id "
-);
+                "GROUP BY t.tag_id, t.tag_name, t.description, t.IsActive, tf.user_id "
+        );
         sqlDynamic.append("ORDER BY is_followed DESC ");
-        if("popular".equals(sort)){
+        if ("popular".equals(sort)) {
             sqlDynamic.append(", question_count DESC");
-        }else if ("newest".equals(sort)){
+        } else if ("newest".equals(sort)) {
             sqlDynamic.append(", t.tag_id DESC");
-        }else{
+        } else {
             sqlDynamic.append(", t.tag_name ASC");
         }
-                     
-        try{
+
+        try {
             Connection conn = db.getConnection();
             PreparedStatement st = conn.prepareStatement(sqlDynamic.toString());
             int paramIndex = 1;
             st.setLong(paramIndex++, userId);
-            if(keyword != null && !keyword.trim().isEmpty()){
+            if (keyword != null && !keyword.trim().isEmpty()) {
                 st.setString(paramIndex++, "%" + keyword.trim() + "%");
             }
             ResultSet rs = st.executeQuery();
-            while(rs.next()){
+            while (rs.next()) {
                 TagDTO tag = new TagDTO();
-    tag.setTagId(rs.getLong("tag_id"));
-    tag.setTagName(rs.getString("tag_name"));
-    tag.setDescription(rs.getString("description"));
-    tag.setIsActive(rs.getBoolean("IsActive"));
-    tag.setIsFollowed(rs.getInt("is_followed") == 1);
-    
-    // ← 3 dòng này THÊM MỚI
-    tag.setQuestionCount(rs.getInt("question_count"));
-    tag.setFollowerCount(rs.getInt("follower_count"));
-    tag.setNewestQuestionAt(rs.getTimestamp("newest_at"));
-    
-    list.add(tag);
+                tag.setTagId(rs.getLong("tag_id"));
+                tag.setTagName(rs.getString("tag_name"));
+                tag.setDescription(rs.getString("description"));
+                tag.setIsActive(rs.getBoolean("IsActive"));
+                tag.setIsFollowed(rs.getInt("is_followed") == 1);
+                tag.setQuestionCount(rs.getInt("question_count"));
+                tag.setFollowerCount(rs.getInt("follower_count"));
+                tag.setNewestQuestionAt(rs.getTimestamp("newest_at"));
+
+                list.add(tag);
             }
-            
-        }catch(Exception e){
+
+        } catch (Exception e) {
             e.printStackTrace();
             System.out.println("Error" + e.getMessage());
         }
         return list;
     }
-    
-    public void followTag(long userId, long tagId){
-        if (isFollowed(userId, tagId)){
+
+    public void followTag(long userId, long tagId) {
+        if (isFollowed(userId, tagId)) {
             return;
         }
         String sql = "INSERT INTO TagFollow (user_id, tag_id) VALUES (?, ?)";
-        try{
+        try {
             Connection con = db.getConnection();
             PreparedStatement st = con.prepareStatement(sql);
             st.setLong(1, userId);
             st.setLong(2, tagId);
             st.executeUpdate();
-            
-        }catch(Exception e){
+
+        } catch (Exception e) {
             e.printStackTrace();
             System.out.println("Error" + e.getMessage());
         }
     }
-    
-    public void unfollowTag(long userId, long tagId){
+
+    public void unfollowTag(long userId, long tagId) {
         String sql = "DELETE FROM TagFollow WHERE user_id = ? AND tag_id = ?";
-        try{
+        try {
             Connection con = db.getConnection();
             PreparedStatement st = con.prepareStatement(sql);
             st.setLong(1, userId);
             st.setLong(2, tagId);
             st.executeUpdate();
-            
-        }catch(Exception e){
+
+        } catch (Exception e) {
             e.printStackTrace();
             System.out.println("Error" + e.getMessage());
         }
     }
-    public TagDTO getTagById(long tagId, long userId){
+
+    public TagDTO getTagById(long tagId, long userId) {
         String sql = "SELECT t.tag_id, t.tag_name, t.description, t.IsActive, "
-               + "CASE WHEN tf.user_id IS NOT NULL THEN 1 ELSE 0 END AS is_followed "
-               + "FROM Tags t "
-               + "LEFT JOIN TagFollow tf ON t.tag_id = tf.tag_id AND tf.user_id = ? "
-               + "WHERE t.tag_id = ? AND t.IsActive = 1";
-    try {
-        Connection conn = db.getConnection();
-        PreparedStatement st = conn.prepareStatement(sql);
-        st.setLong(1, userId);
-        st.setLong(2, tagId);
-        ResultSet rs = st.executeQuery();
-        if (rs.next()) {
-            TagDTO tag = new TagDTO();
-            tag.setTagId(rs.getLong("tag_id"));
-            tag.setTagName(rs.getString("tag_name"));
-            tag.setDescription(rs.getString("description"));
-            tag.setIsActive(rs.getBoolean("IsActive"));
-            tag.setIsFollowed(rs.getInt("is_followed") == 1);
-            return tag;
+                + "CASE WHEN tf.user_id IS NOT NULL THEN 1 ELSE 0 END AS is_followed "
+                + "FROM Tags t "
+                + "LEFT JOIN TagFollow tf ON t.tag_id = tf.tag_id AND tf.user_id = ? "
+                + "WHERE t.tag_id = ? AND t.IsActive = 1";
+        try {
+            Connection conn = db.getConnection();
+            PreparedStatement st = conn.prepareStatement(sql);
+            st.setLong(1, userId);
+            st.setLong(2, tagId);
+            ResultSet rs = st.executeQuery();
+            if (rs.next()) {
+                TagDTO tag = new TagDTO();
+                tag.setTagId(rs.getLong("tag_id"));
+                tag.setTagName(rs.getString("tag_name"));
+                tag.setDescription(rs.getString("description"));
+                tag.setIsActive(rs.getBoolean("IsActive"));
+                tag.setIsFollowed(rs.getInt("is_followed") == 1);
+                return tag;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.out.println("Error: " + e.getMessage());
         }
-    } catch (Exception e) {
-        e.printStackTrace();
-        System.out.println("Error: " + e.getMessage());
+        return null;
+
     }
-    return null;
-        
-    }
+
     public int countQuestionsByTag(long tagId, String filter) {
-    StringBuilder sql = new StringBuilder(
-        "SELECT COUNT(DISTINCT q.question_id) "
-      + "FROM Questions q "
-      + "JOIN Question_Tags qt ON q.question_id = qt.question_id "
-      + "WHERE qt.tag_id = ? "
-    );
-    if ("unanswered".equals(filter)) {
-        sql.append("AND NOT EXISTS ("
-                 + "SELECT 1 FROM Answers a WHERE a.question_id = q.question_id) ");
+        StringBuilder sql = new StringBuilder(
+                "SELECT COUNT(DISTINCT q.question_id) "
+                + "FROM Questions q "
+                + "JOIN Question_Tags qt ON q.question_id = qt.question_id "
+                + "WHERE qt.tag_id = ? "
+        );
+        if ("unanswered".equals(filter)) {
+            sql.append("AND NOT EXISTS ("
+                    + "SELECT 1 FROM Answers a WHERE a.question_id = q.question_id) ");
+        }
+        try {
+            Connection conn = db.getConnection();
+            PreparedStatement st = conn.prepareStatement(sql.toString());
+            st.setLong(1, tagId);
+            ResultSet rs = st.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.out.println("countQuestionsByTag LỖI: " + e.getMessage());
+        }
+        return 0;
     }
-    try {
-        Connection conn = db.getConnection();
-        PreparedStatement st = conn.prepareStatement(sql.toString());
-        st.setLong(1, tagId);
-        ResultSet rs = st.executeQuery();
-        if (rs.next()) return rs.getInt(1);
-    } catch (Exception e) {
-        e.printStackTrace();
-        System.out.println("countQuestionsByTag LỖI: " + e.getMessage());
-    }
-    return 0;
-}
+
     public List<QuestionDTO> getQuestionsByTag(long tagId, String filter, int page) {
-    List<QuestionDTO> list = new ArrayList<>();
-    int pageSize = 10;
-    int offset   = (page - 1) * pageSize;
+        List<QuestionDTO> list = new ArrayList<>();
+        int pageSize = 10;
+        int offset = (page - 1) * pageSize;
 
-    StringBuilder sql = new StringBuilder(
-        //  Bỏ DISTINCT — GROUP BY đã xử lý rồi
-        "SELECT q.question_id, q.title, q.body, q.Score, "
-      + "q.view_count, q.created_at, q.updated_at, q.is_closed, "
-      + "u.username, up.avatar_url, "
-      + "COUNT(a.answer_id) AS answer_count "
-      + "FROM Questions q "
-      + "JOIN Question_Tags qt ON q.question_id = qt.question_id "
-      + "JOIN Users u           ON q.user_id = u.user_id "
-      + "LEFT JOIN User_Profile up ON u.user_id = up.user_id "
-      + "LEFT JOIN Answers a    ON q.question_id = a.question_id "
-      + "WHERE qt.tag_id = ? "
-    );
+        StringBuilder sql = new StringBuilder(
+                //  Bỏ DISTINCT — GROUP BY đã xử lý rồi
+                "SELECT q.question_id, q.title, q.body, q.Score, "
+                + "q.view_count, q.created_at, q.updated_at, q.is_closed, "
+                + "u.username, up.avatar_url, "
+                + "COUNT(a.answer_id) AS answer_count "
+                + "FROM Questions q "
+                + "JOIN Question_Tags qt ON q.question_id = qt.question_id "
+                + "JOIN Users u           ON q.user_id = u.user_id "
+                + "LEFT JOIN User_Profile up ON u.user_id = up.user_id "
+                + "LEFT JOIN Answers a    ON q.question_id = a.question_id "
+                + "WHERE qt.tag_id = ? "
+        );
 
-   if ("unanswered".equals(filter)) {
-        sql.append("AND NOT EXISTS ("
-                 + "SELECT 1 FROM Answers a2 "
-                 + "WHERE a2.question_id = q.question_id) ");
-    }
-
-    //  GROUP BY đủ tất cả non-aggregate columns
-    sql.append("GROUP BY q.question_id, q.title, q.body, q.Score, "
-             + "q.view_count, q.created_at, q.updated_at, q.is_closed, "
-             + "u.username, up.avatar_url ");
-
-    if ("voted".equals(filter)) {
-        sql.append("ORDER BY q.Score DESC ");
-    } else {
-        sql.append("ORDER BY q.created_at DESC ");
-    }
-
-    sql.append("OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
-
-    try {
-        Connection conn = db.getConnection();
-        PreparedStatement st = conn.prepareStatement(sql.toString());
-        st.setLong(1, tagId);
-        st.setInt(2, offset);
-        st.setInt(3, pageSize);
-
-        ResultSet rs = st.executeQuery();
-        while (rs.next()) {
-            QuestionDTO q = new QuestionDTO();
-            q.setQuestionId(rs.getLong("question_id"));
-            q.setTitle(rs.getString("title"));
-            q.setBody(rs.getString("body"));
-            q.setScore(rs.getInt("Score"));           
-            q.setViewCount(rs.getInt("view_count"));
-            q.setCreatedAt(rs.getTimestamp("created_at"));
-            q.setUpdatedAt(rs.getTimestamp("updated_at"));
-            q.setIsClosed(rs.getBoolean("is_closed"));
-            q.setAuthorName(rs.getString("username"));
-            q.setAuthorAvatar(rs.getString("avatar_url"));
-            q.setAnswerCount(rs.getInt("answer_count"));
-            list.add(q);
+        if ("unanswered".equals(filter)) {
+            sql.append("AND NOT EXISTS ("
+                    + "SELECT 1 FROM Answers a2 "
+                    + "WHERE a2.question_id = q.question_id) ");
         }
 
-    } catch (Exception e) {
-        e.printStackTrace();
-        System.out.println("getQuestionsByTag LỖI: " + e.getMessage());
+        //  GROUP BY đủ tất cả non-aggregate columns
+        sql.append("GROUP BY q.question_id, q.title, q.body, q.Score, "
+                + "q.view_count, q.created_at, q.updated_at, q.is_closed, "
+                + "u.username, up.avatar_url ");
+
+        if ("voted".equals(filter)) {
+            sql.append("ORDER BY q.Score DESC ");
+        } else {
+            sql.append("ORDER BY q.created_at DESC ");
+        }
+
+        sql.append("OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
+
+        try {
+            Connection conn = db.getConnection();
+            PreparedStatement st = conn.prepareStatement(sql.toString());
+            st.setLong(1, tagId);
+            st.setInt(2, offset);
+            st.setInt(3, pageSize);
+
+            ResultSet rs = st.executeQuery();
+            while (rs.next()) {
+                QuestionDTO q = new QuestionDTO();
+                q.setQuestionId(rs.getLong("question_id"));
+                q.setTitle(rs.getString("title"));
+                q.setBody(rs.getString("body"));
+                q.setScore(rs.getInt("Score"));
+                q.setViewCount(rs.getInt("view_count"));
+                q.setCreatedAt(rs.getTimestamp("created_at"));
+                q.setUpdatedAt(rs.getTimestamp("updated_at"));
+                q.setIsClosed(rs.getBoolean("is_closed"));
+                q.setAuthorName(rs.getString("username"));
+                q.setAuthorAvatar(rs.getString("avatar_url"));
+                q.setAnswerCount(rs.getInt("answer_count"));
+                list.add(q);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.out.println("getQuestionsByTag LỖI: " + e.getMessage());
+        }
+        return list;
     }
-    return list;
 }
-}
-
-
