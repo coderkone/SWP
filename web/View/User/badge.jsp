@@ -407,7 +407,7 @@
                                                                     <span class="text-muted">Level:</span> <span class="text-capitalize fw-bold" style="color: #d1a684;">${badge.type}</span>
                                                                 </div>
                                                                 <div style="font-size: 13px; margin-bottom: 8px;">
-                                                                    <span class="text-muted">Earned:</span> <fmt:formatDate value="${badge.earnedAt}" pattern="dd/MM/yyyy" />                                                                                                                                </div>
+                                                                                                                                                                                         </div>
                                                                 <div style="font-size: 13px; line-height: 1.4;">
                                                                     ${badge.description}
                                                                 </div>
