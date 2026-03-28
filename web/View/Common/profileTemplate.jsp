@@ -31,16 +31,16 @@
 
             <ul class="nav profile-tabs">
                 <li class="nav-item">
-                    <a class="nav-link ${param.activeTab == 'profile' ? 'active' : ''}" href="${pageContext.request.contextPath}/profile">Profile</a>
+                    <a class="nav-link ${param.activeTab == 'profile' ? 'active' : ''}" href="${pageContext.request.contextPath}/profile?id=${uPro.userId}">Profile</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link ${param.activeTab == 'activity' ? 'active' : ''}" href="${pageContext.request.contextPath}/activity">Activity</a>
+                    <a class="nav-link ${param.activeTab == 'activity' ? 'active' : ''}" href="${pageContext.request.contextPath}/activity?id=${uPro.userId}">Activity</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link ${param.activeTab == 'badge' ? 'active' : ''}" href="${pageContext.request.contextPath}/badge">Badge</a>
+                    <a class="nav-link ${param.activeTab == 'badge' ? 'active' : ''}" href="${pageContext.request.contextPath}/badge?id=${uPro.userId}">Badge</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link ${param.activeTab == 'saves' ? 'active' : ''}" href="${pageContext.request.contextPath}/saves">Saves</a>
+                    <a class="nav-link ${param.activeTab == 'saves' ? 'active' : ''}" href="${pageContext.request.contextPath}/saves?id=${uPro.userId}">Saves</a>
                 </li>
             </ul>
         </div>

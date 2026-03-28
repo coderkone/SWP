@@ -297,7 +297,7 @@ function toggleFilter(e) {
     var currentType = "${requestScope.currentType != null ? requestScope.currentType : 'All'}";
     var label = "ALL";
     if (currentType === "user_post") label = "USER";
-    else if (currentType === "Tag")  label = "TAG";
+    else if (currentType === "tag_post")  label = "TAG";
     document.getElementById("filterLabel").textContent = label;
 })();
 

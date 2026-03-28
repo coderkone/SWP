@@ -24,8 +24,6 @@
                 background: #fff;
                 color: #0c0d0e;
             }
-
-            /* Layout */
             .container {
                 max-width: 1264px;
                 margin: 56px auto 0;
@@ -44,8 +42,6 @@
                 border-left: 1px solid var(--border-color);
                 min-width: 0;
             }
-
-            /* Page header */
             .page-header {
                 margin-bottom: 16px;
             }
@@ -53,8 +49,6 @@
                 font-size: 27px;
                 font-weight: 400;
             }
-
-            /* Search */
             .search-box {
                 position: relative;
                 width: 300px;
@@ -80,10 +74,6 @@
                 border-color: #6bbbf7;
                 box-shadow: 0 0 0 4px rgba(0,149,255,0.15);
             }
-
-
-
-            /* Filter + sort row */
             .filter-row {
                 display: flex;
                 justify-content: flex-end;
@@ -116,8 +106,6 @@
                 font-weight: 500;
                 color: #3b4045;
             }
-
-            /* Users grid */
             .users-grid {
                 display: grid;
                 grid-template-columns: repeat(4, 1fr);
@@ -138,9 +126,6 @@
                     grid-template-columns: 1fr;
                 }
             }
-
-            /* User card */
-
             .user-card {
                 display: flex;
                 align-items: center;
@@ -154,9 +139,6 @@
             .user-card:hover {
                 box-shadow: 0 2px 8px rgba(0,0,0,0.08);
             }
-
-
-
             .user-avatar {
                 width: 48px;
                 height: 48px;
@@ -176,13 +158,10 @@
                 color: #39739d;
                 flex-shrink: 0;
             }
-
             .user-info {
 
                 min-width: 0;
             }
-
-
             .user-name {
                 font-size: 13px;
                 font-weight: 500;
@@ -224,8 +203,6 @@
                 flex: 1;
                 min-width: 0;
             }
-
-            /* Nút More */
             .btn-more {
                 font-size: 12px;
                 color: #6a737c;
@@ -241,13 +218,10 @@
                 background: #f8f9f9;
                 color: #3b4045;
             }
-
         </style>
     </head>
     <body>
-
         <jsp:include page="/View/Common/header.jsp"/>
-
         <div class="container">
             <div class="left-sidebar">
                 <jsp:include page="/View/Common/sidebar.jsp">
@@ -256,13 +230,9 @@
             </div>
 
             <main class="main-content">
-
-                <%-- Page header --%>
                 <div class="page-header">
                     <h1>Users</h1>
                 </div>
-
-                <%-- Search — trên cùng --%>
                 <form method="get" action="${pageContext.request.contextPath}/users">
                     <div class="search-box">
                         <i class="fa-solid fa-magnifying-glass"></i>
@@ -271,11 +241,9 @@
                                name="search"
                                placeholder="Filter by username"
                                value="${keyword}" />
-                        <%-- Giữ sort khi search --%>
                         <input type="hidden" name="sort" value="${sort}" />
                     </div>
                 </form>
-
                 <div class="filter-row">
                     <div class="sort-buttons">
                         <a href="${pageContext.request.contextPath}/users?sort=reputation&search=${keyword}"
@@ -286,9 +254,6 @@
                            class="${sort == 'name' ? 'active' : ''}">Name</a>
                     </div>
                 </div>
-
-                <%-- Users Grid --%>
-                <%-- Users Grid --%>
                 <div class="users-grid">
                     <c:choose>
                         <c:when test="${not empty users}">
@@ -296,7 +261,7 @@
 
                                 <div class="user-card">
 
-                                    <%-- Click avatar + tên → /profile --%>
+                                    
                                     <a href="${pageContext.request.contextPath}/profile?id=${u.userId}"
                                        class="user-card-link">
 
@@ -325,7 +290,7 @@
 
                                     </a>
 
-                                    <%-- Click More → /userprofile --%>
+                                    
                                     <a href="${pageContext.request.contextPath}/userprofile?id=${u.userId}"
                                        class="btn-more">More</a>
 
@@ -345,7 +310,7 @@
             </main>
         </div>
 
-        <%-- Chart.js render Top 10 --%>
+        
         <script>
 
             let timer;
