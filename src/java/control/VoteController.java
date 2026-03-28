@@ -38,10 +38,13 @@ public class VoteController extends HttpServlet {
 
             Object principal = session.getAttribute("user");
             long userId;
+            int userReputation;
             if (principal instanceof UserDTO) {
                 userId = ((UserDTO) principal).getUserId();
+                userReputation = ((UserDTO) principal).getReputation();
             } else if (principal instanceof User) {
                 userId = ((User) principal).getUserId();
+                userReputation = ((User) principal).getReputation();
             } else {
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 out.println("{\"error\": \"Invalid user session\"}");
@@ -104,6 +107,18 @@ public class VoteController extends HttpServlet {
             if (!voteType.equals("upvote") && !voteType.equals("downvote")) {
                 response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                 out.println("{\"error\": \"Invalid vote type. Must be 'upvote' or 'downvote'\"}");
+                return;
+            }
+
+            // Validate reputation
+            if (voteType.equals("upvote") && userReputation < 15) {
+                response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                out.println("{\"error\": \"You need at least 15 reputation to vote up\"}");
+                return;
+            }
+            if (voteType.equals("downvote") && userReputation < 125) {
+                response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                out.println("{\"error\": \"You need at least 125 reputation to vote down\"}");
                 return;
             }
 
