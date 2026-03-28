@@ -48,32 +48,35 @@
 
 <nav class="d-none d-md-block bg-light sidebar">
     <div class="sidebar-sticky">
-        <c:set var="uri" value="${pageContext.request.requestURI}" />
+        <c:set var="originalUri" value="${requestScope['javax.servlet.forward.request_uri']}" />
+        <c:if test="${empty originalUri}">
+            <c:set var="originalUri" value="${pageContext.request.requestURI}" />
+        </c:if>
+        <c:set var="uri" value="${originalUri.toLowerCase()}" />
 
         <ul class="nav flex-column">
             <li class="sidebar-heading">Public</li>
+
             <li class="nav-item">
-                <a class="nav-link ${uri.contains('/home') ? 'active' : ''}" href="${pageContext.request.contextPath}/home">
+                <a class="nav-link ${uri.contains('/home') || uri.endsWith('/DevQuery/') ? 'active' : ''}" href="${pageContext.request.contextPath}/home">
                     <i class="fa-solid fa-house me-2"></i> Home
                 </a>
             </li>
-
             <li class="nav-item">
-                <a class="nav-link ${uri.contains('/tags') ? 'active' : ''}" href="${pageContext.request.contextPath}/tags">
+                <a class="nav-link ${uri.contains('/tag') ? 'active' : ''}" href="${pageContext.request.contextPath}/tags">
                     <i class="fa-solid fa-tags me-2"></i> Tags
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link ${uri.contains('/user') ? 'active' : ''}" href="${pageContext.request.contextPath}/users">
+                <a class="nav-link ${uri.contains('user.jsp') || uri.contains('users.jsp') ? 'active' : ''}" href="${pageContext.request.contextPath}/users">
                     <i class="fa-solid fa-users me-2"></i> Users
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link ${uri.contains('/bounty/questions') ? 'active' : ''}" href="${pageContext.request.contextPath}/bounty/questions">
+                <a class="nav-link ${uri.contains('/bounty') ? 'active' : ''}" href="${pageContext.request.contextPath}/bounty/questions">
                     <i class="fa-solid fa-coins me-2"></i> Bounties
                 </a>
             </li>
-
 
             <c:if test="${sessionScope.user != null}">
                 <li class="sidebar-heading">Personal</li>
