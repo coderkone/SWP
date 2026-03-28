@@ -22,26 +22,25 @@ INSERT INTO [dbo].[Users] ([username], [email], [password_hash], [role], [Reputa
 ('pro_backend', 'senior@nashtech.com', '15e2b0d3c33891ebb0f1ef609ec419420c20e320ce94c65fbc8c979c0fde7dae', 'member', 890),
 ('bot_auto', 'bot@devquery.system', '15e2b0d3c33891ebb0f1ef609ec419420c20e320ce94c65fbc8c979c0fde7dae', 'member', 0);
 GO
-select * from Users
-delete from Users where user_id=16
+
 -- =============================================
 -- 2. TẠO USER PROFILE (15 profiles)
 -- =============================================
 INSERT INTO [dbo].[User_Profile] ([user_id], [location], [bio], [website]) VALUES
-(1, N'Hà Nội', N'Administrator of System', 'https://devquery.com'),
-(2, N'TP.HCM', N'Fullstack Developer yêu thích Spring Boot', 'https://hoangcoder.me'),
+(1, N'Hà Nội', N'Administrator of System', NULL),
+(2, N'TP.HCM', N'Fullstack Developer yêu thích Spring Boot', NULL),
 (3, N'Đà Nẵng', N'Senior Java Developer', NULL),
 (4, N'Hà Nội', N'Data Analyst & SQL Expert', NULL),
-(5, N'New York', N'Freelancer', 'https://davidcode.io'),
+(5, N'New York', N'Freelancer', NULL),
 (6, N'California', N'ReactJS Enthusiast', NULL),
 (7, N'London', N'Learning to code', NULL),
-(8, N'Singapore', N'Frontend Ninja', 'https://charlie.js'),
+(8, N'Singapore', N'Frontend Ninja', NULL),
 (9, N'Hà Nội', N'Backend Architect', NULL),
 (10, N'TP.HCM', N'Automation Tester', NULL),
 (11, N'Bắc Ninh', N'Android & Kotlin', NULL),
 (12, N'Hà Nội', N'Thích màu hồng và code HTML', NULL),
 (13, N'Cần Thơ', N'Sinh viên năm 2', NULL),
-(14, N'Remote', N'10 năm kinh nghiệm System Design', 'https://architect.io'),
+(14, N'Remote', N'10 năm kinh nghiệm System Design', NULL),
 (15, N'Server', N'I am a robot', NULL);
 GO
 
@@ -206,11 +205,11 @@ GO
 -- 11. CẤP BADGE CHO USER (USER_BADGES)
 -- =============================================
 INSERT INTO [dbo].[User_Badges] ([user_id], [badge_id]) VALUES
-(13, 1), -- Newbie gets First Question
-(12, 2), -- Mai gets Good Answer (CSS question answer)
+(13, 1), 
+(12, 2),
 (14, 2),
 (4, 1),
-(14, 5), -- Pro gets Helper
+(14, 5), 
 (3, 5);
 GO
 
@@ -253,6 +252,165 @@ INSERT INTO [dbo].[Privileges] ([name], [description], [required_reputation]) VA
 ('Edit posts', 'Edit other people''s questions and answers.', 500),
 ('Moderator', 'Access moderation tools and delete posts.', 2000);
 GO
-select * from Privileges
 
-select * from Users
+-- ========================================================
+-- BƠM DỮ LIỆU ẢO CHO TÀI KHOẢN CỦA BẠN (USER_ID = 16)
+-- ========================================================
+
+-- Tạo Profile cho tài khoản số 16 (Tránh lỗi thiếu thông tin trang cá nhân)
+INSERT INTO [dbo].[User_Profile] ([user_id], [location], [bio], [website]) 
+VALUES (16, N'Hà Nội', N'Tài khoản đăng nhập bằng Google', 'https://github.com/MaiThanh_1282');
+GO
+
+-- 1. Cập nhật điểm uy tín (Ví dụ: 1550 điểm)
+UPDATE [dbo].[Users] 
+SET [Reputation] = 1550 
+WHERE [user_id] = 16;
+
+-- 2. Bơm 2 Câu hỏi do chính bạn (ID = 16) đặt ra
+INSERT INTO [dbo].[Questions] ([user_id], [title], [body], [view_count], [Score]) 
+VALUES 
+(16, N'Làm sao để code trang Profile chuẩn MVC?', N'Mình đang làm UI cho trang Profile của DevQuery mà chưa biết thiết kế DAO sao cho chuẩn.', 1250, 15),
+(16, N'Lỗi gạch đỏ chữ Connection trong Java', N'Mọi người cho mình hỏi fix lỗi này như thế nào với?', 340, 5);
+
+-- 3. Bơm 3 Câu trả lời do bạn (ID = 16) đi giải đáp cho người khác
+INSERT INTO [dbo].[Answers] ([question_id], [user_id], [body], [is_accepted], [Score]) 
+VALUES 
+(1, 16, N'Lỗi NullPointerException này là do biến chưa được khởi tạo. Bạn check lại kỹ nhé.', 1, 10),
+(2, 16, N'Bạn thử dùng JDBC chuẩn bằng hàm getConnection() xem sao.', 0, 2),
+(3, 16, N'Lỗi vô hạn loop này thường do quên truyền dependency array vào useEffect trong React.', 1, 25);
+
+-- 4. Cấp phát 5 Danh hiệu (Badges) cho bạn
+INSERT INTO [dbo].[User_Badges] ([user_id], [badge_id]) 
+VALUES 
+(16, 3), -- Tặng 1 huy hiệu Vàng (Famous Question)
+(16, 2), -- Tặng 1 huy hiệu Bạc (Good Answer)
+(16, 4), -- Tặng 1 huy hiệu Bạc (Bug Hunter)
+(16, 1), -- Tặng 1 huy hiệu Đồng (First Question)
+(16, 5); -- Tặng 1 huy hiệu Đồng (Helper)
+GO
+
+INSERT INTO [dbo].[Questions] ([user_id], [title], [body], [created_at], [Score]) 
+VALUES (16, N'Java OOP là gì?', N'Nội dung test', '2025-11-10 10:00:00', 20);
+DECLARE @Q1 BIGINT = SCOPE_IDENTITY();
+
+INSERT INTO [dbo].[Questions] ([user_id], [title], [body], [created_at], [Score]) 
+VALUES (16, N'Hỏi về React Hook', N'Nội dung test', '2026-01-05 09:00:00', 30);
+DECLARE @Q2 BIGINT = SCOPE_IDENTITY();
+
+INSERT INTO [dbo].[Answers] ([question_id], [user_id], [body], [created_at], [Score]) 
+VALUES (1, 16, N'Test Answer tháng 12', '2025-12-15 14:00:00', 15);
+
+INSERT INTO [dbo].[Answers] ([question_id], [user_id], [body], [created_at], [Score]) 
+VALUES (2, 16, N'Test Answer tháng 2', '2026-02-20 16:00:00', 5);
+
+-- B. Gắn Tags cho các câu hỏi của User 16
+INSERT INTO [dbo].[Question_Tags] ([question_id], [tag_id]) VALUES 
+(@Q1, 1), (@Q2, 4), (@Q2, 5);
+
+INSERT INTO [dbo].[Question_Tags] ([question_id], [tag_id])
+SELECT question_id, 1 FROM [dbo].[Questions] WHERE user_id = 16 AND title LIKE N'%Java%';
+
+INSERT INTO [dbo].[Question_Tags] ([question_id], [tag_id])
+SELECT question_id, 2 FROM [dbo].[Questions] WHERE user_id = 16 AND title LIKE N'%MVC%'; 
+GO
+
+-- ========================================================
+-- Tạo 15 bản ghi cho mỗi tab
+-- ========================================================
+DECLARE @Counter INT = 1;
+DECLARE @NewQuestionID BIGINT;
+DECLARE @NewAnswerID BIGINT;
+
+WHILE @Counter <= 15
+BEGIN
+    INSERT INTO [dbo].[Questions] ([user_id], [title], [body], [created_at], [Score], [view_count])
+    VALUES (16, CONCAT(N'[Test Phân Trang] Câu hỏi số ', @Counter), N'Nội dung để test UI phân trang...', DATEADD(DAY, -@Counter, GETDATE()), @Counter * 2, @Counter * 10);
+    
+    SET @NewQuestionID = SCOPE_IDENTITY();
+
+    INSERT INTO [dbo].[Answers] ([question_id], [user_id], [body], [created_at], [Score], [is_accepted])
+    VALUES (@NewQuestionID, 16, CONCAT(N'[Test Phân Trang] Câu trả lời số ', @Counter), DATEADD(HOUR, -@Counter, GETDATE()), @Counter, @Counter % 2);
+    
+    SET @NewAnswerID = SCOPE_IDENTITY();
+
+    INSERT INTO [dbo].[Bookmarks] ([user_id], [question_id], [created_at])
+    VALUES (16, @NewQuestionID, DATEADD(MINUTE, -@Counter, GETDATE()));
+
+    IF @Counter % 2 = 0
+        INSERT INTO [dbo].[Comments] ([user_id], [question_id], [answer_id], [body], [created_at])
+        VALUES (16, @NewQuestionID, NULL, CONCAT(N'Comment test trên Question số ', @Counter), DATEADD(SECOND, -@Counter, GETDATE()));
+    ELSE
+        INSERT INTO [dbo].[Comments] ([user_id], [question_id], [answer_id], [body], [created_at])
+        VALUES (16, NULL, @NewAnswerID, CONCAT(N'Comment test trên Answer số ', @Counter), DATEADD(SECOND, -@Counter, GETDATE()));
+
+    IF @Counter % 2 = 0
+        INSERT INTO [dbo].[Votes] ([user_id], [question_id], [answer_id], [vote_type], [created_at])
+        VALUES (16, @NewQuestionID, NULL, 'up', DATEADD(MILLISECOND, -@Counter * 10, GETDATE()));
+    ELSE
+        INSERT INTO [dbo].[Votes] ([user_id], [question_id], [answer_id], [vote_type], [created_at])
+        VALUES (16, NULL, @NewAnswerID, 'down', DATEADD(MILLISECOND, -@Counter * 10, GETDATE()));
+
+    SET @Counter = @Counter + 1;
+END
+GO
+
+-- ========================================================
+-- BỔ SUNG DỮ LIỆU CHO 10 BẢNG MỞ RỘNG 
+-- ========================================================
+
+-- 1. ANSWER_BOOKMARKS (Lưu nháp câu trả lời)
+INSERT INTO [dbo].[Answer_Bookmarks] ([user_id], [answer_id]) VALUES
+(16, 1), (16, 2), (2, 4), (3, 5);
+GO
+
+-- 2. QUESTION_VIEWS (Lịch sử view chi tiết)
+INSERT INTO [dbo].[Question_Views] ([question_id], [viewer_ip], [user_id]) VALUES
+(1, '192.168.1.100', 16), (2, '192.168.1.101', 2), (3, '127.0.0.1', 16);
+GO
+
+-- 3. REPUTATION_HISTORY (Lịch sử biến động điểm)
+INSERT INTO [dbo].[Reputation_History] ([user_id], [delta], [reason], [event_type], [related_post_type], [related_post_id], [actor_user_id]) VALUES
+(16, 10, N'Upvote câu hỏi', 'upvote', 'question', 1, 2),
+(16, 15, N'Câu trả lời được chấp nhận', 'accept_answer', 'answer', 1, 3);
+GO
+
+-- 4. REPORTS (Báo cáo vi phạm)
+INSERT INTO [dbo].[Reports] ([reporter_id], [target_type], [target_id], [reason]) VALUES
+(16, 'question', 4, N'Câu hỏi này bị trùng lặp với bài viết khác'),
+(2, 'answer', 2, N'Ngôn từ chưa phù hợp');
+GO
+
+-- 5. MODERATOR_ACTIONS (Lịch sử quản trị)
+INSERT INTO [dbo].[Moderator_Actions] ([moderator_id], [action_type], [target_type], [target_id], [description]) VALUES
+(1, 'delete', 'question', 5, N'Xóa bài do vi phạm quy tắc cộng đồng'),
+(3, 'edit', 'answer', 3, N'Sửa lại format code cho dễ đọc');
+GO
+
+-- 6. TAGFOLLOW (Theo dõi Tag)
+INSERT INTO [dbo].[TagFollow] ([user_id], [tag_id]) VALUES
+(16, 1), (16, 4), (16, 5), (2, 2);
+GO
+
+-- 7. USERFOLLOW (Theo dõi User)
+INSERT INTO [dbo].[UserFollow] ([follower_id], [following_id]) VALUES
+(16, 2), (16, 3), (2, 16), (4, 16);
+GO
+
+-- 8. BLOGS (Bài viết Blog)
+INSERT INTO [dbo].[Blogs] ([title], [content], [author_id]) VALUES
+(N'Lộ trình học React cập nhật 2026', N'Nội dung chi tiết bài viết hướng dẫn học React...', 16),
+(N'Tối ưu hóa Database SQL Server', N'Chia sẻ kinh nghiệm đánh Index...', 4);
+GO
+
+-- 9. BLOGCOMMENTS (Bình luận Blog)
+INSERT INTO [dbo].[BlogComments] ([blog_id], [user_id], [content]) VALUES
+(1, 2, N'Bài viết rất chi tiết, cảm ơn bạn!'),
+(2, 16, N'Mình sẽ áp dụng ngay kiến thức này vào DevQuery.');
+GO
+
+-- 10. POST_EDIT_HISTORY (Lịch sử chỉnh sửa bài viết)
+INSERT INTO [dbo].[Post_Edit_History] ([post_type], [post_id], [title], [body], [editor_id]) VALUES
+('question', 1, N'Lỗi NullPointerException trong Java là gì?', N'Đã update thêm phần code bị lỗi để mọi người dễ nhìn', 16),
+('answer', 1, NULL, N'Đã fix lỗi chính tả trong câu trả lời', 3);
+GO
