@@ -59,7 +59,7 @@ public class BadgeController extends HttpServlet {
                 sort = "newest";
             }
 
-            List<BadgeDTO> myBadges = dao.getUserBadgesByReputation(user.getUserId(), sort);
+            List<BadgeDTO> myBadges = dao.getUserBadgesByReputation(user.getReputation(), sort);
             request.setAttribute("myBadges", myBadges);
             request.setAttribute("currentSort", sort); // Gửi lại để giữ trạng thái select box
 

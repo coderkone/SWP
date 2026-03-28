@@ -74,7 +74,7 @@ public class AuthController extends HttpServlet {
 
         if (dao.emailExists(email)) {
             request.setAttribute("error", "Email đã tồn tại.");
-request.getRequestDispatcher("/View/User/register.jsp").forward(request, response);
+            request.getRequestDispatcher("/View/User/register.jsp").forward(request, response);
             return;
         }
 
@@ -100,7 +100,6 @@ request.getRequestDispatcher("/View/User/register.jsp").forward(request, respons
         UserDTO userDTO = dao.login(email, pass);
         model.User userModel = dao.loginModel(email, pass);
 
-        
         if (userDTO == null || userModel == null) {
             request.setAttribute("error", "Sai email hoặc password.");
             request.getRequestDispatcher("/View/User/login.jsp").forward(request, response);
@@ -117,13 +116,12 @@ request.getRequestDispatcher("/View/User/register.jsp").forward(request, respons
         HttpSession session = request.getSession(true);
         session.setAttribute("USER", userDTO);
         session.setAttribute("user", userModel); // Use lowercase "user" for model-based JSPs
-        
 
         String role = userDTO.getRole(); // admin / moderator / member
         if (role != null && role.equalsIgnoreCase("admin")) {
             response.sendRedirect(request.getContextPath() + "/dashboard");
         } else {
-            response.sendRedirect(request.getContextPath() + "/home");
+            response.sendRedirect(request.getContextPath() + "/SystemRules");
         }
     }
 }

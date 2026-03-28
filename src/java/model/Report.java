@@ -17,9 +17,69 @@ public class Report {
     private String note;
     private String status; // "open", "resolved"
     private Timestamp createdAt;
-    private String reporterUsername; // Added for display in admin
+    private String reporterUsername; 
+    private String reporterEmail;
+    private String reporterName;
+    private long questionId;
+    private String targetAuthorName;
+    private String targetTitle;
+    private String targetBody;
 
     public Report() {
+    }
+
+    public String getReporterEmail() {
+        return reporterEmail;
+    }
+
+    public void setReporterEmail(String reporterEmail) {
+        this.reporterEmail = reporterEmail;
+    }
+
+    public String getReporterName() {
+        return reporterName != null ? reporterName : reporterUsername;
+    }
+
+    public void setReporterName(String reporterName) {
+        this.reporterName = reporterName;
+    }
+
+    public long getQuestionId() {
+        return questionId;
+    }
+
+    public void setQuestionId(long questionId) {
+        this.questionId = questionId;
+    }
+
+    public String getTargetAuthorName() {
+        return targetAuthorName;
+    }
+
+    public void setTargetAuthorName(String targetAuthorName) {
+        this.targetAuthorName = targetAuthorName;
+    }
+
+    public String getTargetTitle() {
+        return targetTitle;
+    }
+
+    public void setTargetTitle(String targetTitle) {
+        this.targetTitle = targetTitle;
+    }
+
+    public String getTargetBody() {
+        return targetBody;
+    }
+
+    public void setTargetBody(String targetBody) {
+        this.targetBody = targetBody;
+    }
+
+    public String getReasonTruncated(int limit) {
+        if (reason == null) return "";
+        if (reason.length() <= limit) return reason;
+        return reason.substring(0, limit) + "...";
     }
 
     public Report(long reportId, long reporterId, String targetType, long targetId, String reason, String status, Timestamp createdAt) {
@@ -49,7 +109,7 @@ public class Report {
     }
 
     public long getReporterId() {
-        return reporterId;
+return reporterId;
     }
 
     public void setReporterId(long reporterId) {
@@ -110,6 +170,5 @@ public class Report {
 
     public void setReporterUsername(String reporterUsername) {
         this.reporterUsername = reporterUsername;
-    }
-    
+    }  
 }

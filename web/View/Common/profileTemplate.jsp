@@ -12,8 +12,8 @@
     <div class="d-flex">
         <div class="me-4">
             <img src="${pageContext.request.contextPath}/${uPro.avatarUrl != null ? uPro.avatarUrl : 'assets/img/Avatar.png'}" 
-            alt="Avatar" 
-            style="width: 144px; height: 144px; border-radius: 50%; box-shadow: 0 1px 2px rgba(0,0,0,0.15); object-fit: cover;">
+                 alt="Avatar" 
+                 style="width: 144px; height: 144px; border-radius: 50%; box-shadow: 0 1px 2px rgba(0,0,0,0.15); object-fit: cover;">
         </div>
 
         <div class="pt-1">
@@ -46,10 +46,13 @@
         </div>
     </div>
 
-    <div class="pt-2">
+    <div class="pt-2 d-flex flex-column align-items-end gap-2">
         <c:if test="${sessionScope.user != null && sessionScope.user.userId == uPro.userId}">
             <a href="${pageContext.request.contextPath}/edit-profile" class="btn btn-outline-secondary btn-sm" style="border-color: #9fa6ad; color: #525960;">
                 <i class="fas fa-pencil-alt me-1"></i> Edit profile
+            </a>
+            <a href="${pageContext.request.contextPath}/ChangePassword" class="btn btn-outline-secondary btn-sm" style="border-color: #9fa6ad; color: #525960;">
+                <i class="fas fa-pencil-alt me-1"></i> Change Password
             </a>
         </c:if>
     </div>

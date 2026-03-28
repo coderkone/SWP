@@ -278,7 +278,7 @@
                 <a href="${pageContext.request.contextPath}/admin/tags" class="nav-item">
                     <span class="nav-icon">🏷️</span> Tag Management
                 </a>
-                <a href="#" class="nav-item">
+                <a href="${pageContext.request.contextPath}/admin/reports" class="nav-item">
                     <span class="nav-icon">📋</span> Content Reports
                 </a>
                 <a href="${pageContext.request.contextPath}/admin/badges" class="nav-item active">
