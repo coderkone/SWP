@@ -92,6 +92,7 @@ public class UserDAO {
                     user.setRole(rs.getString("role"));
                     user.setReputation(rs.getInt("Reputation"));
                     user.setAvatarUrl(rs.getString("avatar_url"));
+                    user.setProvider(rs.getString("provider"));
                     return user;
                 }
             }
@@ -118,6 +119,7 @@ public class UserDAO {
                     );
                     user.setReputation(rs.getInt("Reputation"));
                     user.setAvatarUrl(rs.getString("avatar_url"));
+                    user.setProvider(rs.getString("provider"));
 
                     // Thử lấy status, nếu lỗi (không có cột) thì mặc định là active
                     try {
@@ -159,6 +161,7 @@ public class UserDAO {
                     u.setRole(rs.getString("role"));
                     u.setReputation(rs.getInt("Reputation"));
                     u.setAvatarUrl(rs.getString("avatar_url"));
+                    u.setProvider(rs.getString("provider"));
                     return u;
                 } else {
                     return createNewUser(providerId, email, name, providerType);
@@ -209,7 +212,7 @@ public class UserDAO {
     public UserDTO getUserProfileById(long id) {
         UserDTO user = null;
         // Query join 2 bảng Users và User_Profile
-        String sql = "SELECT u.user_id, u.username, u.email, u.role, u.Reputation, u.created_at, "
+        String sql = "SELECT u.user_id, u.username, u.email, u.role, u.Reputation, u.provider, u.created_at, "
                 + "p.bio, p.location, p.website, p.avatar_url "
                 + "FROM Users u "
                 + "LEFT JOIN User_Profile p ON u.user_id = p.user_id "
@@ -225,7 +228,7 @@ public class UserDAO {
                     user.setUserId(rs.getLong("user_id"));
                     user.setUsername(rs.getString("username"));
                     user.setEmail(rs.getString("email"));
-user.setRole(rs.getString("role"));
+                    user.setRole(rs.getString("role"));
                     user.setReputation(rs.getInt("Reputation"));
                     user.setCreatedAt(rs.getTimestamp("created_at"));
 
@@ -234,6 +237,7 @@ user.setRole(rs.getString("role"));
                     user.setLocation(rs.getString("location"));
                     user.setWebsite(rs.getString("website"));
                     user.setAvatarUrl(rs.getString("avatar_url"));
+                    user.setProvider(rs.getString("provider"));
                 }
             }
         } catch (Exception e) {

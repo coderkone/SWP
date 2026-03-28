@@ -37,7 +37,7 @@ public class GithubCallbackController extends HttpServlet {
                     UserDTO userDTO = new UserDTO(user.getUserId(), user.getUsername(), user.getEmail(), user.getRole());
                     request.getSession().setAttribute("USER", userDTO);
                     request.getSession().setAttribute("user", user);
-                    response.sendRedirect(request.getContextPath() + "/home");
+                    response.sendRedirect(request.getContextPath() + "/SystemRules");
                 } else {
                     response.sendRedirect(request.getContextPath() + "/auth/login?error=GithubLoginFailed");
                 }

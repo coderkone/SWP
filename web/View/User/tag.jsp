@@ -1,10 +1,10 @@
-
-
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <!DOCTYPE html>
 <html>
     <head>
+        <%@ page import="java.sql.Timestamp, java.time.*, java.time.temporal.*" %>
+        <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
         <title>Tags</title>
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -40,7 +40,7 @@
             .left-sidebar {
                 width: 164px;
                 flex-shrink: 0;
-                padding-top: 25px;
+                padding-top: 0;
                 border-right: 1px solid var(--border-color);
             }
 
@@ -98,7 +98,6 @@
                 border-color: #6bbbf7;
                 box-shadow: 0 0 0 4px rgba(0,149,255,0.15);
             }
-
             .sort-buttons {
                 display: flex;
                 border: 1px solid #9fa6ad;
@@ -258,14 +257,36 @@
             .empty-state p {
                 font-size: 15px;
             }
+            .tag-stats {
+                display: grid;
+                grid-template-columns: repeat(3, 1fr);
+                gap: 4px;
+                border-top: 1px solid #e3e6e8;
+                padding-top: 8px;
+                margin-top: 4px;
+            }
+            .stat-item {
+                display: flex;
+                flex-direction: column;
+                gap: 2px;
+            }
+            .stat-label {
+                font-size: 10px;
+                color: #9fa6ad;
+                text-transform: uppercase;
+                letter-spacing: 0.3px;
+            }
+            .stat-value {
+                font-size: 12px;
+                font-weight: 500;
+                color: #3b4045;
+            }
         </style>
     </head>
     <body>
         <jsp:include page="/View/Common/header.jsp"/>
 
         <div class="container">
-
-
             <div class="left-sidebar">
                 <jsp:include page="/View/Common/sidebar.jsp">
                     <jsp:param name="page" value="tags"/>
@@ -273,7 +294,6 @@
             </div>
 
             <main class="main-content">
-
                 <div class="tags-header">
                     <h1>Tags</h1>
                     <p>
@@ -282,10 +302,8 @@
                     </p>
                 </div>
 
-
                 <form method="get" action="${pageContext.request.contextPath}/tags">
                     <div class="tags-controls">
-
                         <div class="search-box">
                             <i class="fa-solid fa-magnifying-glass"></i>
                             <input type="text"
@@ -293,7 +311,7 @@
                                    name="search"
                                    placeholder="Filter by tag name"
                                    value="${param.search}" 
-                                   />
+                            />
                         </div>
 
                         <div class="sort-buttons">
@@ -318,7 +336,7 @@
                     <c:choose>
                         <c:when test="${not empty tagList}">
                             <c:forEach var="tag" items="${tagList}">
-                                <div class="tag-card${tag.followed ? 'followed' : ''}">
+                                <div class="tag-card ${tag.followed ? 'followed' : ''}">
                                     <div class="tag-card-header">
                                         <a href="${pageContext.request.contextPath}/tagsdetail?id=${tag.tagId}"
                                            class="tag-badge ${tag.followed ? 'followed-badge' : ''}">
@@ -326,7 +344,6 @@
                                             <c:if test="${isLoggedIn}">
                                                 <c:choose>
                                                     <c:when test="${tag.followed}">
-
                                                     <form method="post"
                                                           action="${pageContext.request.contextPath}/follow-tags"
                                                           style="margin:0;">
@@ -340,7 +357,6 @@
                                                     </form>
                                                 </c:when>
                                                 <c:otherwise>
-
                                                     <form method="post"
                                                           action="${pageContext.request.contextPath}/follow-tags"
                                                           style="margin:0;">
@@ -355,8 +371,6 @@
                                                 </c:otherwise>
                                             </c:choose>
                                         </c:if>
-
-
                                     </div>
 
                                     <p class="tag-desc">
@@ -365,6 +379,27 @@
                                             <c:otherwise><em>No description available.</em></c:otherwise>
                                         </c:choose>
                                     </p>
+                                    <div class="tag-stats">
+                                        <div class="stat-item">
+                                            <span class="stat-label">Questions</span>
+                                            <span class="stat-value">${tag.questionCount}</span>
+                                        </div>
+                                        <div class="stat-item">
+                                            <span class="stat-label">Newest</span>
+                                            <span class="stat-value">
+                                                <c:choose>
+                                                    <c:when test="${not empty tag.newestQuestionAt}">
+                                                        <fmt:formatDate value="${tag.newestQuestionAt}" pattern="dd/MM/yy"/>
+                                                    </c:when>
+                                                    <c:otherwise>—</c:otherwise>
+                                                </c:choose>
+                                            </span>
+                                        </div>
+                                        <div class="stat-item">
+                                            <span class="stat-label">Followers</span>
+                                            <span class="stat-value">${tag.followerCount}</span>
+                                        </div>
+                                    </div>
 
 
                                 </div>
@@ -388,7 +423,6 @@
                         </c:otherwise>
                     </c:choose>
                 </div>
-
             </main>
         </div> 
         <script>
@@ -422,6 +456,22 @@
                     badge.innerHTML = text.replace(regex, '<span class="highlight">$1</span>');
                 });
             }
+            <%!
+
+private String timeAgo(Timestamp ts) {
+    if (ts == null) return "No posts yet";
+    long seconds = ChronoUnit.SECONDS.between(
+        ts.toLocalDateTime(), LocalDateTime.now()
+    );
+    if (seconds < 60)   return seconds + "s ago";
+    if (seconds < 3600) return (seconds / 60) + "m ago";
+    if (seconds < 86400) return (seconds / 3600) + "h ago";
+    long days = seconds / 86400;
+    if (days < 30)  return days + "d ago";
+    if (days < 365) return (days / 30) + "mo ago";
+    return (days / 365) + "y ago";
+}
+            %>
         </script>
         <jsp:include page="../Common/footer.jsp" />
     </body>

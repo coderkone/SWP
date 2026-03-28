@@ -90,10 +90,10 @@ public class ProfileDAO extends DBContext {
     // 4. Lấy danh sách huy hiệu theo loại (gold, silver, bronze)
     public List<Badge> getBadgesByUserAndType(long userId, String type) {
         List<Badge> list = new ArrayList<>();
-        String sql = "SELECT b.badge_id, b.name, b.type, b.description "
+        String sql = "SELECT b.badge_id, b.name, b.type, b.description, b.required_reputation "
                 + "FROM Badges b "
-                + "JOIN User_Badges ub ON b.badge_id = ub.badge_id "
-                + "WHERE ub.user_id = ? AND b.type = ?";
+                + "WHERE b.type = ? AND b.required_reputation <= "
+                + "(SELECT Reputation FROM Users WHERE user_id = ?)";
 
         Connection conn = null;
         PreparedStatement st = null;
@@ -101,8 +101,8 @@ public class ProfileDAO extends DBContext {
         try {
             conn = getConnection();
             st = conn.prepareStatement(sql);
-            st.setLong(1, userId);
-            st.setString(2, type);
+            st.setString(1, type);
+            st.setLong(2, userId);
             rs = st.executeQuery();
             while (rs.next()) {
                 Badge badge = new Badge();

@@ -1,4 +1,5 @@
 package dal;
+
 import config.DBContext;
 import dto.QuestionDTO;
 import java.sql.Connection;
@@ -79,8 +80,7 @@ public class QuestionDAO extends DBContext {
     private void ensureQuestionColumn(String columnName, String alterSql) {
         String checkSql = "SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'Questions' AND COLUMN_NAME = ?";
 
-        try (Connection con = getConnection();
-                PreparedStatement check = con.prepareStatement(checkSql)) {
+        try (Connection con = getConnection(); PreparedStatement check = con.prepareStatement(checkSql)) {
             check.setString(1, columnName);
             try (ResultSet rs = check.executeQuery()) {
                 if (!rs.next()) {
@@ -306,7 +306,7 @@ public class QuestionDAO extends DBContext {
         Connection conn = null;
         try {
             conn = getConnection();
-            conn.setAutoCommit(false); 
+            conn.setAutoCommit(false);
 
             // Insert Question
             long questionId = insertQuestionCore(conn, userId, title, body);
@@ -674,9 +674,7 @@ public class QuestionDAO extends DBContext {
             sql.append("ORDER BY q.bounty_amount DESC, q.bounty_expires_at ASC, q.created_at DESC ");
         }
 
-        try (Connection conn = getConnection();
-                PreparedStatement ps = conn.prepareStatement(sql.toString());
-                ResultSet rs = ps.executeQuery()) {
+        try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(sql.toString()); ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
                 list.add(mapRow(rs));
             }
@@ -883,33 +881,35 @@ public class QuestionDAO extends DBContext {
         } catch (SQLException ignored) {
         }
     }
-    
+
     private static class QuestionAcceptState {
-    private final long questionOwnerId;
-    private final Long acceptedAnswerId;
-    private final int bountyAmount;
-    private final Timestamp bountyExpiresAt;
 
-    private QuestionAcceptState(long questionOwnerId, Long acceptedAnswerId, int bountyAmount, Timestamp bountyExpiresAt) {
-        this.questionOwnerId = questionOwnerId;
-        this.acceptedAnswerId = acceptedAnswerId;
-        this.bountyAmount = bountyAmount;
-        this.bountyExpiresAt = bountyExpiresAt;
+        private final long questionOwnerId;
+        private final Long acceptedAnswerId;
+        private final int bountyAmount;
+        private final Timestamp bountyExpiresAt;
+
+        private QuestionAcceptState(long questionOwnerId, Long acceptedAnswerId, int bountyAmount, Timestamp bountyExpiresAt) {
+            this.questionOwnerId = questionOwnerId;
+            this.acceptedAnswerId = acceptedAnswerId;
+            this.bountyAmount = bountyAmount;
+            this.bountyExpiresAt = bountyExpiresAt;
+        }
+
+        private boolean hasActiveBounty() {
+            return bountyAmount > 0 && bountyExpiresAt != null
+                    && bountyExpiresAt.after(new Timestamp(System.currentTimeMillis()));
+        }
     }
 
-    private boolean hasActiveBounty() {
-        return bountyAmount > 0 && bountyExpiresAt != null
-                && bountyExpiresAt.after(new Timestamp(System.currentTimeMillis()));
-    }
-}
+    private static class AnswerOwner {
 
-private static class AnswerOwner {
-    private final long userId;
+        private final long userId;
 
-    private AnswerOwner(long userId) {
-        this.userId = userId;
+        private AnswerOwner(long userId) {
+            this.userId = userId;
+        }
     }
-}
 
     public boolean toggleAcceptAnswer(long questionId, long answerId, long questionOwnerId) throws Exception {
         Connection conn = null;
@@ -1016,50 +1016,50 @@ private static class AnswerOwner {
             }
         }
     }
+
     //======================================================
     public long getLastInsertedQuestionId() {
 
-    String sql = "SELECT TOP 1 question_id FROM Questions ORDER BY question_id DESC";
+        String sql = "SELECT TOP 1 question_id FROM Questions ORDER BY question_id DESC";
 
-    try (Connection conn = getConnection();
-         PreparedStatement ps = conn.prepareStatement(sql);
-         ResultSet rs = ps.executeQuery()) {
+        try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
 
-        if (rs.next()) {
-            return rs.getLong("question_id");
+            if (rs.next()) {
+                return rs.getLong("question_id");
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
-    } catch (Exception e) {
-        e.printStackTrace();
+        return -1;
     }
 
-    return -1;
-}
     private List<String> getTagNamesByQuestionId(long questionId) {
 
-    List<String> tags = new ArrayList<>();
+        List<String> tags = new ArrayList<>();
 
-    String sql = "SELECT t.tag_name FROM Tags t "
-               + "JOIN Question_Tags qt ON t.tag_id = qt.tag_id "
-               + "WHERE qt.question_id = ?";
+        String sql = "SELECT t.tag_name FROM Tags t "
+                + "JOIN Question_Tags qt ON t.tag_id = qt.tag_id "
+                + "WHERE qt.question_id = ?";
 
-    try (Connection conn = getConnection();
-         PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
 
-        ps.setLong(1, questionId);
-        ResultSet rs = ps.executeQuery();
+            ps.setLong(1, questionId);
+            ResultSet rs = ps.executeQuery();
 
-        while (rs.next()) {
-            tags.add(rs.getString("tag_name"));
+            while (rs.next()) {
+                tags.add(rs.getString("tag_name"));
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
-    } catch (Exception e) {
-        e.printStackTrace();
+        return tags;
     }
+    // ================= NOTIFICATION =================
 
-    return tags;
-}
-        // ================= NOTIFICATION =================
     public void createNotificationForNewQuestion(long authorId, long questionId, String title) {
 
         Set<Long> userFollowers = new HashSet<>();
@@ -1070,8 +1070,7 @@ private static class AnswerOwner {
         // USER FOLLOW
         String sqlUser = "SELECT follower_id FROM UserFollow WHERE following_id = ?";
 
-        try (Connection conn = getConnection();
-             PreparedStatement ps = conn.prepareStatement(sqlUser)) {
+        try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(sqlUser)) {
 
             ps.setLong(1, authorId);
             ResultSet rs = ps.executeQuery();
@@ -1098,8 +1097,7 @@ private static class AnswerOwner {
 
         Map<Long, List<String>> tagMap = new HashMap<>();
 
-        try (Connection conn = getConnection();
-             PreparedStatement ps = conn.prepareStatement(sqlTag)) {
+        try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(sqlTag)) {
 
             ps.setLong(1, questionId);
             ResultSet rs = ps.executeQuery();
@@ -1108,7 +1106,9 @@ private static class AnswerOwner {
                 long uid = rs.getLong("user_id");
                 String tagName = rs.getString("tag_name");
 
-                if (uid == authorId) continue;
+                if (uid == authorId) {
+                    continue;
+                }
 
                 tagFollowers.add(uid);
                 tagMap.computeIfAbsent(uid, k -> new ArrayList<>()).add(tagName);
@@ -1121,8 +1121,7 @@ private static class AnswerOwner {
         // INSERT
         String insertSql = "INSERT INTO Notifications (user_id, type, content) VALUES (?, ?, ?)";
 
-        try (Connection conn = getConnection();
-             PreparedStatement ps = conn.prepareStatement(insertSql)) {
+        try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(insertSql)) {
 
             // USER
             for (Long userId : userFollowers) {
@@ -1151,294 +1150,294 @@ private static class AnswerOwner {
             e.printStackTrace();
         }
     }
+
     private String getUsernameById(long userId) {
 
-    String sql = "SELECT username FROM Users WHERE user_id = ?";
+        String sql = "SELECT username FROM Users WHERE user_id = ?";
 
-    try (Connection conn = getConnection();
-         PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
 
-        ps.setLong(1, userId);
-        ResultSet rs = ps.executeQuery();
+            ps.setLong(1, userId);
+            ResultSet rs = ps.executeQuery();
 
-        if (rs.next()) {
-            return rs.getString("username");
+            if (rs.next()) {
+                return rs.getString("username");
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
-    } catch (Exception e) {
-        e.printStackTrace();
+        return "Unknown";
     }
 
-    return "Unknown";
-}
-    
+    /**
+     * Extract tags từ danh sách question đã xem
+     */
+    public List<String> extractTagsFromViewed(List<Long> viewedIds) {
+        List<String> tags = new ArrayList<>();
 
-    
-
-
-/**
- * Extract tags từ danh sách question đã xem
- */
-public List<String> extractTagsFromViewed(List<Long> viewedIds) {
-    List<String> tags = new ArrayList<>();
-
-    if (viewedIds == null || viewedIds.isEmpty()) {
-        return tags;
-    }
-
-    try {
-        Connection conn = getConnection();
-
-        for (Long qId : viewedIds) {
-            tags.addAll(getTagsByQuestionId(qId));
+        if (viewedIds == null || viewedIds.isEmpty()) {
+            return tags;
         }
 
-        conn.close();
+        try {
+            Connection conn = getConnection();
 
-    } catch (Exception e) {
-        e.printStackTrace();
-    }
+            for (Long qId : viewedIds) {
+                tags.addAll(getTagsByQuestionId(qId));
+            }
 
-    // remove duplicate + limit
-    return tags.stream()
-            .distinct()
-            .limit(5)
-            .toList();
-}
+            conn.close();
 
-/**
- * Remove duplicate question + loại bỏ câu đã xem
- */
-private List<QuestionDTO> distinctAndLimit(List<QuestionDTO> list, List<Long> excludeIds, int limit) {
-    List<QuestionDTO> result = new ArrayList<>();
-    java.util.Set<Long> seen = new java.util.HashSet<>();
-
-    for (QuestionDTO q : list) {
-        if (seen.contains(q.getQuestionId())) continue;
-        if (excludeIds != null && excludeIds.contains(q.getQuestionId())) continue;
-
-        seen.add(q.getQuestionId());
-        result.add(q);
-
-        if (result.size() >= limit) break;
-    }
-
-    return result;
-}
-
-
-public List<QuestionDTO> getRecommendedQuestions(List<Long> viewedIds, int limit) {
-    if (viewedIds == null || viewedIds.isEmpty()) {
-        return getPopularQuestions(0, limit);
-    }
-
-    List<String> tags = extractTagsFromViewed(viewedIds);
-    List<String> keywords = extractKeywordsFromViewed(viewedIds, 8);
-    List<QuestionDTO> recommended = findRecommendedByProfile(tags, keywords, viewedIds, limit);
-
-    if (recommended.size() < limit) {
-        List<QuestionDTO> fallback = getPopularQuestions(0, limit * 2);
-        recommended.addAll(fallback);
-        recommended = distinctAndLimit(recommended, viewedIds, limit);
-    }
-
-    return recommended;
-}
-
-public List<String> extractKeywordsFromViewed(List<Long> viewedIds, int limit) {
-    Map<String, Integer> frequencies = new HashMap<>();
-
-    if (viewedIds == null || viewedIds.isEmpty()) {
-        return new ArrayList<>();
-    }
-
-    StringBuilder sql = new StringBuilder();
-    sql.append("SELECT title, body FROM Questions WHERE question_id IN (");
-    appendPlaceholders(sql, viewedIds.size());
-    sql.append(") AND ISNULL(is_deleted, 0) = 0");
-
-    try (Connection conn = getConnection();
-         PreparedStatement ps = conn.prepareStatement(sql.toString())) {
-        int index = 1;
-        for (Long id : viewedIds) {
-            ps.setLong(index++, id);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
-        try (ResultSet rs = ps.executeQuery()) {
-            while (rs.next()) {
-                collectKeywordFrequency(frequencies, rs.getString("title"));
-                collectKeywordFrequency(frequencies, rs.getString("body"));
+        // remove duplicate + limit
+        return tags.stream()
+                .distinct()
+                .limit(5)
+                .toList();
+    }
+
+    /**
+     * Remove duplicate question + loại bỏ câu đã xem
+     */
+    private List<QuestionDTO> distinctAndLimit(List<QuestionDTO> list, List<Long> excludeIds, int limit) {
+        List<QuestionDTO> result = new ArrayList<>();
+        java.util.Set<Long> seen = new java.util.HashSet<>();
+
+        for (QuestionDTO q : list) {
+            if (seen.contains(q.getQuestionId())) {
+                continue;
+            }
+            if (excludeIds != null && excludeIds.contains(q.getQuestionId())) {
+                continue;
+            }
+
+            seen.add(q.getQuestionId());
+            result.add(q);
+
+            if (result.size() >= limit) {
+                break;
             }
         }
-    } catch (Exception e) {
-        e.printStackTrace();
+
+        return result;
     }
 
-    return frequencies.entrySet().stream()
-            .sorted(Map.Entry.<String, Integer>comparingByValue(Comparator.reverseOrder())
-                    .thenComparing(Map.Entry::getKey))
-            .limit(limit)
-            .map(Map.Entry::getKey)
-            .collect(Collectors.toList());
-}
+    public List<QuestionDTO> getRecommendedQuestions(List<Long> viewedIds, int limit) {
+        if (viewedIds == null || viewedIds.isEmpty()) {
+            return getPopularQuestions(0, limit);
+        }
 
-private List<QuestionDTO> findRecommendedByProfile(List<String> tags, List<String> keywords,
-        List<Long> excludeIds, int limit) {
-    List<QuestionDTO> list = new ArrayList<>();
-    boolean hasTags = tags != null && !tags.isEmpty();
-    boolean hasKeywords = keywords != null && !keywords.isEmpty();
+        List<String> tags = extractTagsFromViewed(viewedIds);
+        List<String> keywords = extractKeywordsFromViewed(viewedIds, 8);
+        List<QuestionDTO> recommended = findRecommendedByProfile(tags, keywords, viewedIds, limit);
 
-    if (!hasTags && !hasKeywords) {
+        if (recommended.size() < limit) {
+            List<QuestionDTO> fallback = getPopularQuestions(0, limit * 2);
+            recommended.addAll(fallback);
+            recommended = distinctAndLimit(recommended, viewedIds, limit);
+        }
+
+        return recommended;
+    }
+
+    public List<String> extractKeywordsFromViewed(List<Long> viewedIds, int limit) {
+        Map<String, Integer> frequencies = new HashMap<>();
+
+        if (viewedIds == null || viewedIds.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        StringBuilder sql = new StringBuilder();
+        sql.append("SELECT title, body FROM Questions WHERE question_id IN (");
+        appendPlaceholders(sql, viewedIds.size());
+        sql.append(") AND ISNULL(is_deleted, 0) = 0");
+
+        try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+            int index = 1;
+            for (Long id : viewedIds) {
+                ps.setLong(index++, id);
+            }
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    collectKeywordFrequency(frequencies, rs.getString("title"));
+                    collectKeywordFrequency(frequencies, rs.getString("body"));
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return frequencies.entrySet().stream()
+                .sorted(Map.Entry.<String, Integer>comparingByValue(Comparator.reverseOrder())
+                        .thenComparing(Map.Entry::getKey))
+                .limit(limit)
+                .map(Map.Entry::getKey)
+                .collect(Collectors.toList());
+    }
+
+    private List<QuestionDTO> findRecommendedByProfile(List<String> tags, List<String> keywords,
+            List<Long> excludeIds, int limit) {
+        List<QuestionDTO> list = new ArrayList<>();
+        boolean hasTags = tags != null && !tags.isEmpty();
+        boolean hasKeywords = keywords != null && !keywords.isEmpty();
+
+        if (!hasTags && !hasKeywords) {
+            return list;
+        }
+
+        StringBuilder sql = new StringBuilder();
+        sql.append("SELECT TOP (?) q.*, u.username, u.Reputation AS author_reputation, up.avatar_url, ")
+                .append("(SELECT COUNT(*) FROM Answers a WHERE a.question_id = q.question_id) as ans_count, ")
+                .append("CAST((");
+
+        List<String> scoreParts = new ArrayList<>();
+        if (hasTags) {
+            StringBuilder tagScore = new StringBuilder();
+            tagScore.append("(SELECT COUNT(DISTINCT qt.tag_id) * 8.0 FROM Question_Tags qt ")
+                    .append("JOIN Tags t ON qt.tag_id = t.tag_id ")
+                    .append("WHERE qt.question_id = q.question_id AND t.tag_name IN (");
+            appendPlaceholders(tagScore, tags.size());
+            tagScore.append("))");
+            scoreParts.add(tagScore.toString());
+        }
+
+        if (hasKeywords) {
+            for (int i = 0; i < keywords.size(); i++) {
+                scoreParts.add("CASE WHEN q.title LIKE ? THEN 5.0 ELSE 0 END");
+                scoreParts.add("CASE WHEN q.body LIKE ? THEN 2.5 ELSE 0 END");
+            }
+        }
+
+        scoreParts.add("(q.Score * 1.5)");
+        scoreParts.add("(q.view_count * 0.08)");
+        scoreParts.add("CASE WHEN q.accepted_answer_id IS NOT NULL THEN 2.0 ELSE 0 END");
+
+        sql.append(String.join(" + ", scoreParts))
+                .append(") AS FLOAT) AS recommendation_score ")
+                .append("FROM Questions q ")
+                .append("JOIN Users u ON q.user_id = u.user_id ")
+                .append("LEFT JOIN User_Profile up ON u.user_id = up.user_id ")
+                .append("WHERE ISNULL(q.is_deleted, 0) = 0 ");
+
+        if (excludeIds != null && !excludeIds.isEmpty()) {
+            sql.append("AND q.question_id NOT IN (");
+            appendPlaceholders(sql, excludeIds.size());
+            sql.append(") ");
+        }
+
+        sql.append("AND (");
+        List<String> matchParts = new ArrayList<>();
+        if (hasTags) {
+            StringBuilder tagMatch = new StringBuilder();
+            tagMatch.append("EXISTS (SELECT 1 FROM Question_Tags qt ")
+                    .append("JOIN Tags t ON qt.tag_id = t.tag_id ")
+                    .append("WHERE qt.question_id = q.question_id AND t.tag_name IN (");
+            appendPlaceholders(tagMatch, tags.size());
+            tagMatch.append("))");
+            matchParts.add(tagMatch.toString());
+        }
+        if (hasKeywords) {
+            for (int i = 0; i < keywords.size(); i++) {
+                matchParts.add("q.title LIKE ?");
+                matchParts.add("q.body LIKE ?");
+            }
+        }
+        sql.append(String.join(" OR ", matchParts))
+                .append(") ")
+                .append("ORDER BY recommendation_score DESC, q.view_count DESC, q.created_at DESC");
+
+        try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+            int index = 1;
+            ps.setInt(index++, limit);
+
+            if (hasTags) {
+                for (String tag : tags) {
+                    ps.setString(index++, tag);
+                }
+            }
+
+            if (hasKeywords) {
+                for (String keyword : keywords) {
+                    String pattern = "%" + keyword + "%";
+                    ps.setString(index++, pattern);
+                    ps.setString(index++, pattern);
+                }
+            }
+
+            if (excludeIds != null && !excludeIds.isEmpty()) {
+                for (Long id : excludeIds) {
+                    ps.setLong(index++, id);
+                }
+            }
+
+            if (hasTags) {
+                for (String tag : tags) {
+                    ps.setString(index++, tag);
+                }
+            }
+
+            if (hasKeywords) {
+                for (String keyword : keywords) {
+                    String pattern = "%" + keyword + "%";
+                    ps.setString(index++, pattern);
+                    ps.setString(index++, pattern);
+                }
+            }
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    QuestionDTO question = mapRow(rs);
+                    question.setPopularScore(rs.getDouble("recommendation_score"));
+                    list.add(question);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
         return list;
     }
 
-    StringBuilder sql = new StringBuilder();
-    sql.append("SELECT TOP (?) q.*, u.username, u.Reputation AS author_reputation, up.avatar_url, ")
-            .append("(SELECT COUNT(*) FROM Answers a WHERE a.question_id = q.question_id) as ans_count, ")
-            .append("CAST((");
+    private void collectKeywordFrequency(Map<String, Integer> frequencies, String text) {
+        if (text == null || text.trim().isEmpty()) {
+            return;
+        }
 
-    List<String> scoreParts = new ArrayList<>();
-    if (hasTags) {
-        StringBuilder tagScore = new StringBuilder();
-        tagScore.append("(SELECT COUNT(DISTINCT qt.tag_id) * 8.0 FROM Question_Tags qt ")
-                .append("JOIN Tags t ON qt.tag_id = t.tag_id ")
-                .append("WHERE qt.question_id = q.question_id AND t.tag_name IN (");
-        appendPlaceholders(tagScore, tags.size());
-        tagScore.append("))");
-        scoreParts.add(tagScore.toString());
-    }
+        String normalized = text.toLowerCase(Locale.ENGLISH)
+                .replaceAll("<[^>]+>", " ")
+                .replaceAll("[^a-z0-9#+._-]", " ");
 
-    if (hasKeywords) {
-        for (int i = 0; i < keywords.size(); i++) {
-            scoreParts.add("CASE WHEN q.title LIKE ? THEN 5.0 ELSE 0 END");
-            scoreParts.add("CASE WHEN q.body LIKE ? THEN 2.5 ELSE 0 END");
+        for (String token : normalized.split("\\s+")) {
+            String clean = token.trim();
+            if (clean.length() < 3 || clean.length() > 24) {
+                continue;
+            }
+            if (RECOMMENDATION_STOP_WORDS.contains(clean)) {
+                continue;
+            }
+            if (!clean.matches(".*[a-z].*")) {
+                continue;
+            }
+            frequencies.merge(clean, 1, Integer::sum);
         }
     }
 
-    scoreParts.add("(q.Score * 1.5)");
-    scoreParts.add("(q.view_count * 0.08)");
-    scoreParts.add("CASE WHEN q.accepted_answer_id IS NOT NULL THEN 2.0 ELSE 0 END");
-
-    sql.append(String.join(" + ", scoreParts))
-            .append(") AS FLOAT) AS recommendation_score ")
-            .append("FROM Questions q ")
-            .append("JOIN Users u ON q.user_id = u.user_id ")
-            .append("LEFT JOIN User_Profile up ON u.user_id = up.user_id ")
-            .append("WHERE ISNULL(q.is_deleted, 0) = 0 ");
-
-    if (excludeIds != null && !excludeIds.isEmpty()) {
-        sql.append("AND q.question_id NOT IN (");
-        appendPlaceholders(sql, excludeIds.size());
-        sql.append(") ");
-    }
-
-    sql.append("AND (");
-    List<String> matchParts = new ArrayList<>();
-    if (hasTags) {
-        StringBuilder tagMatch = new StringBuilder();
-        tagMatch.append("EXISTS (SELECT 1 FROM Question_Tags qt ")
-                .append("JOIN Tags t ON qt.tag_id = t.tag_id ")
-                .append("WHERE qt.question_id = q.question_id AND t.tag_name IN (");
-        appendPlaceholders(tagMatch, tags.size());
-        tagMatch.append("))");
-        matchParts.add(tagMatch.toString());
-    }
-    if (hasKeywords) {
-        for (int i = 0; i < keywords.size(); i++) {
-            matchParts.add("q.title LIKE ?");
-            matchParts.add("q.body LIKE ?");
-        }
-    }
-    sql.append(String.join(" OR ", matchParts))
-            .append(") ")
-            .append("ORDER BY recommendation_score DESC, q.view_count DESC, q.created_at DESC");
-
-    try (Connection conn = getConnection();
-         PreparedStatement ps = conn.prepareStatement(sql.toString())) {
-        int index = 1;
-        ps.setInt(index++, limit);
-
-        if (hasTags) {
-            for (String tag : tags) {
-                ps.setString(index++, tag);
+    private void appendPlaceholders(StringBuilder sql, int count) {
+        for (int i = 0; i < count; i++) {
+            sql.append("?");
+            if (i < count - 1) {
+                sql.append(",");
             }
         }
-
-        if (hasKeywords) {
-            for (String keyword : keywords) {
-                String pattern = "%" + keyword + "%";
-                ps.setString(index++, pattern);
-                ps.setString(index++, pattern);
-            }
-        }
-
-        if (excludeIds != null && !excludeIds.isEmpty()) {
-            for (Long id : excludeIds) {
-                ps.setLong(index++, id);
-            }
-        }
-
-        if (hasTags) {
-            for (String tag : tags) {
-                ps.setString(index++, tag);
-            }
-        }
-
-        if (hasKeywords) {
-            for (String keyword : keywords) {
-                String pattern = "%" + keyword + "%";
-                ps.setString(index++, pattern);
-                ps.setString(index++, pattern);
-            }
-        }
-
-        try (ResultSet rs = ps.executeQuery()) {
-            while (rs.next()) {
-                QuestionDTO question = mapRow(rs);
-                question.setPopularScore(rs.getDouble("recommendation_score"));
-                list.add(question);
-            }
-        }
-    } catch (Exception e) {
-        e.printStackTrace();
     }
 
-    return list;
-}
-
-private void collectKeywordFrequency(Map<String, Integer> frequencies, String text) {
-    if (text == null || text.trim().isEmpty()) {
-        return;
-    }
-
-    String normalized = text.toLowerCase(Locale.ENGLISH)
-            .replaceAll("<[^>]+>", " ")
-            .replaceAll("[^a-z0-9#+._-]", " ");
-
-    for (String token : normalized.split("\\s+")) {
-        String clean = token.trim();
-        if (clean.length() < 3 || clean.length() > 24) {
-            continue;
-        }
-        if (RECOMMENDATION_STOP_WORDS.contains(clean)) {
-            continue;
-        }
-        if (!clean.matches(".*[a-z].*")) {
-            continue;
-        }
-        frequencies.merge(clean, 1, Integer::sum);
-    }
-}
-
-private void appendPlaceholders(StringBuilder sql, int count) {
-    for (int i = 0; i < count; i++) {
-        sql.append("?");
-        if (i < count - 1) {
-            sql.append(",");
-        }
-    }
-}
- public List<QuestionDTO> getPopularQuestions(long excludeQuestionId, int limit) {
+    public List<QuestionDTO> getPopularQuestions(long excludeQuestionId, int limit) {
         List<QuestionDTO> list = new ArrayList<>();
         String sql = "SELECT q.*, u.username, u.Reputation AS author_reputation, up.avatar_url, "
                 + "(SELECT COUNT(*) FROM Answers a WHERE a.question_id = q.question_id) as ans_count, "
@@ -1469,4 +1468,15 @@ private void appendPlaceholders(StringBuilder sql, int count) {
         return list;
     }
 
+    public boolean closeQuestion(long questionId, String reason) {
+        String sql = "UPDATE Questions SET is_closed = 1, closed_reason = ?, closed_at = GETDATE() WHERE question_id = ?";
+        try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, reason);
+            ps.setLong(2, questionId);
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
 }

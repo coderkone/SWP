@@ -15,6 +15,7 @@ public class UserDTO {
     private String location;
     private String website;
     private String avatarUrl;
+    private String provider;
 
     public UserDTO() {}
 
@@ -60,6 +61,15 @@ public class UserDTO {
     public String getAvatarUrl() { return avatarUrl; }
     public void setAvatarUrl(String avatarUrl) { this.avatarUrl = avatarUrl; }
 
+    public String getProvider() {
+        return provider;
+    }
+
+    public void setProvider(String provider) {
+        this.provider = provider;
+    }
+
+    
     // Helper: Xử lý hiển thị Avatar mặc định (Logic Frontend dùng luôn)
     public String getDisplayAvatar() {
         if (avatarUrl != null && !avatarUrl.isEmpty()) {

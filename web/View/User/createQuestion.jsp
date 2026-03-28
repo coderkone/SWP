@@ -49,7 +49,7 @@
                     </div>
                     <% } %>
 
-                    <form action="${pageContext.request.contextPath}/create" method="POST">
+                    <form action="${pageContext.request.contextPath}/create" method="POST" onsubmit="return clearDrafts()">
 
                         <div class="mb-3">
                             <label for="title" class="form-label fw-bold">Title</label>
@@ -105,6 +105,8 @@
             const titleInput = document.getElementById('title');
             const tagsInput = document.getElementById('tags');
 
+            let isSubmitting = false; // Cờ chặn lưu đè cực kỳ quan trọng
+
             // Chỉ điền bản nháp nếu ô input đang trống
             document.addEventListener("DOMContentLoaded", function () {
                 if (!titleInput.value && localStorage.getItem(TITLE_KEY)) {
@@ -118,23 +120,27 @@
                 }
             });
 
-            // TỰ ĐỘNG LƯU 
+            // TỰ ĐỘNG LƯU (Chỉ lưu khi form chưa được submit)
             titleInput.addEventListener('input', function () {
-                localStorage.setItem(TITLE_KEY, this.value);
+                if (!isSubmitting) localStorage.setItem(TITLE_KEY, this.value);
             });
             tagsInput.addEventListener('input', function () {
-                localStorage.setItem(TAGS_KEY, this.value);
+                if (!isSubmitting) localStorage.setItem(TAGS_KEY, this.value);
             });
             easyMDE.codemirror.on("change", function () {
-                localStorage.setItem(BODY_KEY, easyMDE.value());
+                if (!isSubmitting) localStorage.setItem(BODY_KEY, easyMDE.value());
             });
 
-            // Xóa BẢN NHÁP KHI ĐĂNG BÀI
-            document.querySelector('form').addEventListener('submit', function () {
+            // 3. HÀM XÓA BẢN NHÁP (Được gọi khi bấm nút Post Question)
+            function clearDrafts() {
+                isSubmitting = true; // Bật cờ để chặn 3 hàm tự động lưu ở trên chạy lại
+
                 localStorage.removeItem(TITLE_KEY);
                 localStorage.removeItem(BODY_KEY);
                 localStorage.removeItem(TAGS_KEY);
-            });
+
+                return true; // Cho phép trình duyệt tiếp tục gửi data về Controller
+            }
         </script>
     </body>
 </html>
