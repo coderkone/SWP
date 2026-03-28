@@ -39,7 +39,6 @@ public class BlogDAO extends DBContext {
         List<Blog> list = new ArrayList<>();
         int offset = (page - 1) * 9;
 
-        // 1. XÓA u.avatar_url khỏi câu lệnh SELECT
         StringBuilder sql = new StringBuilder(
                 "SELECT b.*, u.username "
                 + "FROM Blogs b LEFT JOIN Users u ON b.author_id = u.user_id "
@@ -81,8 +80,6 @@ public class BlogDAO extends DBContext {
                 blog.setViewCount(rs.getInt("view_count"));
                 blog.setCommentCount(rs.getInt("comment_count"));
                 blog.setStatus(rs.getInt("status"));
-
-                // 2. Chỉ lấy username, BỎ dòng get avatar_url đi
                 blog.setAuthorName(rs.getString("username"));
 
                 list.add(blog);
@@ -278,7 +275,6 @@ public class BlogDAO extends DBContext {
     }
 
     public Blog getBlogByIdForAdmin(int blogId) {
-        // 1. XÓA u.avatar_url
         String sql = "SELECT b.*, u.username "
                 + "FROM Blogs b LEFT JOIN Users u ON b.author_id = u.user_id "
                 + "WHERE b.blog_id = ?";
@@ -299,8 +295,6 @@ public class BlogDAO extends DBContext {
                 blog.setViewCount(rs.getInt("view_count"));
                 blog.setCommentCount(rs.getInt("comment_count"));
                 blog.setStatus(rs.getInt("status"));
-
-                // 2. BỎ lấy avatar_url
                 blog.setAuthorName(rs.getString("username"));
 
                 return blog;
@@ -310,7 +304,6 @@ public class BlogDAO extends DBContext {
         }
         return null;
     }
-    // Trong BlogDAO.java
 
     public int getTotalBlogs(String keyword, String status) {
         String query = "SELECT COUNT(*) FROM Blogs WHERE title LIKE ?";
@@ -332,7 +325,6 @@ public class BlogDAO extends DBContext {
 
     public List<Blog> getBlogsWithPagination(String keyword, String status, String sortField, String sortOrder, int pageIndex, int pageSize) {
         List<Blog> list = new ArrayList<>();
-        // LUÔN ĐẨY HIDDEN XUỐNG DƯỚI (status 1 đứng trước status 0)
         String orderBy = "b.status DESC, b.created_at DESC"; 
 
         if (sortField != null && !sortField.isEmpty()) {
@@ -344,7 +336,7 @@ public class BlogDAO extends DBContext {
             }
         }
 
-        // Đã bổ sung LEFT JOIN với Users để lấy authorName
+        // LEFT JOIN với Users để lấy authorName
         String query = "SELECT b.*, u.username "
                      + "FROM Blogs b "
                      + "LEFT JOIN Users u ON b.author_id = u.user_id "

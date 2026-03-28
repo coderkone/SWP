@@ -41,7 +41,7 @@ public class BadgeController extends HttpServlet {
         // Điều hướng Tab
         String tab = request.getParameter("tab");
         if (tab == null || tab.isEmpty()) {
-            tab = "summary";
+            tab = "reputation";
         }
         request.setAttribute("currentTab", tab);
 
@@ -59,7 +59,7 @@ public class BadgeController extends HttpServlet {
                 sort = "newest";
             }
 
-            List<BadgeDTO> myBadges = dao.getUserBadges(user.getUserId(), sort);
+            List<BadgeDTO> myBadges = dao.getUserBadgesByReputation(user.getUserId(), sort);
             request.setAttribute("myBadges", myBadges);
             request.setAttribute("currentSort", sort); // Gửi lại để giữ trạng thái select box
 
