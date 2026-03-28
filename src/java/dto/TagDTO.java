@@ -23,6 +23,7 @@ public class TagDTO {
     private int questionCount;
     private int followerCount;
     private boolean isFollowed; // them moi de check xem user theo doi tag hay chua
+    private java.sql.Timestamp newestQuestionAt;
     public TagDTO() {
     }
 
@@ -119,7 +120,12 @@ public String getShortDescription() {
     }
     return description; // Không có dấu chấm → trả nguyên
 }
-    
+public java.sql.Timestamp getNewestQuestionAt() {
+    return newestQuestionAt;
+}
+public void setNewestQuestionAt(java.sql.Timestamp newestQuestionAt) {
+    this.newestQuestionAt = newestQuestionAt;
+}  
     
     
 

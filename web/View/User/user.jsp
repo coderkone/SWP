@@ -7,7 +7,7 @@
     <title>Users - DevQuery</title>
     <link rel="stylesheet"
           href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+    
     <style>
         :root { --border-color: #d6d9dc; --blue: #0074cc; }
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -52,22 +52,7 @@
             box-shadow: 0 0 0 4px rgba(0,149,255,0.15);
         }
 
-        /* Chart section */
-        .chart-section {
-            background: #f8f9f9;
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            padding: 20px;
-            margin-bottom: 20px;
-        }
-        .chart-section h2 {
-            font-size: 15px; font-weight: 600;
-            color: #3b4045; margin-bottom: 16px;
-        }
-        .chart-wrapper {
-            max-width: 700px; 
-            height: 300px;
-        }
+       
 
         /* Filter + sort row */
         .filter-row {
@@ -216,23 +201,17 @@
                 </div>
             </form>
 
-            <%-- Biểu đồ Top 10 --%>
-            <div class="chart-section">
-                <h2>🏆 Top 10 Reputation</h2>
-                <div class="chart-wrapper">
-                    <canvas id="topChart"></canvas>
-                </div>
-            </div>
+            
 
             <%-- Filter — bên phải --%>
             <div class="filter-row">
                 <div class="sort-buttons">
                     <a href="${pageContext.request.contextPath}/users?sort=name&search=${keyword}"
-                       class="${sort == 'name' || empty sort ? 'active' : ''}">Name</a>
+                       class="${sort == 'name' ? 'active' : ''}">Name</a>
                     <a href="${pageContext.request.contextPath}/users?sort=date&search=${keyword}"
                        class="${sort == 'date' ? 'active' : ''}">Date</a>
                     <a href="${pageContext.request.contextPath}/users?sort=reputation&search=${keyword}"
-                       class="${sort == 'reputation' ? 'active' : ''}">Reputation</a>
+                       class="${sort == 'reputation'|| empty sort ? 'active' : ''}">Reputation</a>
                 </div>
             </div>
 
@@ -296,78 +275,7 @@
 
     <%-- Chart.js render Top 10 --%>
     <script>
-        const ctx = document.getElementById('topChart').getContext('2d');
-
-        //  Data từ Controller qua JSP
-        const labels = [
-            <c:forEach var="u" items="${top10}" varStatus="s">
-                '${u.username}'<c:if test="${!s.last}">,</c:if>
-            </c:forEach>
-        ];
-        const data = [
-            <c:forEach var="u" items="${top10}" varStatus="s">
-                ${u.reputation}<c:if test="${!s.last}">,</c:if>
-            </c:forEach>
-        ];
-
-        new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: labels,
-                datasets: [{
-                    label: 'Reputation',
-                    data: data,
-                    backgroundColor: [
-                        '#FFD700',  // Top 1 - Vàng
-                        '#C0C0C0',  // Top 2 - Bạc
-                        '#CD7F32',  // Top 3 - Đồng
-                        '#5b9bd5',  // Top 4
-                        '#5b9bd5',  // Top 5
-                        '#5b9bd5',  // Top 6
-                        '#5b9bd5',  // Top 7
-                        '#5b9bd5',  // Top 8
-                        '#5b9bd5',  // Top 9
-                        '#5b9bd5'   // Top 10
-                    ],
-                    borderColor: [
-                        '#FFC000',
-                        '#A0A0A0',
-                        '#B06020',
-                        '#4a8ac4',
-                        '#4a8ac4',
-                        '#4a8ac4',
-                        '#4a8ac4',
-                        '#4a8ac4',
-                        '#4a8ac4',
-                        '#4a8ac4'
-                    ],
-                    borderWidth: 1,
-                    borderRadius: 4
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { display: false },
-                    tooltip: {
-                        callbacks: {
-                            label: ctx => ctx.parsed.y + ' rep'
-                        }
-                    }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: { font: { size: 11 } }
-                    },
-                    x: {
-                        ticks: { font: { size: 12, weight: '600' } }
-                    }
-                }
-            }
-        });
-
+        
         let timer;
 const searchInput = document.getElementById('searchInput');
 if (searchInput) {

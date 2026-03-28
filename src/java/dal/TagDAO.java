@@ -379,18 +379,24 @@ ps.setLong(1, targetTagId);
     public List<TagDTO> getAllTagsForUser(long userId , String keyword , String sort){
         List<TagDTO> list = new ArrayList<>();
         StringBuilder sqlDynamic = new StringBuilder(
-            "SELECT t.tag_id, t.tag_name, t.description, t.IsActive, " +
-            "CASE WHEN tf.user_id IS NOT NULL THEN 1 ELSE 0 END AS is_followed, " +
-            "COUNT(qt.question_id) AS question_count " +
-            "FROM Tags t " +
-            "LEFT JOIN TagFollow tf ON t.tag_id = tf.tag_id AND tf.user_id = ? " +
-            "LEFT JOIN Question_Tags qt ON t.tag_id = qt.tag_id " +
-            "WHERE t.IsActive = 1 "
-        );
+    "SELECT t.tag_id, t.tag_name, t.description, t.IsActive, " +
+    "CASE WHEN tf.user_id IS NOT NULL THEN 1 ELSE 0 END AS is_followed, " +
+    "COUNT(DISTINCT qt.question_id)  AS question_count, " +  
+    "COUNT(DISTINCT tf2.user_id)     AS follower_count, " +  
+    "MAX(q.created_at)               AS newest_at " +        
+    "FROM Tags t " +
+    "LEFT JOIN TagFollow tf  ON t.tag_id = tf.tag_id  AND tf.user_id = ? " +  
+    "LEFT JOIN TagFollow tf2 ON t.tag_id = tf2.tag_id " +                      
+    "LEFT JOIN Question_Tags qt ON t.tag_id = qt.tag_id " +
+    "LEFT JOIN Questions q      ON qt.question_id = q.question_id " +          
+    "WHERE t.IsActive = 1 "
+);
         if(keyword != null && !keyword.trim().isEmpty()){
             sqlDynamic.append("AND t.tag_name LIKE ? ");  
         }
-        sqlDynamic.append("GROUP BY t.tag_id, t.tag_name, t.description, t.IsActive, tf.user_id ");
+        sqlDynamic.append(
+    "GROUP BY t.tag_id, t.tag_name, t.description, t.IsActive, tf.user_id "
+);
         sqlDynamic.append("ORDER BY is_followed DESC ");
         if("popular".equals(sort)){
             sqlDynamic.append(", question_count DESC");
@@ -411,12 +417,18 @@ ps.setLong(1, targetTagId);
             ResultSet rs = st.executeQuery();
             while(rs.next()){
                 TagDTO tag = new TagDTO();
-                tag.setTagId(rs.getLong("tag_id"));
-                tag.setTagName(rs.getString("tag_name"));
-                tag.setDescription(rs.getString("description"));
-                tag.setIsActive(rs.getBoolean("IsActive"));
-                tag.setIsFollowed(rs.getInt("is_followed") == 1);
-                list.add(tag);
+    tag.setTagId(rs.getLong("tag_id"));
+    tag.setTagName(rs.getString("tag_name"));
+    tag.setDescription(rs.getString("description"));
+    tag.setIsActive(rs.getBoolean("IsActive"));
+    tag.setIsFollowed(rs.getInt("is_followed") == 1);
+    
+    // ← 3 dòng này THÊM MỚI
+    tag.setQuestionCount(rs.getInt("question_count"));
+    tag.setFollowerCount(rs.getInt("follower_count"));
+    tag.setNewestQuestionAt(rs.getTimestamp("newest_at"));
+    
+    list.add(tag);
             }
             
         }catch(Exception e){

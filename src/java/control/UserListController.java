@@ -30,15 +30,14 @@ public class UserListController extends HttpServlet {
 
         String keyword = request.getParameter("search");
         String sort    = request.getParameter("sort");
-        if (sort == null) sort = "name"; // default
+        if (sort == null) sort = "reputation"; // default
 
-        // Top 10 — không bị ảnh hưởng bởi search/filter
-        List<UserDTO> top10 = dao.getTopUsers();
+       
 
         // Danh sách users — bị ảnh hưởng bởi search/filter
         List<UserDTO> users = dao.getAllUsers(keyword, sort);
 
-        request.setAttribute("top10",   top10);
+        
         request.setAttribute("users",  users);
         request.setAttribute("keyword", keyword);
         request.setAttribute("sort",    sort);
