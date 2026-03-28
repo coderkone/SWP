@@ -109,6 +109,11 @@ public class AcceptAnswerController extends HttpServlet {
         } catch (NumberFormatException e) {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             out.print("{\"success\": false, \"error\": \"Invalid ID format\"}");
+        } catch (IllegalStateException e) {
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            String msg = e.getMessage() != null ? e.getMessage() : "Invalid accept action";
+            msg = msg.replace("\\", "\\\\").replace("\"", "\\\"");
+            out.print("{\"success\": false, \"error\": \"" + msg + "\"}");
         } catch (Exception e) {
             e.printStackTrace();
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
