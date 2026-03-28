@@ -22,6 +22,10 @@ INSERT INTO [dbo].[Users] ([username], [email], [password_hash], [role], [Reputa
 ('pro_backend', 'senior@nashtech.com', '15e2b0d3c33891ebb0f1ef609ec419420c20e320ce94c65fbc8c979c0fde7dae', 'member', 890),
 ('bot_auto', 'bot@devquery.system', '15e2b0d3c33891ebb0f1ef609ec419420c20e320ce94c65fbc8c979c0fde7dae', 'member', 0);
 GO
+UPDATE Users
+SET role = 'admin' 
+WHERE user_id = 18;
+
 
 -- =============================================
 -- 2. TẠO USER PROFILE (15 profiles)
@@ -241,16 +245,16 @@ UPDATE [dbo].[Badges] SET [required_reputation] = 1000 WHERE [badge_id] = 4;
 UPDATE [dbo].[Badges] SET [required_reputation] = 2500 WHERE [badge_id] = 3;
 GO
 
-select * from Badges
-
 INSERT INTO [dbo].[Privileges] ([name], [description], [required_reputation]) VALUES
-('Create posts', 'Ask a question or contribute an answer.', 1),
-('Vote up', 'Indicate when questions and answers are useful.', 15),
-('Comment', 'Leave comments on other people''s posts.', 50),
-('Vote down', 'Indicate when questions and answers are not useful.', 125),
-('Create tags', 'Add new tags to the system.', 250),
-('Edit posts', 'Edit other people''s questions and answers.', 500),
-('Moderator', 'Access moderation tools and delete posts.', 2000);
+('Essential Contributor', 'Ability to create new questions and provide technical answers.', 1),
+('Content Supporter', 'Upvote helpful posts to increase their visibility in the community.', 15),
+('Active Collaborator', 'Leave comments on posts to ask for clarification or provide feedback.', 50),
+('Quality Reviewer', 'Downvote unhelpful or incorrect content to maintain data accuracy.', 75),
+('Bounty Sponsor', 'Offer a reputation reward to get faster or more detailed answers.', 100),
+('Tag Architect', 'Create and define new tags to better organize the knowledge base.', 1500),
+('Thread Curator', 'Close discussions that are duplicates or off-topic.', 2000),
+('Platform Auditor', 'Access the review queue to approve edits and handle flagged content.', 3000),
+('Thread Guardian', 'Protect important or high-traffic posts from spam and low-quality edits.', 3000);
 GO
 
 -- ========================================================
