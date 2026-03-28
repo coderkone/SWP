@@ -8,8 +8,8 @@ import java.util.Properties;
 public class DBContext {
     private static final String DEFAULT_HOST = "localhost";
     private static final String DEFAULT_PORT = "1433";
-    private static final String DEFAULT_DB = "devquery";
-    private static final String DEFAULT_USER = "sa";
+    private static final String DEFAULT_DB = "devquery2";
+    private static final String DEFAULT_USER = "huylq";
     private static final String DEFAULT_PASS = "123";
 
     private final Properties props = loadDbProperties();
