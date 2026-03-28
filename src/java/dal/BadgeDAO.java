@@ -25,15 +25,20 @@ public class BadgeDAO extends DBContext {
     // 1. Lấy lịch sử thay đổi điểm uy tín (Tab Reputation)
     public List<ReputationDTO> getReputationHistory(long userId) {
         List<ReputationDTO> list = new ArrayList<>();
-        String sql = "SELECT action_type, value, created_at "
-                + "FROM Reputation_History "
-                + "WHERE user_id = ? "
-                + "ORDER BY created_at DESC";
-        try {
-            Connection conn = getConnection();
-            PreparedStatement ps = conn.prepareStatement(sql);
+        
+        // FIX BUG: Dùng Alias (AS) để map cột 'event_type' thành 'action_type' 
+        // và 'delta' thành 'value' cho khớp với ReputationDTO và bảng trong Database
+        String sql = "SELECT event_type AS action_type, delta AS value, created_at "
+                   + "FROM Reputation_History "
+                   + "WHERE user_id = ? "
+                   + "ORDER BY created_at DESC";
+                   
+        try (Connection conn = getConnection(); 
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+             
             ps.setLong(1, userId);
             ResultSet rs = ps.executeQuery();
+            
             while (rs.next()) {
                 list.add(new ReputationDTO(
                         rs.getString("action_type"),
@@ -41,7 +46,6 @@ public class BadgeDAO extends DBContext {
                         rs.getTimestamp("created_at")
                 ));
             }
-            conn.close();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -49,36 +53,40 @@ public class BadgeDAO extends DBContext {
     }
 
     // 2. Lấy danh sách huy hiệu của user (Tab Badges)
-    public List<BadgeDTO> getUserBadges(long userId, String sort) {
+    public List<BadgeDTO> getUserBadgesByReputation(long userReputation, String sort) {
         List<BadgeDTO> list = new ArrayList<>();
 
-        // Mặc định sắp xếp theo ngày nhận mới nhất
-        String orderBy = "ORDER BY ub.created_at DESC";
+        // "newest" bây giờ sẽ ưu tiên hiển thị các huy hiệu khó đạt nhất (yêu cầu điểm cao nhất) lên trước
+        String orderBy = "ORDER BY required_reputation DESC";
 
         // Nếu user chọn lọc theo tên Alphabet
         if ("name".equals(sort)) {
-            orderBy = "ORDER BY b.name ASC";
+            orderBy = "ORDER BY name ASC";
         }
 
-        String sql = "SELECT b.name, b.type, b.description, ub.created_at "
-                + "FROM User_Badges ub "
-                + "JOIN Badges b ON ub.badge_id = b.badge_id "
-                + "WHERE ub.user_id = ? "
+        // Truy vấn trực tiếp vào bảng Badges, không cần đi qua User_Badges
+        String sql = "SELECT name, type, description, required_reputation "
+                + "FROM Badges "
+                + "WHERE required_reputation <= ? "
                 + orderBy;
-        try {
-            Connection conn = getConnection();
-            PreparedStatement ps = conn.prepareStatement(sql);
-            ps.setLong(1, userId);
+
+        try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setLong(1, userReputation); // Truyền điểm của user vào để so sánh
             ResultSet rs = ps.executeQuery();
+
             while (rs.next()) {
-                list.add(new BadgeDTO(
-                        rs.getString("name"),
-                        rs.getString("type"),
-                        rs.getString("description"),
-                        rs.getTimestamp("created_at")
-                ));
+                BadgeDTO badge = new BadgeDTO();
+                badge.setName(rs.getString("name"));
+                badge.setType(rs.getString("type"));
+                badge.setDescription(rs.getString("description"));
+                badge.setRequiredReputation(rs.getInt("required_reputation"));
+
+                // Vì không còn bảng User_Badges, ta không có ngày Earned cụ thể nữa
+                badge.setEarnedAt(null);
+
+                list.add(badge);
             }
-            conn.close();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -168,6 +176,7 @@ public class BadgeDAO extends DBContext {
         }
         return list;
     }
+
     // Thêm badge mới
     public boolean insertBadge(BadgeDTO badge) {
         String sql = "INSERT INTO Badges (name, type, description, required_reputation) VALUES (?, ?, ?, ?)";
@@ -177,7 +186,9 @@ public class BadgeDAO extends DBContext {
             ps.setString(3, badge.getDescription());
             ps.setInt(4, badge.getRequiredReputation());
             return ps.executeUpdate() > 0;
-        } catch (Exception e) { e.printStackTrace(); }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         return false;
     }
 
@@ -191,7 +202,9 @@ public class BadgeDAO extends DBContext {
             ps.setInt(4, badge.getRequiredReputation());
             ps.setInt(5, badge.getBadgeId());
             return ps.executeUpdate() > 0;
-        } catch (Exception e) { e.printStackTrace(); }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         return false;
     }
 
@@ -201,7 +214,9 @@ public class BadgeDAO extends DBContext {
         try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, badgeId);
             return ps.executeUpdate() > 0;
-        } catch (Exception e) { e.printStackTrace(); }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         return false;
     }
 
@@ -220,7 +235,9 @@ public class BadgeDAO extends DBContext {
                 b.setRequiredReputation(rs.getInt("required_reputation"));
                 return b;
             }
-        } catch (Exception e) { e.printStackTrace(); }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         return null;
     }
 }

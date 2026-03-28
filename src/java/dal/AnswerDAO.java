@@ -245,13 +245,19 @@ public class AnswerDAO extends DBContext {
         }
     }
 
-    public boolean deleteAnswer(long answerId) throws Exception {
+     public boolean deleteAnswer(long answerId) throws Exception {
+        String clearAccepted = "UPDATE Questions SET accepted_answer_id = NULL WHERE accepted_answer_id = ?";
         String sql = "DELETE FROM Answers WHERE answer_id = ?";
 
-        try (Connection con = getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
-
-            ps.setLong(1, answerId);
-            return ps.executeUpdate() > 0;
+        try (Connection con = getConnection()) {
+            try (PreparedStatement ps = con.prepareStatement(clearAccepted)) {
+                ps.setLong(1, answerId);
+                ps.executeUpdate();
+            }
+            try (PreparedStatement ps = con.prepareStatement(sql)) {
+                ps.setLong(1, answerId);
+                return ps.executeUpdate() > 0;
+            }
         }
     }
 

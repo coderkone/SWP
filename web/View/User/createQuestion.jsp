@@ -83,7 +83,7 @@
 
         <script src="https://unpkg.com/easymde/dist/easymde.min.js"></script>
         <script>
-            // 1. Khởi tạo Markdown Editor (Giữ nguyên cấu hình của bạn)
+            // 1. Khởi tạo Markdown Editor
             var easyMDE = new EasyMDE({
                 element: document.getElementById('body'),
                 spellChecker: false,
@@ -97,11 +97,7 @@
                 ]
             });
 
-            // =======================================================
-            // 2. TÍNH NĂNG AUTO-SAVE DRAFT (LƯU NHÁP VÀO LOCALSTORAGE)
-            // =======================================================
-
-            // Định nghĩa các key để lưu trữ
+            // 2. LƯU NHÁP VÀO LOCALSTORAGE
             const TITLE_KEY = "draft_question_title";
             const BODY_KEY = "draft_question_body";
             const TAGS_KEY = "draft_question_tags";
@@ -109,8 +105,7 @@
             const titleInput = document.getElementById('title');
             const tagsInput = document.getElementById('tags');
 
-            // A. TẢI LẠI BẢN NHÁP (Load Draft)
-            // Chỉ điền bản nháp nếu ô input đang trống (để tránh ghi đè dữ liệu của server khi báo lỗi)
+            // Chỉ điền bản nháp nếu ô input đang trống
             document.addEventListener("DOMContentLoaded", function () {
                 if (!titleInput.value && localStorage.getItem(TITLE_KEY)) {
                     titleInput.value = localStorage.getItem(TITLE_KEY);
@@ -123,21 +118,18 @@
                 }
             });
 
-            // B. TỰ ĐỘNG LƯU (Auto Save)
-            // Lắng nghe sự kiện gõ phím ở các ô input thông thường
+            // TỰ ĐỘNG LƯU 
             titleInput.addEventListener('input', function () {
                 localStorage.setItem(TITLE_KEY, this.value);
             });
             tagsInput.addEventListener('input', function () {
                 localStorage.setItem(TAGS_KEY, this.value);
             });
-            // Lắng nghe sự kiện gõ phím riêng của khung Markdown EasyMDE
             easyMDE.codemirror.on("change", function () {
                 localStorage.setItem(BODY_KEY, easyMDE.value());
             });
 
-            // C. DỌN DẸP BẢN NHÁP KHI ĐĂNG BÀI (Clear Draft)
-            // Khi người dùng bấm Post Question, xóa nháp để lần sau mở form là form trắng
+            // Xóa BẢN NHÁP KHI ĐĂNG BÀI
             document.querySelector('form').addEventListener('submit', function () {
                 localStorage.removeItem(TITLE_KEY);
                 localStorage.removeItem(BODY_KEY);

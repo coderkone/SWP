@@ -315,7 +315,7 @@
                 <div class="toolbar">
                     <form action="${pageContext.request.contextPath}/admin/badges" method="get" class="search-box">
                         <input type="text" name="q" placeholder="Search badges..." value="${param.q}">
-                        <select name="type" style="padding: 8px; border: 1px solid var(--border-color); border-radius: 4px;">
+                        <select name="type" style="padding: 8px; border: 1px solid var(--border-color); border-radius: 4px;" onchange="this.form.submit()">
                             <option value="">All Ranks</option>
                             <option value="Gold" ${param.type == 'Gold' ? 'selected' : ''}>Gold</option>
                             <option value="Silver" ${param.type == 'Silver' ? 'selected' : ''}>Silver</option>

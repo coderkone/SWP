@@ -72,29 +72,27 @@ public class EditProfileController extends HttpServlet {
 
         ProfileDAO dao = new ProfileDAO();
 
-        // 1. XỬ LÝ AVATAR (XÓA HOẶC UPLOAD ẢNH MỚI)
+        // 1. XÓA HOẶC UPLOAD ẢNH MỚI
         Part filePart = request.getPart("avatarFile");
         String deleteAvatarFlag = request.getParameter("deleteAvatar");
 
         if ("true".equals(deleteAvatarFlag)) {
-            // Trường hợp user bấm nút DELETE avatar
+            // Click DELETE avatar
             dao.updateAvatar(currentUser.getUserId(), null);
             currentUser.setAvatarUrl(null);
             session.setAttribute("user", currentUser);
 
         } else if (filePart != null && filePart.getSize() > 0) {
 
-            // 1. Lấy đường dẫn động của thư mục build/web
+            // Lấy đường dẫn động chuyển thành đường dẫn tĩnh
             String buildPath = getServletContext().getRealPath("");
-
-            // 2. Chuyển đổi thành đường dẫn source
             String sourcePath = buildPath.substring(0, buildPath.indexOf("build")) + "web";
 
-            // 3. Khai báo thư mục lưu ảnh ở cả 2 nơi
+            // Khai báo thư mục lưu ảnh 
             String buildAvatarDir = buildPath + File.separator + "assets" + File.separator + "img" + File.separator + "avatar";
             String sourceAvatarDir = sourcePath + File.separator + "assets" + File.separator + "img" + File.separator + "avatar";
 
-            // 4. Tạo thư mục nếu chưa có
+            // Tạo thư mục nếu chưa có
             File bDir = new File(buildAvatarDir);
             if (!bDir.exists()) {
                 bDir.mkdirs();
@@ -111,10 +109,10 @@ public class EditProfileController extends HttpServlet {
 
             String fileName = "user_" + currentUser.getUserId() + "_" + System.currentTimeMillis() + ext;
 
-            // 5. Lưu vào build/web 
+            // Lưu vào build/web 
             filePart.write(buildAvatarDir + File.separator + fileName);
 
-            // 6. Copy sang source gốc
+            // Copy sang source gốc
             Files.copy(
                     new File(buildAvatarDir + File.separator + fileName).toPath(),
                     new File(sourceAvatarDir + File.separator + fileName).toPath(),
@@ -154,7 +152,18 @@ public class EditProfileController extends HttpServlet {
             response.sendRedirect("profile?id=" + currentUser.getUserId() + "&status=success");
         } else {
             request.setAttribute("ERROR", "Update failed! The display name might already be taken.");
-            doGet(request, response);
+            
+            // Tạo profile tạm thời
+            UserDTO tempProfile = new UserDTO();
+            tempProfile.setUsername(displayName);
+            tempProfile.setBio(bio);
+            tempProfile.setLocation(location);
+            tempProfile.setAvatarUrl(currentUser.getAvatarUrl()); 
+            
+            request.setAttribute("profile", tempProfile);
+            request.setAttribute("socialLinks", linksObj);
+            
+            request.getRequestDispatcher("/View/User/editProfile.jsp").forward(request, response);
         }
     }
 }

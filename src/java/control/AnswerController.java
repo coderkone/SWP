@@ -9,6 +9,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
 import java.io.IOException;
+import model.User;
 
 @WebServlet(name = "AnswerController", urlPatterns = {"/answer/create"})
 public class AnswerController extends HttpServlet {
@@ -23,17 +24,23 @@ public class AnswerController extends HttpServlet {
         try {
             // Get user from session
             HttpSession session = request.getSession(false);
-            if (session == null || session.getAttribute("user") == null) {
+            if (session == null) {
                 response.sendRedirect(request.getContextPath() + "/auth/login");
                 return;
             }
 
             Object userObj = session.getAttribute("user");
+            if (userObj == null) {
+                userObj = session.getAttribute("USER");
+            }
             long userId = 0;
             
-            // Extract userId from UserDTO
+            // Extract userId from supported session principal types
             if (userObj instanceof UserDTO) {
                 UserDTO user = (UserDTO) userObj;
+                userId = user.getUserId();
+            } else if (userObj instanceof User) {
+                User user = (User) userObj;
                 userId = user.getUserId();
             } else {
                 response.sendRedirect(request.getContextPath() + "/auth/login");

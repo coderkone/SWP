@@ -6,13 +6,26 @@
     }
 
     function openFlagModal(postType, postId, questionId, answerId) {
-        const params = new URLSearchParams();
-        if (postType) params.append('postType', postType);
-        if (postId) params.append('postId', postId);
-        if (questionId) params.append('questionId', questionId);
-        if (answerId) params.append('answerId', answerId);
-        window.location.href = '${pageContext.request.contextPath}/flag/report?' + params.toString();
-    }
+        const modal = document.getElementById('flag-modal');
+        if (!modal) return;
+
+        const postTypeInput = document.getElementById('flag-post-type');
+        const postIdInput = document.getElementById('flag-post-id');
+        const questionIdInput = document.getElementById('flag-question-id');
+        const answerIdInput = document.getElementById('flag-answer-id');
+        const reasonSelect = document.getElementById('flag-reason');
+        const noteArea = document.getElementById('flag-note');
+
+        if (postTypeInput) postTypeInput.value = postType || '';
+        if (postIdInput) postIdInput.value = postId || '';
+        if (questionIdInput) questionIdInput.value = questionId || '';
+        if (answerIdInput) answerIdInput.value = answerId || '';
+        if (reasonSelect) reasonSelect.value = '';
+        if (noteArea) noteArea.value = '';
+
+        modal.classList.add('active');
+        modal.setAttribute('aria-hidden', 'false');
+        document.body.style.overflow = 'hidden';    }
 
     function closeFlagModal() {
         const modal = document.getElementById('flag-modal');
@@ -47,8 +60,33 @@
         document.body.style.overflow = '';
     }
 
+    function openBountyModal(questionId) {
+        const modal = document.getElementById('bounty-modal');
+        if (!modal) return;
+
+        const questionIdInput = document.getElementById('bounty-question-id');
+        const amountInput = document.getElementById('bounty-amount');
+
+        if (questionIdInput) questionIdInput.value = questionId || '';
+        if (amountInput) amountInput.value = '50';
+
+        modal.classList.add('active');
+        modal.setAttribute('aria-hidden', 'false');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeBountyModal() {
+        const modal = document.getElementById('bounty-modal');
+        if (!modal) return;
+
+        modal.classList.remove('active');
+        modal.setAttribute('aria-hidden', 'true');
+        document.body.style.overflow = '';
+    }
+
     function toggleMenu() {
         var sidebar = document.getElementById('sidebar');
+        if (!sidebar) return;
         sidebar.classList.toggle('active');
         document.body.classList.toggle('sidebar-open');
     }
@@ -125,12 +163,18 @@
         if (closeModal && event.target === closeModal) {
             closeCloseModal();
         }
+
+        const bountyModal = document.getElementById('bounty-modal');
+        if (bountyModal && event.target === bountyModal) {
+            closeBountyModal();
+        }
     });
 
     document.addEventListener('keydown', function(event) {
         if (event.key === 'Escape') {
             closeFlagModal();
             closeCloseModal();
+            closeBountyModal();
         }
     });
 
@@ -420,6 +464,37 @@
         }
     }
 
+    function updateBountyCountdowns() {
+        const countdownNodes = document.querySelectorAll('[data-bounty-expiry]');
+        const now = Date.now();
+
+        countdownNodes.forEach(function(node) {
+            const expiry = Number(node.getAttribute('data-bounty-expiry'));
+            if (!expiry) {
+                return;
+            }
+
+            const remaining = expiry - now;
+            if (remaining <= 0) {
+                node.textContent = 'Expired';
+                return;
+            }
+
+            const totalSeconds = Math.floor(remaining / 1000);
+            const days = Math.floor(totalSeconds / 86400);
+            const hours = Math.floor((totalSeconds % 86400) / 3600);
+            const minutes = Math.floor((totalSeconds % 3600) / 60);
+
+            if (days > 0) {
+                node.textContent = days + 'd ' + hours + 'h left';
+            } else if (hours > 0) {
+                node.textContent = hours + 'h ' + minutes + 'm left';
+            } else {
+                node.textContent = Math.max(minutes, 0) + 'm left';
+            }
+        });
+    }
+
     // ===== QUILL RICH TEXT EDITOR INITIALIZATION =====
     let quillEditor;
 
@@ -457,6 +532,9 @@
 
     // Initialize Quill editor when document is ready
     document.addEventListener('DOMContentLoaded', function() {
+        updateBountyCountdowns();
+        window.setInterval(updateBountyCountdowns, 60000);
+
         quillEditor = new Quill('#answer-editor', {
             theme: 'snow',
             modules: {
