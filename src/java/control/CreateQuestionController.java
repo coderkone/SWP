@@ -77,10 +77,10 @@ public class CreateQuestionController extends HttpServlet {
             // Lấy điểm uy tín của người dùng
             int userRep = currentUser.getReputation(); 
             QuestionDAO qDao = new QuestionDAO();
-            if (userRep < 50) {
+            if (userRep < 1500) {
                 List<String> newTags = qDao.findNewTags(tags);
                 if (!newTags.isEmpty()) {
-                    String errorMsg = "You need at least 50 reputation to create new tags. Invalid tags: " + String.join(", ", newTags);
+                    String errorMsg = "You need at least 1500 reputation to create new tags. Invalid tags: " + String.join(", ", newTags);
                     request.setAttribute("errorMessage", errorMsg);
                     // Giữ lại nội dung cũ để người dùng không phải gõ lại từ đầu
                     request.setAttribute("oldTitle", title);
