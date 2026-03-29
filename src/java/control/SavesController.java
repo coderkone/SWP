@@ -46,9 +46,10 @@ public class SavesController extends HttpServlet {
             BookmarkDAO bmDao = new BookmarkDAO();
             CollectionDAO colDao = new CollectionDAO();
             UserDAO userDao = new UserDAO();
-
+            long targetId = (request.getParameter("id") != null && !request.getParameter("id").isEmpty()) ? Long.parseLong(request.getParameter("id")) : user.getUserId();
             // 1. Lấy thông tin Profile người dùng
-            UserDTO userProfile = userDao.getUserProfileById(user.getUserId());
+            UserDTO userProfile = userDao.getUserProfileById(targetId);
+            
             request.setAttribute("userProfile", userProfile);
 
             // 2. Nhận tham số phân trang từ URL

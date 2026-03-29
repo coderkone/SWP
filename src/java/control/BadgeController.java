@@ -35,7 +35,8 @@ public class BadgeController extends HttpServlet {
 
         // Lấy thông tin Profile
         UserDAO userDao = new UserDAO();
-        UserDTO userProfile = userDao.getUserProfileById(user.getUserId());
+        long targetId = (request.getParameter("id") != null && !request.getParameter("id").isEmpty()) ? Long.parseLong(request.getParameter("id")) : user.getUserId();
+        UserDTO userProfile = userDao.getUserProfileById(targetId);
         request.setAttribute("userProfile", userProfile);
 
         // Điều hướng Tab
@@ -49,7 +50,7 @@ public class BadgeController extends HttpServlet {
 
         // RẼ NHÁNH XỬ LÝ THEO TAB
         if (tab.equals("reputation")) {
-            List<ReputationDTO> repList = dao.getReputationHistory(user.getUserId());
+            List<ReputationDTO> repList = dao.getReputationHistory(targetId);
             request.setAttribute("repList", repList);
 
         } else if (tab.equals("badges")) {
