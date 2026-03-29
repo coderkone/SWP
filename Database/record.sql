@@ -418,3 +418,75 @@ INSERT INTO [dbo].[Post_Edit_History] ([post_type], [post_id], [title], [body], 
 ('question', 1, N'Lỗi NullPointerException trong Java là gì?', N'Đã update thêm phần code bị lỗi để mọi người dễ nhìn', 16),
 ('answer', 1, NULL, N'Đã fix lỗi chính tả trong câu trả lời', 3);
 GO
+
+-- ========================================================
+-- BƠM 15 THÔNG BÁO TEST CHO USER MAICT (ID = 16)
+-- ========================================================
+
+INSERT INTO [dbo].[Notifications] ([user_id], [type], [content], [is_read], [created_at])
+VALUES
+(16, 'badge', N'Chúc mừng! Bạn đã nhận được huy hiệu "Famous Question".', 0, GETDATE()),
+(16, 'answer', N'Thuy_java đã trả lời câu hỏi "Làm sao để code trang Profile chuẩn MVC?" của bạn.', 0, DATEADD(MINUTE, -15, GETDATE())),
+(16, 'comment', N'Hoang_coder đã trả lời bình luận của bạn trong bài viết về ReactJS.', 0, DATEADD(HOUR, -2, GETDATE())),
+(16, 'upvote', N'Câu hỏi của bạn vừa nhận được 10 lượt upvote liên tiếp.', 1, DATEADD(HOUR, -5, GETDATE())),
+(16, 'system', N'Hệ thống DevQuery sẽ bảo trì server định kỳ vào lúc 2h sáng mai.', 1, DATEADD(DAY, -1, GETDATE())),
+(16, 'badge', N'Chúc mừng! Bạn đã mở khóa huy hiệu "Bug Hunter".', 1, DATEADD(DAY, -2, GETDATE())),
+(16, 'answer', N'Một người dùng ẩn danh vừa thêm câu trả lời mới cho bài viết của bạn.', 0, DATEADD(DAY, -2, GETDATE())),
+(16, 'comment', N'Admin đã nhắc đến bạn (@MaiCT) trong một chủ đề thảo luận chung.', 1, DATEADD(DAY, -3, GETDATE())),
+(16, 'system', N'Chào mừng bạn gia nhập cộng đồng DevQuery! Hãy đặt câu hỏi đầu tiên nhé.', 1, DATEADD(DAY, -4, GETDATE())),
+(16, 'accept', N'Tuyệt vời! Câu trả lời của bạn đã được người hỏi đánh dấu là "Chấp nhận" (Accepted).', 0, DATEADD(DAY, -5, GETDATE())),
+(16, 'badge', N'Bạn vừa mở khóa đặc quyền mới: "Vote up" và "Bình luận".', 1, DATEADD(DAY, -6, GETDATE())),
+(16, 'comment', N'Có người vừa phản hồi lại bình luận của bạn trong bài "Java OOP là gì?".', 0, DATEADD(DAY, -7, GETDATE())),
+(16, 'system', N'Tin hot: Bài viết của bạn đang lọt top Trending tuần này!', 0, DATEADD(DAY, -8, GETDATE())),
+(16, 'answer', N'Pro_backend đã trả lời câu hỏi "Lỗi gạch đỏ chữ Connection trong Java".', 1, DATEADD(DAY, -9, GETDATE())),
+(16, 'upvote', N'Bạn nhận được +15 Reputation từ một câu trả lời xuất sắc.', 1, DATEADD(DAY, -10, GETDATE()));
+GO
+
+SET IDENTITY_INSERT [dbo].[Blogs] ON;
+INSERT INTO Blogs (blog_id, title, content, author_id, view_count, status) VALUES
+(1, N'Blog 1 - Java Basics', N'Content about Java basics', 1, 120, 1),
+(2, N'Blog 2 - OOP Concepts', N'Content about OOP', 1, 230, 1),
+(3, N'Blog 3 - SQL Optimization', N'Content about SQL', 1, 321, 1),
+(4, N'Blog 4 - REST API Design', N'Content about REST API', 1, 90, 1),
+(5, N'Blog 5 - Microservices Intro', N'Content about Microservices', 1, 450, 1),
+(6, N'Blog 6 - Docker Basics', N'Content about Docker', 1, 88, 1),
+(7, N'Blog 7 - Kubernetes Guide', N'Content about Kubernetes', 1, 510, 1),
+(8, N'Blog 8 - Design Patterns', N'Content about Patterns', 1, 240, 1),
+(9, N'Blog 9 - Spring Boot Intro', N'Content about Spring Boot', 1, 310, 1),
+(10, N'Blog 10 - Web Security', N'Content about Security', 1, 200, 1),
+(11, N'Blog 11 - Java Streams', N'Content about Streams', 1, 180, 1),
+(12, N'Blog 12 - Hibernate ORM', N'Content about Hibernate', 1, 275, 1),
+(13, N'Blog 13 - Database Indexing', N'Content about Index', 1, 312, 1),
+(14, N'Blog 14 - Clean Code', N'Content about Clean Code', 1, 402, 1),
+(15, N'Blog 15 - Git Workflow', N'Content about Git', 1, 198, 1),
+(16, N'Blog 16 - Linux Commands', N'Content about Linux', 1, 150, 1),
+(17, N'Blog 17 - Cloud Computing', N'Content about Cloud', 1, 390, 1),
+(18, N'Blog 18 - DevOps Pipeline', N'Content about DevOps', 1, 420, 1),
+(19, N'Blog 19 - AI Basics', N'Content about AI', 1, 530, 1),
+(20, N'Blog 20 - Machine Learning', N'Content about ML', 1, 610, 1);
+SET IDENTITY_INSERT [dbo].[Blogs] OFF;
+
+select *from [dbo].[Blogs];
+
+-- =========================================================
+-- 7. BLOG COMMENTS (ĐẦY ĐỦ 30 BÌNH LUẬN)
+-- =========================================================
+-- 10 Root Comments
+INSERT INTO BlogComments (blog_id, user_id, parent_id, content) VALUES
+(1,1,NULL,N'Great article'), (1,16,NULL,N'Nice explanation'), (1,1,NULL,N'Helpful blog'),
+(1,16,NULL,N'Good tutorial'), (1,1,NULL,N'Clear and easy'), (1,16,NULL,N'Thanks for sharing'),
+(1,1,NULL,N'Interesting read'), (1,16,NULL,N'Well written'), (1,1,NULL,N'Very useful'), (1,16,NULL,N'I learned a lot');
+
+-- 20 Child Comments (Tham chiếu tới các ID vừa chèn)
+DECLARE @FirstCommID INT = (SELECT MIN(comment_id) FROM BlogComments);
+INSERT INTO BlogComments (blog_id, user_id, parent_id, content) VALUES
+(1,16, @FirstCommID, N'I agree'), (1,1, @FirstCommID, N'Same here'), (1,16, @FirstCommID+1, N'Yes exactly'),
+(1,1, @FirstCommID+1, N'Good point'), (1,16, @FirstCommID+2, N'Nice observation'), (1,1, @FirstCommID+2, N'Thanks for comment'),
+(1,16, @FirstCommID+3, N'Correct'), (1,1, @FirstCommID+3, N'Absolutely'), (1,16, @FirstCommID+4, N'I think so too'),
+(1,1, @FirstCommID+4, N'Right'), (1,16, @FirstCommID+5, N'Good feedback'), (1,1, @FirstCommID+5, N'Helpful reply'),
+(1,16, @FirstCommID+6, N'Interesting thought'), (1,1, @FirstCommID+6, N'Nice discussion'), (1,16, @FirstCommID+7, N'Great'),
+(1,1, @FirstCommID+7, N'Agreed'), (1,16, @FirstCommID+8, N'True'), (1,1, @FirstCommID+8, N'Indeed'),
+(1,16, @FirstCommID+9, N'Good point'), (1,1, @FirstCommID+9, N'Exactly');
+
+-- Đồng bộ comment_count
+UPDATE Blogs SET comment_count = (SELECT COUNT(*) FROM BlogComments WHERE BlogComments.blog_id = Blogs.blog_id);
